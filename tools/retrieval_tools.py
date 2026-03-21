@@ -79,3 +79,70 @@ def get_activity_description(
     """Returns the description for a known activity, or empty string if not found."""
     load_activity_list()
     return _activity_descriptions.get(activity_name, "")
+
+def retrieve_all_steps(
+    steps: Annotated[list, "Full list of step dicts from decomposition"],
+) -> list[dict]:
+    """
+    Retrieves and validates activity candidates for ALL steps in one call.
+    Returns the complete manifest in one shot — no per-step looping needed.
+    """
+    load_activity_list()
+
+    CONTROL_FLOW_INTENTS = {"branch", "parallel"}
+    CONTROL_FLOW_CF = {"ifelse", "parallel"}
+
+    manifest = []
+    for step in steps:
+        step_id = step.get("step_id", "")
+        description = step.get("description", "")
+        control_flow = step.get("control_flow", "linear")
+        intent = step.get("intent", "")
+
+        # Control flow containers — not in activity list
+        if control_flow in CONTROL_FLOW_CF or intent in CONTROL_FLOW_INTENTS:
+            manifest.append({
+                "step_id": step_id,
+                "query": description,
+                "candidates": [],
+                "selected_activity": "IfElseActivity",
+                "status": "CONTROL_FLOW",
+            })
+            continue
+
+        candidates = retrieve_activities(description)
+
+        if not candidates:
+            manifest.append({
+                "step_id": step_id,
+                "query": description,
+                "candidates": [],
+                "selected_activity": None,
+                "status": "UNAVAILABLE",
+            })
+            continue
+
+        top = candidates[0]["activity_name"]
+        validation = validate_activity(top)
+
+        if validation["valid"]:
+            manifest.append({
+                "step_id": step_id,
+                "query": description,
+                "candidates": [
+                    {"activity_name": c["activity_name"], "keyword_hits": c["keyword_hits"]}
+                    for c in candidates[:3]
+                ],
+                "selected_activity": top,
+                "status": "MATCHED",
+            })
+        else:
+            manifest.append({
+                "step_id": step_id,
+                "query": description,
+                "candidates": candidates[:3],
+                "selected_activity": None,
+                "status": "UNAVAILABLE",
+            })
+
+    return manifest

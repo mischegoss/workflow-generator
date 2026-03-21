@@ -1,8 +1,8 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
-
-MODEL = LiteLlm(model="anthropic/claude-sonnet-4-5-20251001")
+import os
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
 
 INSTRUCTION = """
 You are the first stage of a workflow generation pipeline for Resolve Actions (a Windows Workflow

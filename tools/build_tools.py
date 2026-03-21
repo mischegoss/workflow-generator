@@ -2,6 +2,8 @@ import copy
 import json
 import os
 import re
+import random
+import time
 import uuid
 from typing import Annotated
 
@@ -117,13 +119,25 @@ def fill_scaffold_params(
 
 
 def generate_pnumber() -> str:
-    """Generates a unique Pnumber for each workflow to prevent platform treating it as an update."""
-    return f"WF-{uuid.uuid4().hex[:12].upper()}"
+    """
+    Generates a unique numeric Pnumber for each workflow.
+    Platform requires integer format and treats matching Pnumbers as updates
+    to existing workflows rather than new imports — must be unique every run.
+    Uses timestamp + random suffix to guarantee uniqueness across rapid calls.
+    """
+    timestamp = int(time.time())
+    suffix = random.randint(100, 999)
+    return str(timestamp + suffix)
 
 
 def generate_workflow_name(
     base_name: Annotated[str, "Human readable base name"],
 ) -> str:
-    """Creates a safe workflow name — alphanumeric, no spaces or special characters."""
+    """
+    Creates a safe unique workflow name — alphanumeric, no spaces.
+    Appends a timestamp suffix to guarantee uniqueness on every run.
+    """
     safe = "".join(c if c.isalnum() else "_" for c in base_name)
-    return safe.strip("_")[:60]
+    safe = safe.strip("_")[:40]
+    timestamp = int(time.time())
+    return f"{safe}_{timestamp}"

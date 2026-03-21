@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
-import uuid
+import random
+import time
 
 
 class WorkflowXmlComposer:
@@ -14,36 +15,49 @@ class WorkflowXmlComposer:
         "ReturnValue":    ("ns_retval",     "ReturnValue",    "ReturnValue, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null"),
         "Continue":       ("ns_continue",   "Continue",       "Continue, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"),
         "SendEmail":      ("ns_sendemail",  "SendEmail",      "SendEmail, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null"),
-        "WhileActivity":     ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "ExitWhile":         ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "ForEachActivity":   ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "UserGroup":         ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "MemorySet":         ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "DisplayValue":      ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "GetRowsCount":      ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "GetCellValue":      ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "RunWorkflow":       ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "Ping":              ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "MultiMemorySet":    ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "DisplayMultiValue": ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
-        "GetRows":           ("ns0", "EyeShare.Workflow.Activities", "EyeShare.Workflow.Activities"),
+        "WhileActivity":     (None, None, None),
+        "ExitWhile":         (None, None, None),
+        "ForEachActivity":   (None, None, None),
+        "UserGroup":         (None, None, None),
+        "MemorySet":         (None, None, None),
+        "DisplayValue":      (None, None, None),
+        "GetRowsCount":      (None, None, None),
+        "GetCellValue":      (None, None, None),
+        "RunWorkflow":       (None, None, None),
+        "Ping":              (None, None, None),
+        "MultiMemorySet":    (None, None, None),
+        "DisplayMultiValue": (None, None, None),
+        "GetRows":           (None, None, None),
     }
 
     SKIP_FIELDS = {
-        "CustomTypeName", "isJsonValid", "isFavorite", "modulePermissions",
-        "activityLicenseType", "readPermission", "writePermission",
-    }
+    "CustomTypeName",   # used for routing, not an XML attribute
+    "modulePermissions", # null, not in real XOML
+    "notes",            # pipeline-internal only
+}
+
+    SEQUENCE_CONTAINERS = {"WhileActivity", "ForEachActivity"}
 
     def compose(self, workflow_json: dict, workflow_name: str, pnumber: str) -> str:
         raw_data = workflow_json.get("workflow_raw_data", {})
         xoml = self._build_xoml(raw_data, workflow_name)
 
         total_export = ET.Element("TotalExport", attrib={"sourceSystem": "NG"})
-        ET.SubElement(total_export, "WorkflowInfo", attrib={
-            "Pnumber": pnumber,
-            "Name": workflow_name,
-            "DateLic": "",
-            "Xoml": xoml,
+        workflows_elem = ET.SubElement(total_export, "Workflows")
+        ET.SubElement(workflows_elem, "WorkflowInfo", attrib={
+            "Pnumber":               pnumber,
+            "Name":                  workflow_name,
+            "Description":           workflow_json.get("description", ""),
+            "Xoml":                  xoml,
+            "XomlStatus":            "0",
+            "Details":               "",
+            "DateLic":               "",
+            "WorkflowType":          "0",
+            "WorkflowFolderId":      "0",
+            "WorkflowParentId":      "0",
+            "Permissions":           "",
+            "ErrorHandling":         "",
+            "CurrentRevisionNumber": "1",
         })
 
         ET.indent(total_export, space="  ")
@@ -55,9 +69,10 @@ class WorkflowXmlComposer:
         used_namespaces = self._collect_namespaces(raw_data)
 
         attribs = {
-            "x:Name": workflow_name,
-            "xmlns:x": "http://schemas.microsoft.com/winfx/2006/xaml",
             "xmlns":   "http://schemas.microsoft.com/winfx/2006/xaml/workflow",
+            "xmlns:x": "http://schemas.microsoft.com/winfx/2006/xaml",
+            "x:Name":  "CustomWorkflow",
+            "x:Class": "WorkflowDesignerControl.CustomWorkflow",
         }
         for prefix, (clr_ns, assembly) in used_namespaces.items():
             attribs[f"xmlns:{prefix}"] = f"clr-namespace:{clr_ns};Assembly={assembly}"
@@ -82,12 +97,6 @@ class WorkflowXmlComposer:
                 prefix, clr_ns, assembly = self.NAMESPACE_REGISTRY[ct]
                 if prefix and prefix not in seen:
                     seen[prefix] = (clr_ns, assembly)
-            else:
-                if ct and "ns0" not in seen:
-                    seen["ns0"] = (
-                        "EyeShare.Workflow.Activities",
-                        "EyeShare.Workflow.Activities",
-                    )
             for value in node.values():
                 self._collect_namespaces(value, seen)
         return seen
@@ -118,13 +127,32 @@ class WorkflowXmlComposer:
                 attribs[key] = str(value)
 
         elem = ET.Element(tag, attrib=attribs)
-        for child in child_elements:
-            elem.append(child)
+
+        if custom_type in self.SEQUENCE_CONTAINERS:
+            seq_elem = None
+            other_children = []
+            for child in child_elements:
+                child_tag = child.tag.split(":")[-1] if ":" in child.tag else child.tag
+                if child_tag == "SequenceActivity":
+                    seq_elem = child
+                else:
+                    other_children.append(child)
+            if seq_elem is not None:
+                for child in other_children:
+                    seq_elem.append(child)
+                elem.append(seq_elem)
+            else:
+                for child in child_elements:
+                    elem.append(child)
+        else:
+            for child in child_elements:
+                elem.append(child)
+
         return elem
 
     def _resolve_tag(self, custom_type: str) -> str:
         if custom_type not in self.NAMESPACE_REGISTRY:
-            return f"ns0:{custom_type}"
+            return custom_type
         prefix, clr_ns, assembly = self.NAMESPACE_REGISTRY[custom_type]
         if prefix is None:
             return custom_type

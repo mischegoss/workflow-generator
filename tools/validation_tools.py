@@ -9,6 +9,11 @@ VALID_CONDITION_TYPES = {"", "Equals", "Contains", "Not Contains", "Formula"}
 CONTAINER_TYPES = {
     "WhileActivity", "SequenceActivity", "IfElseActivity", "IfElseBranchActivity",
     "ParallelActivity", "UserGroup", "ForEachActivity", "ExitWhile", "ReturnValue",
+    "IfElseCondition",
+}
+
+EXCLUDED_REQUIRED_FIELDS = {
+    "XMLTableResult",
 }
 
 
@@ -62,6 +67,7 @@ def validate_activity_schema(
 ) -> dict:
     """
     Checks required fields per activities_controls.json.
+    Skips EXCLUDED_REQUIRED_FIELDS (e.g. XMLTableResult — configured manually after import).
     If activity not in index, adds a VERIFY note instead of silently passing.
     """
     controls_index = _load_controls_index()
@@ -74,7 +80,11 @@ def validate_activity_schema(
         if type_name and type_name not in CONTAINER_TYPES:
             if type_name in controls_index:
                 for control in controls_index[type_name]:
-                    if control.get("required") and control["fieldKey"] not in node:
+                    if (
+                        control.get("required")
+                        and control["fieldKey"] not in node
+                        and control["fieldKey"] not in EXCLUDED_REQUIRED_FIELDS
+                    ):
                         errors.append(
                             f"[{path}] '{type_name}' missing required field "
                             f"'{control['fieldKey']}' ({control['fieldName']})"
