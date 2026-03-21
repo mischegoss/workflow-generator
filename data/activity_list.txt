@@ -1,0 +1,664 @@
+name	description
+Abs	Returns the absolute value of a specified number
+ADAddtoGroup	Adds a user or a computer account to a group
+ADComputerLoggedInDate	Retrieves the last date a computer account was logged in
+ADCopyUser	Duplicates a user account
+ADCreateAccount	Creates a new user account
+ADCreateGroup	Creates a new group
+ADCreateGroupAdvanced	An activity that creates groups in AD.
+AddDate	Adds an interval to a given date
+ADDeleteAccount	Deletes a user or a computer account
+ADDeleteGroup	Deletes an existing group
+ADDisableAccount	Disables a user or a computer account
+AddMemoryTableColumn	Adds a single or multiple column/s to a table
+AddMemoryTableRow	Adds a single or multiple row/s to a table
+ADEnableAccount	Enables a user or a computer account
+ADGetProperty	Retrieves a user''s or a computer account''s property
+ADGroupExists	Checks if a group exists
+ADIsAccountDisabled	Checks if a user or a computer account is disabled
+ADIsAccountLocked	Checks if a user account is locked
+ADLDAPQuery	Executes an LDAP query
+ADListGroup	Retrieves a list of the group members
+ADListOU	Retrieves the list of objects which reside in an OU
+ADListUserGroups	Retrieves a list of groups of which the user is a member
+ADMoveAccount	Moves a user or a computer account to a new OU
+ADPassExpDaysLeft	Retrieves the number of days left until a user account''s password is expired
+ADPasswordReset	Resets a user account''s password
+ADPermissionsRemoteFolder	This Activity is used to set folder permissions to the AD user in remote server.
+ADRemoveFromGroup	Removes a user or a computer account from a group
+ADRenameAccount	Renames a user or a computer account
+ADSearchAccount	Searches for a user''s or a computer account''s distinguished name based on the account''s name
+ADSearchUserLogonName	Searches for a user account''s name based on the account''s properties
+ADSetPasswordProperties	Sets a user account''s password properties
+ADSetProperty	Sets a user''s or a computer account''s property
+ADUnlockAccount	Unlocks a user account
+ADUserExists	Checks if a user account exists
+ADUserLoggedInDate	Retrieves the last date a user account was logged in
+ADUsersSynchronization	Synchronizes the Active Directory users and groups with the eyeShareDev database
+AdvancedCommunicate	Assigns a person to handle the event or the Incident that triggered the workflow
+ApplicationPoolRecycle	Recycles the specified application pool on the designated server
+ApplicationPoolStart	Starts the specified application pool on the designated server
+ApplicationPoolStatus	Returns the specified application pool''s status
+ApplicationPoolStop	Stops the specified application pool on the designated server
+AttachmentList	Lists the files attached to the email that triggered the workflow 
+AvayaClearCallFwd	connect to Avaya phone system and clear a call forward from a given extension
+AvayaSetCallFwd	set a call forwarding DN on a given extension
+AWSAttachNetworkInterface	Attaches a network interface to an Amazon Web Service instance
+AWSAttachVolume	Attaches a volume to an Amazon Web Service instance
+AWSCopySnapshot	Copies an Amazon Web Service snapshot
+AWSCreateImage	Create a new Amazon Web Service image based on an existing instance
+AWSCreateSnapshot	Creates a new Amazon Web Service snapshot based on an existing volume
+AWSCreateVolume	Creates a new Amazon Web Service volume
+AWSDeleteSnapshot	Deletes an Amazon Web Service snapshot
+AWSDeleteVolume	Deletes an Amazon Web Service volume
+AWSDeregisterImage	Deregisters an Amazon Web Service image
+AWSDetachNetworkInterface	Detaches a network interface from an Amazon Web Service instance
+AWSDetachVolume	Detaches a volume from an Amazon Web Service instance
+AWSGetObject	Retrieves information on various Amazon Web Service objects
+AWSLaunchInstance	Launches a new Amazon Web Service instance
+AWSSSMCommandExecute	Execute a command on an EC2 using the System Manager agent.
+AYAccountLoginResponse	AY AccountLoginResponse
+AyehuNgExportWorkflows	Export workflows as encoded string
+AyehuNgGetWorkflowIds	Return Ayehu NG Workflow Id for selected workflows
+AyehuNgLoginToken	Generate Ayehu NG Login Token
+AYInsightGetAuditTrail	AY InsightGetAuditTrail
+AzureADUserCreate	Creates an Azure Active Directory user.
+AzureADUserGroupsMemberGet	Get groups where a specific user is member of
+AzureADUsersSynchronization	Synchronizes the Azure Active Directory users and groups with the Ayehu NG database
+AzureApplicationServiceDelete	Deletes a web, mobile, or API app, or one of the deployment slots.
+AzureCreateVMInstance	Activity to create a new Azure Virtual Machine.
+AzureDiskGetInfo	Retrieve information on an Azure disk.
+AzureDiskResize	Resize an Azure virtual machine disk.
+AzureDNSGetRecordSet	Get an Azure DNS record set by type.
+AzureDNSUpdateOrCreateRecordSet	Creates or updates an Azure record set within a DNS zone.
+AzureImageCreate	Create an image from a VM.
+AzureImageDelete	Deletes an Azure image
+AzureImageGet	Get information about a virtual machine image.
+AzureImageList	Gets the list of Images in the subscription.
+AzureMySQLServerCreateFirewallRule	Create a firewall rule for an Azure MySQL server.
+AzureMySQLServerGetFirewallRules	Retrieve firewall rules for an Azure MySQL Server.
+AzureMySQLServerGetMetrics	Retrieve metrics for an Azure MySQL Server.
+AzureNetworkInterfaceAttach	Attach an existing network interface to a Virtual Machine
+AzureNetworkInterfaceDelete	Deletes an Azure Network Interface by name
+AzureNetworkInterfaceDetach	Detach a secondary Network Interface from a Virtual Machine
+AzureNetworkInterfaceGetInfo	Gets details information of network interface by name
+AzureNetworkSecurityGroupCreateFirewallRule	Create a firewall rule for an Azure network security group
+AzureNetworkSecurityGroupGetInfo	Gets details information of the network security group
+AzureResourceDelete	Deletes a resource by ID.
+AzureResourceExist	Checks by ID whether a resource exists.
+AzureResourceGetInfo	Gets a resource by ID.
+AzureResourceGetInfoByName	Gets a resource by Name
+AzureResourcesList	Get all the resources in a subscription.
+AzureRetrieveAccessToken	Retrieve an access token for use with other API requests
+AzureRoleAssignmentCreate	Creates a role assignment for a resource. 
+AzureServicePlanDelete	Delete an App Service plan.
+AzureSnapshotCreate	Creates a snapshot from a disk.
+AzureSnapshotDelete	Deletes a snapshot.
+AzureSnapshotGet	Get information about a snapshot.
+AzureSnapshotGetList	List all snapshots in a subscription.
+AzureSQLFirewallRuleCreate	Create a firewall rule for an Azure SQL server.
+AzureStorageAccountDelete	Deletes an Azure Storage Account.
+AzureStorageAcctFirewallRuleCreate	Creates a new StorageAccount Firewall rule.
+AzureVMDeallocate	Shuts down the virtual machine and releases the compute resources. You are not billed for the compute resources that this virtual machine uses.
+AzureVMDiskAttach	Activity to attach a Data Disk to a Virtual Machine.
+AzureVMDiskCreate	Create a Data Disk
+AzureVMDiskDelete	Activity to delete a Data Disk.
+AzureVMDiskDetach	Activity to detach Data Disk from a Virtual Machine.
+AzureVMGetInfo	Retrieve information on an Azure virtual machine.
+AzureVMGetInstanceState	Retrieve instance state details on an Azure virtual machine.
+AzureVMGetMetrics	Retrieve metrics for an Azure virtual machine.
+AzureVMInstanceDelete	Delete an Azure Virtual Machine
+AzureVMPowerOff	Power off an Azure virtual machine.
+AzureVMPowerOn	Power on an Azure virtual machine.
+AzureVMReboot	Reboot an Azure virtual machine.
+AzureVMResize	Resize an Azure virtual machine.
+BMCHelixRemedyforceCreateRecord	BMC Helix Remedyforce Create Record
+BMCHelixRemedyforceExecuteSOQL	BMC Helix Remedyforce Execute SOQL
+BMCHelixRemedyforceGetRecord	BMC Helix Remedyforce Get Record
+BMCHelixRemedyforceUpdateRecord	BMC Helix Remedyforce Update Record
+BMCITSMCreateRecord	BMC ITSM Create Record
+BMCITSMGetRecord	BMC ITSM Get Record
+BMCITSMUpdateRecord	BMC ITSM Update Record
+BMCRemedyAddWorkLog	Creates a new Work Log and saves it to an existing record in BMC Remedy
+BMCRemedyCreateRecord	Creates a new record in a BMC Remedy form
+BMCRemedyGetRecord	Retrievs a list of matching records of a specific BMC Remedy form
+BMCRemedyUpdateRecord	Updates a record in a BMC Remedy form
+BuildNetsuiteAuth	build auth header for accessing Netsuite
+BuildRandomString	builds random alphanumeric string of specified length
+CASAcknowledgeAlert	Acknowledges an existing alarm in the CA Spectrum console
+CASCancelMaintenanceMode	Cancels the maintenance mode of a CA Spectrum model
+CASClearAlert	Clears an existing alarm from CA Spectrum
+CASCreateEvent	Creates a new event in CA Spectrum
+CASSetMaintenanceMode	Puts the CA Spectrum model in maintenance mode
+CASUnacknowledgeAlert	Unacknowledges an alarm in the CA Spectrum console
+Ceiling	Returns the smallest integral value greater than or equal to the specified number
+ChangeSeverity	Changes the severity level of an Incident
+ChatGPTQuery	Send a query to ChatGPT and receive a response.
+ChatGPTQueryPython	Send a query to ChatGPT and receive a response.
+CherwellCreateJournal	Cherwell Create Journal
+CherwellCreateRecord	Cherwell Create Record
+CherwellDownloadAttachment	Cherwell Download Attachment
+CherwellGetAttachmentList	Cherwell Get Attachment List
+CherwellGetRecord	Cherwell Get Record
+CherwellUpdateRecord	Cherwell Update Record
+CherwellUploadAttachment	Cherwell Upload Attachment
+CiscoChangeVlan	Cisco Change Vlan
+CleanTable	Remove trailing and leading whitespace from all cells in a table.
+ClearDisplayedIncident	Removes an Incident from eyeShareDev Dashboard
+CloseIncident	Closes the Incident in eyeShareDev Dashboard
+ConditionalWait	Puts the Workflow on hold until a specified condition applies
+Contains	Checks if a sub string exists within a string/table
+ConvertDateToFileTime	Convert a datetime formatted date to filetime format for use with Active Directory and other applications.
+ConvertHexStringToDecimal	Return decimal version of a Hex string
+ConvertHtmlToPlainText	Convert HTML to plaintext.
+ConvertPasswordToPlaintext	Return plaintext version of an encrypted password variable.
+ConvertTabletoCSV	Convert a result-set table to CSV.
+ConvertTableToJSON	Convert a result-set table to JSON.
+ConvertTextToTable	Converts a text variable into a table according to predefined column/row delimiters
+ConvertToBaseSixtyFourString	Convert a string to Base64.
+ConvertToDBStatement	Converts a table into a DB2/Oracle/MySQL/TSQL Insert statement
+ConvertToHTMLTable	Converts a table variable into an HTML table and stores it in a different variable
+ConvertToPlainText	Converts a table variable into plain text and stores it in a different variable
+ConvertUNIXTimeToHumanReadable	Convert a UNIX timestamp to human-readable format in UTC.
+CorrigoAddComment	add a comment to an existing ticket.  URL must be updated to point to customer environment.
+CorrigoCreateTicket	create new Corrigo ticket via api
+CorrigoGetTicketsByDate	query Corrigo API for tickets that have been updated after the filter date
+CorrigoGetTicketsByDesc	query Corrigo API for tickets matching specified description
+CorrigoGetTicketsByWO	query Corrigo API for tickets with a specified Work Order ID custom attribute
+CorrigoGetToken	query Corrigo API for access token
+CorrigoUpdateStatus	update Corrigo ticket status
+CorrigoUploadAttachment	uploads attachment to Corrigo ticket
+Counter	Increases the value of a counter (represented by the activity name) by 1
+CPU	Returns the current Available CPU/CPU Usage of the selected machine
+CreateMemoryTable	Creates a table and saves it to the workflow memory
+CreateVirtualDirectory	Creates a Virtual Directory on an IIS website
+CreateWindowsEventLog	Creates an entry in the selected Windows event log
+CyberArkGetPassword	Retrieves a password from a CyberArk safe
+DateDifference	Calculates the difference between two time stamps
+DB2Query	Executes a Select query on a DB2 database
+DB2Statement	Executes a statement on a DB2 database
+DecodeHTML	Decode an HTML-encoded string to plaintext.
+DeleteFile	Deletes a file in a specified location
+DeleteFolder	Deletes a specified folder
+DeleteIncident	Deletes an Incident from the eyeShareDev database
+DeleteMemoryTableColumns	Deletes a column or columns from a table, indicated by their numbers
+DeleteMemoryTableRows	Deletes specified rows from a table, indicated by their numbers
+DiskSpace	Returns the current Disk Space value (usage and availability) of the selected machine
+DisplayIDoc	Display IDocs from SAP System.
+DisplayIncident	Adds an Incident to eyeShareDev Dashboard
+DisplayValue	Displays an eyeShare variable value in the active logs
+DisplayXMLSession	Displays the selected XML session
+DownloadWebsiteCertificate	Download and save a website''s certificate.
+DuoGetPhoneInfo	Retrieve details on an individual Duo phone number.
+DuoVerifyIdentity	Send an identity verification request to a Duo user.
+EditVirtualDirectory	Edits a Virtual Directory on an IIS website
+EnablePrivilegedCommands	Sends an “ena” Cisco command with its password
+EncodeURL	Encode a plaintext string to URL format.
+EpochConverter	Convert Epoch to Human Readable Date
+ESMAcknowledgeAlert	Acknowledges an existing alert in the McAfee ESM console
+ESMDeleteAlert	Deletes an existing alert from the McAfee ESM console
+ESMGetAlert	Retrieves a list of McAfee ESM alerts according to the selected time frame and criteria
+ESMGetEvent	Retrieves a list of McAfee ESM events according to the selected time frame and criteria
+ESMUnAcknowledgeAlert	Un-acknowledges an alert in the McAfee ESM console
+ExcelWrite	Write to an Excel file (supports sheets).
+ExcelWriteWithColoredHeaders	Create an Excel spreadsheet with a highlighted Header Row
+ExcelWriteWithDropdown	Create an Excel spreadsheet with a dropdown list.
+Executor	Executes any external command or script
+ExitWhile	Exit While loop immediately
+ExtractByPattern	Extracts all rows within a defined pattern
+ExtractLineFromText	Extracts a line from a string, according to its location or a matching keyword
+FileAccessedDate	Returns the date on which the file was last accessed
+FileChecksumComparison	Compares two files and determines whether they are identical or not
+FileCopyRemote	Copy a File from a Source Location to a Destination Location.
+FileCount	Counts the number of files in a folder
+FileCreatedDate	Returns the date on which the file was created
+FileDeleteRemote	Delete file from path
+FileExist	Checks whether a specified file exists or not
+FileExistRemote	Checks whether a file exist or not supporting impersonation with credentials provided in the the activity for all path types (UNC or Local)
+FileGetExt	Retrieves the extension of a selected file
+FileGetNameWithoutExt	Retrieves a file''s name without its extension
+FileGetPath	Retrieves a file''s path
+FileGetRoot	Retrieves a file''s root folder
+FileHash	Produces a 128-bit (16-byte) hash value
+FileModifiedDate	Returns the date on which the file was last modified
+FileMoveRemote	Moves a file from a source location to a destination location supporting impersonation with credentials.
+FilePathParser	Parse path and filename from a full path in both Windows and Linux/UNIX format.
+FileReadDevariablized	Read and de-variablize file.
+FileRename	Renames a specified file
+FileSize	Returns the size of a specified file
+FileVersion	Returns the version of a specified file
+FileWritable	Checks whether a specific file is writable or not
+FileWriteDevariablized	Restore variables in contents of de-variablized text and then write it to a file.
+FindMissingTableEntries	Based on two tables, find rows missing from one or the other.
+Floor	Returns the largest integer smaller than or equal to the specified number
+FolderCreate	Creates a new folder
+FolderExist	Checks whether a specified folder exists or not
+FolderExistRemote	Checks whether a folder exist or not supporting impersonation with credentials provided in the the activity for all path types (UNC or Local)
+FolderList	Lists the files and folders under a specified folder, according to predefined time criteria
+FolderListRemote	List a folder on a remote Windows host.
+FolderRename	Renames a specified folder
+FolderSize	Returns the size of a specified folder
+FormatDate	Converts a date to a specified target format
+FTPCreateFolder	Creates a new folder on the FTP server
+FTPDeleteFile	Deletes a file from the FTP server
+FTPDeleteFolder	Deletes a folder from the FTP server
+FTPFileExists	Checks whether a file exists on the FTP server or not
+FTPGetFile	Downloads a file from the FTP server
+FTPListFolder	Lists the folders in a specific path on the FTP server
+FTPPutFile	Uploads a file to the FTP server
+FTPRenameFile	Renames a file on the FTP server
+FTPRenameFolder	Renames a folder on the FTP server
+FunctionCalculator	Performs various calculations on variables
+GDriveGetFile	get a file from google drive
+GDriveUploadFile	Upload a file in a Google Drive account.
+GetCellValue	Retrieves a cell''s value according to its location in a table
+GetCellValueAdvanced	Retrieve a cell value based on the value of another cell in its row.
+GetCellValueNoError	Retrieve a cell value based on the value of another cell in its row.
+GetColumnName	Retrieves a column''s name
+GetColumns	Retrieve one or more columns from a table, either by name or number.
+GetColumnsCount	Counts the number of columns in a table
+GetDate	Returns current, future or past time in the selected format, in a specific time zone
+GetExternalInternetIPAddress	Returns the external IP address of the eyeShareDev server
+GetHeaderValue	Get Header Value
+GetIncidentOpenDuration	Returns the open duration of an Incident (in minutes)
+GetIncidentSeverity	Returns the severity of a selected incident or its currently active instance
+GetIncidentTicketID	Returns the Incident''s ticket ID (used to retrieve ticket numbers generated by an integration)
+GetInterfacesStatus	Retrieves a table of the Cisco session’s related interfaces and their status (up/down)
+GetOpenIncidents	Returns a list of the currently open Incidents in Ayehu Live, according to the selected criteria
+GetRows	Returns the selected rows from a table, according to a line number or a certain text phrase
+GetRowsCount	Counts the number of rows in a table
+GetTableRowNumberByString	Return the row number from a table that contains the entered value
+GetTableRowsByRange	Retrieve rows from a Memory Table by range or length.
+GetUNIXTimestamp	Retrieve UNIX timestamp.
+GetWebsiteCertificateDetails	Retrieve details of a website''s certificate.
+GetWindowEventLogs	Returns a table of all events according to the specified event type
+GoTo	Redirects to another activity in the Workflow and executes it
+HPArcsightDeleteCase	HP Arcsight Delete Case
+HPArcsightGetCase	HP Arcsight Get Case
+HPArcsightGetEvent	HP Arcsight Get Event
+HPArcsightUpdateCase	HP Arcsight Update Case
+HPOMAcknowledgeAlert	Acknowledges an open HP Operation Manager alert
+HPOMAddAnnotation	Adds an annotation to an open HP Operation Manager alert
+HPOMCreateAlert	Creates a new HP Operation Manager alert 
+HPOMDeleteAnnotation	Removes an annotation from an HP Operation Manager alert
+HPOMDeleteCustomAttribute	Removes a custom attribute from an open HP Operation Manager alert
+HPOMDisownAlert	Disowns an owned HP Operation Manager alert
+HPOMGetAlert	Retrieves a list of HP Operation Manager alerts according to the selected criteria
+HPOMGetAnnotations	Retrieves a list of all annotations of a specified HP Operation Manager alert
+HPOMOwnAlert	Owns an open HP Operation Manager alert
+HPOMSetCustomAttribute	Sets a custom attribute to an existing HP Operation Manager alert
+HPOMUnacknowledgeAlert	Unacknowledges a closed HP Operation Manager alert
+HPOMUpdateAlert	Updates an existing HP Operation Manager alert
+HPOMUpdateAnnotation	Updates an existing annotation of a specific HP Operation Manager alert
+HPSMNewEntry	Creates a new HP Service Manager entry
+HPSMQueryEntry	Retrieves a list of HP Service Manager entries according to the selected criteria
+HPSMUpdateEntry	Updates an existing HP Service Manager entry
+HTTPRequest	Sends an HTTP request (including headers)
+HyperVAddDisk	Add disk to a virtual machine
+HyperVCalcHostRating	Calculate host rating
+HyperVExpandDiskSize	Expand disk size to a virtual machine
+HyperVImport	Import virtual machine
+HyperVInfo	Get information for specific virtual machine name
+HyperVList	Get list of virtual machine names
+HyperVModifyMemory	Modify the amount of memory for a virual machine
+HyperVNew	New virtual machine
+HyperVPowerOFF	Power off virtual machine
+HyperVPowerON	Power on virtual machine
+HyperVRefreshVM	Refresh VM
+HyperVRestart	Restart virtual machine
+HyperVStaticMac	Modify Static MAC
+IBMTOCreateAlert	Creates a new IBM Tivoli Omnibus alert
+IBMTOGetAlert	Gets a list of IBM Tivoli Omnibus alerts according to the selected criteria
+IBMTOUpdateAlert	Updates an existing IBM Tivoli Omnibus alert 
+IISListSites	An activity to list details on all or one of a Windows server''s IIS sites.
+IncidentCounter	Returns the number of currently open Incidents, according to the selected criteria and duration
+IncidentHistoryReport	Creates a report containing the incident history, according to a specified filter
+IncidentNumberOfInstances	Returns the Incident''s number of concurrent instances
+IncidentOccurrences	Returns the number of incidents that occurred over the last specified period
+IncidentStatus	Returms the incident''s status
+IndexOf	Returns the index (location) of a sub string within a string
+InStr	Returns the position of the first occurrence of a sub string within a string
+InStrRev	Returns the position of the first occurrence of a sub string within a string, starting to search at the last character of the string 
+IsEmpty	Checks if a text is empty
+IsNumeric	Checks if a string contains a valid numeric value
+JiraCreateIssue	Creates a new Jira issue
+JiraDownloadAttachment	Download an attachment from a Jira ticket.
+JiraGenericCommand	Executes a Jira command
+JiraGetIssue	Gets a list of Jira issues according to the selected criteria
+JiraListAttachments	Retrieve list of attachments from a Jira ticket.
+JiraUpdateIssue	Updates a Jira issue
+JiraUploadAttachment	Upload an attachment to a Jira ticket.
+JSONEncodeString	Escape/encode a string so it can be passed as a value for a JSON key.
+JsonGetKeyPaths	Json Get Key Paths
+JSONStringArraytoTable	Convert a JSON array of strings to a single-column data table.
+JsonToTable	Json To Table
+JSONtoTableAdvanced	Generate data table from complex, nested JSON.
+LastResponse	Contacts the latest recipient who took responsibility for the workflow
+Left	Extracts a specified number of characters from the left side of a string 
+LeftTrim	Removes the leading blank spaces from a string
+Length	Returns the number of characters in a string
+ListFolderBox	List folder
+LMAcknowledgeAlert	Acknowledge alert by id.
+LMSetDeviceSDT	set Standard Down Time (SDT) for a specified device
+LoadFile	Loads a file and returns its data in Base64 format
+LoadRemoteFile	Loads a file and returns its data in Base64 format
+LockExecutor	Locks the selected executor to be exclusively used by the activities of the running workflow
+LowerCase	Switches all characters in a string to lower case
+MatchRegularExpression	Searches for all matches between a Regular Expression and a given text
+Max	Returns the higher of two numbers
+Memory	Returns the Available Memory/Memory Usage of the selected machine (in MB)
+MemoryClean	Clears a variable''s value from its allocated memory cell
+MemorySet	Allocates a value to a Workflow/Global  variable
+MemoryTableComparison	Compares two tables (or two specific columns in the tables) and displays the equivalent/inequivalent rows
+MemoryTableGetUniqueRows	Return a list of unique rows from two Memory Tables.
+MemoryTableUnion	Merges two identical schema tables into one and saves the new table in the target table''s variable name
+MFSMAXAddComment	Add a comment to a ticket in Micro Focus SMAX.
+MFSMAXCreateTicket	Create a ticket in Micro Focus SMAX.
+MFSMAXDownloadAttachment	Download an attachment from a ticket in Micro Focus SMAX.
+MFSMAXGetComments	Retrieve comments from a Micro Focus SMAX ticket.
+MFSMAXGetTicket	Retrieve an individual ticket in Micro Focus SMAX.
+MFSMAXListAttachments	Retrieve list of attachments from a ticket in Micro Focus SMAX.
+MFSMAXListTickets	Retrieve tickets in Micro Focus SMAX.
+MFSMAXUpdateTicket	Update an individual ticket in Micro Focus SMAX.
+MicrosoftGetanaccesstoken	Get an access token for Microsoft Graph
+Min	Returns the lower of two numbers
+MQCounter	Returns the amount of messages in a queue
+MQGetAllMessages	Returns the list of messages in a queue
+MQPeek	Returns the first message in a queue
+MQPurge	Deletes all messages in a queue
+MQSend	Inserts a new message to a queue
+MsTeamsAddToTeam	Add the defined user to the selected team
+MsTeamsCreateChannel	Create a new channel under a team in Teams 
+MsTeamsCreateTeam	Create a new team in MS Teams
+MsTeamsDeleteChannel	Delete the specified channel
+MsTeamsDeleteTeam	Delete the specified team
+MsTeamsEndConversation	Terminates the existing Teams session
+MsTeamsRemoveFromTeam	Remove the defined user from the selected team
+MsTeamsSendMessage	Send a message to the specified channel or user
+MsTeamsStartConversation	Ms Teams Start Conversation
+MultiMemorySet	Allocates a value to one or more Workflow/Global variables
+MultiSSHCommands	Sends multiple SSH protocol commands
+MySQLQuery	Executes a Select query on a MySQL database 
+MySQLStatement	Executes a statement on a MySQL database
+NestedJsonToTable	Convert JSON with up to two nested levels to a table.
+NetBackupChangePolicy	Activity to make changes in the NetBackup policies (e.g Enable/Disable)
+NewEvent	Simulates an external event generation
+NewIncident	Creates an Incident and sends it to evaluation performed by the rule base engine
+OracleQuery	Executes a Select query on an Oracle database 
+OracleStatement	Executes a statement on an Oracle database
+PasswordGenerator	Generates a strong password
+PerformanceMonitor	Requests for the current value of performance counters at a specified time interval
+Ping	Runs a Ping command
+PingLatency	Retrieves the elapsed time passing between sending a ping command and retrieving an answer
+PlivoSendSMS	Send text message to a mobile number using Plivo.
+Pow	Returns a specified number raised to the specified power
+PowerShell	Executes a Powershell script on a remote device
+PowershellSecurestring	Powershell Secure string
+ProcessCounter	Returns the number of active instances of a specified process in the operating system
+ProcessCPUUsage	Returns the CPU usage value of a specified process
+ProcessKill	Terminates all active instances of a specified process
+ProcessMemoryUsage	Returns the memory usage value of a specified process (in MB)
+ProcessOwner	Returns a list of process ID’s and process owners 
+ProcessStart	Starts a specified process
+PythonCode	Activity execute predefined Python script
+QRadarAddOffenseNote	QRadar Add Offense Note
+QRadarAssignOffense	QRadar Assign Offense
+QRadarCloseOffense	QRadar Close Offense
+QRadarGetEventDetails	QRadar Get Event Details
+QRadarGetOffense	QRadar Get Offense
+QRadarGetOffenseEvents	QRadar Get Offense Events
+RandomNumberGenerator	Generates a random number within a specified range
+ReadContinuousFile	Returns the data that was added to a specified text file since it was last read
+ReadCSV	Reads a CSV file and returns its data
+ReadFile	Reads a text file and returns its data
+ReadPDF	Reads a PDF file and returns its data
+ReadWord	Read Word Document.
+ReadXLS	Reads an Excel file and returns its data
+RegistryCreateKeyPath	Create a new key path in Windows Registry.
+RegistryDelete	Deletes a selected entry from the registry according to a selected registry key and path
+RegistryQuery	Queries a selected entry in the registry according to a selected registry key and path
+RegistryWriteKeyValue	Write value to a specific key path in Windows Registry.
+RemedyForceCreateRecord	Remedy Force Create Record
+RemedyForceExecuteSOQL	Remedy Force Execute SOQL
+RemedyForceGetRecord	RemedyForceGetRecord
+RemedyForceUpdateRecord	Remedy Force Update Record
+RemoveEmptyRowsAndColumnsFromTable	Remove any empty rows or columns in a table.
+RemoveUserAssignment	Removes an assigned user from the Incident that triggered the workflow
+RenameMemoryTableColumn	Renames a selected Column in a table
+ReplaceParagraph	Replaces one paragraph with other text
+ReplaceString	Returns a new string in which all occurrences of a specified sub string are replaced with another sub string
+ReplaceStringAdvanced	Returns a new string in which all occurrences of a specified sub string are replaced with another sub string
+ResetIncident	Resets the Incident that triggered the Workflow or any other Incident 
+ResolveDNS	Performs a DNS name query resolution for a host.
+ResultSetFilter	Filters a table according to a specified statement
+Right	Extracts a specified number of characters from the right side of a string 
+RightTrim	Removes the trailing blank spaces from a string
+RotateTable	Rotates a table by 90 degrees
+Round	Rounds a decimal value to the nearest integral value
+RunRemoteExecutable	Run an executable hosted on a remote Windows host.
+RunWorkflow	Runs a child Workflow within the current one
+SalesforceCreateRecord	Salesforce Create Record
+SalesforceExecuteSOQL	Salesforce Execute SOQL
+SalesforceGetRecord	Salesforce Get Record
+SalesforceUpdateRecord	Salesforce Update Record
+SAPActivateUser	Activates an existing user in SAP ECC
+SAPAssignRole	Assigns a role to an exisitng user in SAP ECC
+SAPCreateNewUser	Creates a new user in SAP ECC
+SAPDeactivateUser	Deactivates an existing user in SAP ECC
+SAPPasswordReset	Resets a user’s password in SAP ECC
+SAPRemoveRole	Removes a role from an exisitng user in SAP ECC
+SAPReprocessIDocs	Reprocess the selected IDocs.
+SAPUpdateUser	Updates an existing user in SAP ECC
+SaveXMLSession	Saves an XML session to a file
+SCOMCreateAlert	Creates a new alert in MS Operations Manager
+SCOMGetAlert	Retrieves a list of MS Operations Manager alerts according to the selected criteria
+SCOMStartMaintenanceMode	Starts a maintenance mode of a specified MS Operations Manager monitor for a predefined duration
+SCOMStopMaintenanceMode	Stops a maintenance mode of a specified MS Operations Manager monitor
+SCOMUpdateAlert	Updates an existing MS Operations Manager alert
+SearchRowByInterval	Searches for a row containing certain keywords within a specified range of rows
+SelfServiceResponse	Sends a response to the self service request
+SendCiscoCommand	Sends a command to a Cisco router 
+SendEmail	Sends an email to a User, a Duty or a Group
+SendSMS	Send an SMS to a User or a Group
+SendSSHCommand	Sends a single SSH protocol command to an open SSH session
+SendSSHPassword	Sends an encrypted password to an open SSH session
+SendSyslog	Sends a Syslog message (creates a log entry)
+SendTelnetCommand	Sends a Telnet Command
+ServerDetails	Retrieve detailed system information on a Windows server.
+ServerLogoff	Logs a user off a Server 
+ServerOSDetails	Retrieve detailed OS information on a Windows server.
+ServerRestart	Restarts a Server
+ServerShutdown	Shuts down a Server
+ServiceDeskPlusAssociateProblem	This operation lets you attach a Problem to a Incident Request.
+ServiceDeskPlusDeleteRequest	This operation lets you delete(move to trash) request.
+ServiceDeskPlusGetAssociatedProblem	This operation allows you to get the associated Problem of a incident request.
+ServiceDeskPlusGetRequestSummary	This operation allows you to get the summary of a request.
+ServiceDeskPlusGetResolution	This operation allows you to get a resolution of the request.
+ServiceDeskPlusViewAllRequests	This operation lets you to view the details of all the requests.
+ServiceDeskPlusViewRequest	This operation helps you to view the request details by the unique request id.
+ServicePause	Pauses a Service
+ServiceRestart	Restarts a Service
+ServiceResume	Resumes a paused service
+ServiceStart	Starts a Service
+ServiceStartupType	Returns the service’s startup type (Manual/Auto/Disabled)
+ServiceStatus	Returns the status of the specified Service
+ServiceStop	Stops a Service
+SetCellValue	Sets a new value to a table''s cell
+SetFilePermissions	Sets a file’s permissions
+SetFolderPermissions	Sets a folder’s permissions
+SetIncidentTicketID	Assigns an Incident with a ticket ID which can be used by another workflow
+SetServiceLogonCredentials	Sets the service''s logon account
+SetServiceStartupType	Determines the service’s startup type (Manual/Automatic/ Disabled)
+Sgn	Returns a value indicating the sign of a decimal number
+ShareFolder	Creates a new folder share
+SingleSSHCommand	Sends a single SSH protocol command
+SlackArchiveChannel	Archives a Slack channel.
+SlackCreateChannel	Creates a Slack channel.
+SlackInvitetoChannel	Invites the defined users to the selected channel.
+SlackKickfromChannel	Kicks the desired users out of the selected channel.
+SlackSendMessage	Sends a Slack message.
+SlackStartConversation	Initiated a Conversation ID to use in subsequent Slack Send Message activities
+SlackStopConversation	Ends the current Slack conversation
+SLNPMAcknowledgeAlert	Acknowledges a SolarWinds NPM alert
+SLNPMAddNote	Adds a SolarWinds NPM note
+SLNPMGetAlert	Retrieves a list of SolarWinds NPM alerts according to the selected criteria
+SLNPMGetNode	Retrieves a list of SolarWinds NPM nodes according to the selected criteria
+SLNPMManageNode	Manages a SolarWinds NPM node after a maintenance procedure
+SLNPMUnacknowledgeAlert	Un-acknowledges a SolarWinds NPM alert
+SLNPMUnManageNode	Un-manages a SolarWinds NPM node during maintenance procedures
+SNCreateRecord	Creates a new Service Now record
+SNDeleteRecord	Deletes an existing ServiceNow record 
+SNDownloadAttachment	SN Download Attachment
+SNDownloadAttachmentStandalone	Download an attachment from a ServiceNow ticket without the use of an integration module.
+SNGetCatalogVariables	Get Catalog Variables Items
+SNGetRecord	Retrieves a list of ServiceNow records according to the selected criteria
+SNMPGet	Retrieves the value of an SNMP object ID of a specified device
+SNMPGetNext	Retrieves the value of the next Object ID of a specified device
+SNMPSendTrap	Sends an SNMP trap containing a specific SNMP object assigned with a value
+SNMPSetRequest	Sends an SNMP request containing a specific SNMP object assigned with a value
+SNMPWalk	Retrieves a list of object ID''s of a specified device based on a given OID range
+SNOWRAJFSetCatalogVariablesviaJSON	Set the RITM values provided
+SNOWupdateCatalogVariable	Update the Variable in sc_item_option (Variable) table.
+SNUpdateRecord	Updates an existing ServiceNow record
+SNUploadAttachment	Uploads an attachment to an existing Service Now record
+SNUploadAttachmentStandalone	Upload an attachment to a ServiceNow ticket without the use of an integration module.
+SortTable	Sorts a table according to the selected column name or column number
+Split	Splits a selected string into sub strings (according to a specified delimiter) and returns a one-dimensional table containing the sub strings
+SplunkCreateEvent	Splunk Create Event
+SplunkGetAlert	Splunk Get Alert
+SplunkGetAlertEvents	Splunk Get Alert Events
+SplunkGetDynamicAlertEvents	Retrieve dynamic list of alert events for a specific Splunk SID
+SplunkGetEvents	Splunk Get Events
+SplunkGetReport	Splunk Get Report
+Sqr	Returns the square root of a specified number
+StartCiscoSession	Starts a Cisco router session
+StartFTPSession	Starts an FTP session
+StartJsonSession	Start Json Session
+StartSSHSession	Starts an SSH session
+StartTelnetSession	Starts a Telnet Session
+StartXMLSession	Starts an XML Session
+StopWorkflow	Terminates all instances of a specified Workflow
+StrComp	Compares two strings
+StrReverse	Reverses a string
+SubString	Extracts a sub string from a string according to its index and number of characters
+SubStringByText	Extracts a sub string from a string according to a given start and end string
+SumCells	Sums up a sequence of table cell values
+SystemUptime	Returns the system''s uptime (in seconds)
+TableDateFormatter	Convert a column of dates stored in a data table.
+TableReplaceCellValues	Replace a text string with another across all cells in a table.
+TableSearch	Return the rows and columns where a search string is found in a table.
+TableToEventBody	Convert one or more rows from a table into an Event Body for use with the New Event activity.
+TabletoXML	Converts a table to an XML 
+Telnet	Runs a Telnet command
+Terminate	Terminates the current branch in the current Workflow, even if it is the only branch
+TerminateCiscoSession	Terminates a Cisco router session
+TerminateFTPSession	Terminates an FTP session
+TerminateSSHSession	Terminates an SSH session
+TerminateTelnetSession	Terminates a Telnet Session
+TerminateWorkflow	Terminates the entire current Workflow (all running branches)
+Tester	tester
+Tracert	Returns the route over the network between two systems
+Trim	Removes both leading and trailing blank spaces from a string
+TrimbyString	Removes specific characters from the beginning or the end of a given string
+Truncate	Calculates the integral part of a specified decimal number
+TSOMCreateEvent	Create a new event in TSOM based on defined properties
+TSOMGetEvent	Return a list of TrueSight events that match the specified criteria
+TSOMUpdateEvent	Update an event in TrueSight OM based on defined properties.
+TSQLQuery	Executes a Select query on a Microsoft SQL database 
+TSQLStatement	Executes a statement on a Microsoft SQL database
+UcFirst	set first letter of string to upper case
+UnlockExecutor	Unlocks a locked executor (follows a Lock Executor activity)
+UnshareFolder	Removes the specified folder share
+UpdateIncidentEvent	Updates the Incident with new information
+UploadGoogleDriveFile	upload a file to google drive
+UpperCase	Capitalizes all characters in a string
+URLCheck	Checks the availability of a URL based on a return code or an existance of a specific phrase
+UserAssignment	Assigns a user to handle the Incident which activated the workflow 
+UserAuthentication	Validates a user''s access to a target machine
+VMChangeVlan	VM Change Vlan
+VMClone	Clones a Virtual Machine
+VMCreate	Creates a Virtual Machine
+VMCreateConfigurationSpec	Creates a Virtual Machine configuration specification file, used to clone a Virtual Machine
+VMCreateFromTemplate	Creates a Virtual Machine from a template
+VMCreateSnapshot	Snapshots a Virtual Machine''s state
+VMCurrentSnapshot	Retrieves the name of the Virtual Machine''s current Snapshot
+VMDelete	Deletes a Virtual Machine
+VMDeleteAllSnapshots	Deletes all Snapshots of a Virtual Machine
+VMDeleteConfigurationSpec	Deletes a Virtual Machine''s configuration specification
+VMDeleteSnapshot	Deletes a selected Snapshot of a Virtual Machine
+VMDiskInfo	Retrieve details on an individual disk.
+VMExists	Checks whether or not a specific Virtual Machine exists
+VMFolderCreate	Creates a Virtual Machine folder on a vCenter
+VMHostEnterMaintenanceMode	Puts a host into maintenance mode
+VMHostExitMaintenanceMode	Terminates the host''s maintenance mode
+VMHostReboot	Reboots a host
+VMInfo	Retrieves a Virtual Machine''s info
+VMList	Retrieves a list of Virtual Machines on the entire vCenter or a specific host
+VMListSnapshot	Retrieves a list of all Snapshots of a Virtual Machine
+VMMarkTemplate	Converts a Virtual Machine to a template
+VMModifyCPU	Modifies the count of CPUs of a Virtual Machine
+VMModifyMemory	Modifies the Virtual Machine''s available memory
+VMMountISO	Mounts an ISO image file on a Virtual Machine
+VMNetworkAdapterDisable	Disable a VM''s network adapter.
+VMNetworkAdapterEnable	Enable a VM''s network adapter.
+VMPowerCLI	Allows executing any PowerCLI command on the vCenter or ESX
+VMPowerOff	Switches a Virtual Machine off
+VMPowerOn	Switches a Virtual Machine on
+VMPowerState	Retrieves the current power state of a Virtual Machine
+VMReboot	Reboots a Virtual Machine
+VMRename	Renames a Virtual Machine
+VMRenameSnapshot	Renames a Snapshot of a Virtual Machine
+VMReset	Resets a Virtual Machine
+VMResizeDisk	Resizes a Virtual Machine''s disk
+VMReverttoCurrentSnapshot	Reverts to the current Snapshot of a Virtual Machine
+VMReverttoSnapshot	Reverts to a Snapshot of a Virtual Machine
+VMShutdown	Shuts down a Virtual Machine
+VMSnapshotInfo	Retrieves the info of a Virtual Machine''s selected Snapshot
+VMStandby	Puts a Virtual Machine into standby mode
+VMSuspend	Suspends a Virtual Machine
+VMTemplateDelete	Delete a VM template.
+VMTemplateRename	Rename a VM template.
+VMUnmarkTemplate	Converts a template to a Virtual Machine
+Wait	Pauses the Workflow for a specified period of time
+WaitforCMD	Pauses the Workflow until an eyeShareDev CMD message that complies with a specified condition is received
+WaitForEmail	Pauses the Workflow until an email that complies with a specified condition is received
+WakeonLan	Turns on a selected machine using its MAC address
+WebServiceResponse	Respond to Ayehu web service request.
+WhileActivity	Runs an activity or a group of activities for a number of iterations, dictated by an Exit While activity
+WMI	Queries a WMI object
+WorkflowCounter	Returns the number of currently active instances of the selected Workflow
+WriteBaseSixtyFourStringToFile	Write a Base64 encoded string to a file.
+WriteCSV	Produces a CSV file out of a table
+WriteFile	Creates a new plain text file
+WriteXLS	Produces an excel file out of a table
+XCHAddDistributionGroupMember	Adds a user to an MS Exchange distribution group
+XCHDisableMailbox	Disables an MS Exchange mailbox
+XCHEnableMailbox	Enables an MS Exchange mailbox
+XCHGetMailbox	Retrieves an MS Exchange mailbox''s object attributes
+XCHGetMailboxDatabase	Retrieves a mailbox''s database object from an Exchange server
+XCHGetMailboxPermission	Retrieves an MS Exchange mailbox''s permissions
+XCHGetMailboxServer	Retrieves mailbox’s server objects from an MS Exchange server
+XCHGetMailboxStatistics	Retrieves an MS Exchange mailbox size,  number of messages and the last time it was accessed
+XCHManagementShell	Execute an MS Exchange powershell command
+XCHNewMailbox	Creates a new mailbox in an MS Exchange server
+XCHRemoveDistributionGroupMember	Removes a user from an MS Exchange distribution group
+XCHRemoveMailboxContent	Deletes all emails from a user’s MS Exchange mailbox
+XCHSetMailbox	Modifies an attribute of an MS Exchange mailbox
+XMLAddAttribute	Adds the specified attribute as the last node in the collection
+XMLAddNode	Adds a new node in the specified Xpath
+XMLDeleteAttribute	Removes the selected attribute from the specified Xpath
+XMLDeleteNodebyXpath	Deletes an XML node according to its path
+XMLEditAttribute	Changes a specified XML attribute’s value
+XMLEditNode	Changes a specified XML node''s value 
+XMLElementstoTable	Converts a specific table with its attributes within the specified XML to a table variable
+XMLEvaluateXpathExpression	Queries for an XML value
+XMLtoTable	Converts a specific table within the specified XML to a table variable
+ZipDecompress	Extracts a selected compressed file
+FileCopy	Copies a file to a specified destination
+FileMove	Moves a file to a specified destination
+FolderCopy	Copies a folder to a specified destination
+VMHostList	Retrieves a list of VMware hosts
+DisplayMultiValue	Displays multiple eyeShare variable values in the active logs
+RunWorkflow	Runs an existing workflow
+ZipCompress	Compresses files into a ZIP archive
+SMTPSendEmail	Sends an email using SMTP

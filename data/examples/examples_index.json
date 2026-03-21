@@ -1,0 +1,426 @@
+[
+  {
+    "file": "example_linear_1.json",
+    "control_flow": "linear",
+    "example_index": 1,
+    "source_file": "2865_sap_activities.xml",
+    "activity_types_present": [
+      "DisplayIDoc",
+      "DisplayValue",
+      "SAPActivateUser",
+      "SAPAssignRole",
+      "SAPCreateNewUser",
+      "SAPDeactivateUser",
+      "SAPPasswordReset",
+      "SAPRemoveRole",
+      "SAPReprocessIDocs",
+      "SAPUpdateUser"
+    ]
+  },
+  {
+    "file": "example_linear_2.json",
+    "control_flow": "linear",
+    "example_index": 2,
+    "source_file": "2493_corrigo_custom_activities.xml",
+    "activity_types_present": [
+      "CorrigoAddComment",
+      "CorrigoCreateTicket",
+      "CorrigoGetTicketsByDate",
+      "CorrigoGetTicketsByDesc",
+      "CorrigoGetTicketsByWO",
+      "CorrigoGetToken",
+      "CorrigoUpdateStatus",
+      "CorrigoUploadAttachment"
+    ]
+  },
+  {
+    "file": "example_linear_3.json",
+    "control_flow": "linear",
+    "example_index": 3,
+    "source_file": "2634_SCCMimportDevice.xml",
+    "activity_types_present": [
+      "ConvertPasswordToPlaintext",
+      "GetCellValue",
+      "JsonToTable",
+      "PowerShellScript",
+      "StartJsonSession"
+    ]
+  },
+  {
+    "file": "example_linear_4.json",
+    "control_flow": "linear",
+    "example_index": 4,
+    "source_file": "81_Download and delete largest file.xml",
+    "activity_types_present": [
+      "FTPDeleteFile",
+      "FTPGetFile",
+      "FTPListFolder",
+      "GetCellValue",
+      "ResultSetFilter",
+      "SortTable",
+      "StartFTPSession",
+      "TerminateFTPSession"
+    ]
+  },
+  {
+    "file": "example_linear_5.json",
+    "control_flow": "linear",
+    "example_index": 5,
+    "source_file": "3432_ServiceDesk Plus Import Activities.xml",
+    "activity_types_present": [
+      "ServiceDeskPlusAssociateProblem",
+      "ServiceDeskPlusDeleteRequest",
+      "ServiceDeskPlusGetAssociatedProblem",
+      "ServiceDeskPlusGetRequestSummary",
+      "ServiceDeskPlusGetResolution",
+      "ServiceDeskPlusViewAllRequests",
+      "ServiceDeskPlusViewRequest"
+    ]
+  },
+  {
+    "file": "example_ifelse_1.json",
+    "control_flow": "ifelse",
+    "example_index": 1,
+    "source_file": "9_Monitor windows event log.xml",
+    "activity_types_present": [
+      "Continue",
+      "ConvertToHTMLTable",
+      "GetRowsCount",
+      "GetWindowEventLogs",
+      "SendEmail"
+    ]
+  },
+  {
+    "file": "example_ifelse_2.json",
+    "control_flow": "ifelse",
+    "example_index": 2,
+    "source_file": "6811_Health_Check_20241204.xml",
+    "activity_types_present": [
+      "ConvertPasswordToPlaintext",
+      "ConvertTableToJSON",
+      "ConvertToBaseSixtyFourString",
+      "ConvertToDBStatement",
+      "ConvertToPlainText",
+      "DeleteMemoryTableRows",
+      "DisplayValue",
+      "GetDate",
+      "HTTPRequest",
+      "MemorySet",
+      "MultiMemorySet",
+      "Split",
+      "TSQLQuery",
+      "TSQLStatement"
+    ]
+  },
+  {
+    "file": "example_ifelse_3.json",
+    "control_flow": "ifelse",
+    "example_index": 3,
+    "source_file": "5562_validate_field.xml",
+    "activity_types_present": [
+      "DisplayValue",
+      "FormatDate",
+      "GoTo",
+      "Length",
+      "MatchRegularExpression",
+      "MemoryClean",
+      "MemorySet"
+    ]
+  },
+  {
+    "file": "example_ifelse_4.json",
+    "control_flow": "ifelse",
+    "example_index": 4,
+    "source_file": "8895_aiTool_createTaskList.xml",
+    "activity_types_present": [
+      "ConvertTableToJSON",
+      "CreateMemoryTable",
+      "GetDate",
+      "GetRowsCount",
+      "IsEmpty",
+      "MemorySet",
+      "NewEvent",
+      "RunWorkflow",
+      "TableToEventBody",
+      "TerminateWorkflow",
+      "Wait"
+    ]
+  },
+  {
+    "file": "example_ifelse_5.json",
+    "control_flow": "ifelse",
+    "example_index": 5,
+    "source_file": "5740_Onboarding for Azure AD.xml",
+    "activity_types_present": [
+      "ADGetProperty",
+      "ADUserExists",
+      "AzureADUserCreate",
+      "GetCellValue",
+      "GetRowsCount",
+      "MemorySet",
+      "MicrosoftGetanaccesstoken",
+      "PasswordGenerator",
+      "SNUpdateRecord",
+      "SendEmail",
+      "Split"
+    ]
+  },
+  {
+    "file": "example_while_1.json",
+    "control_flow": "while",
+    "example_index": 1,
+    "source_file": "1139_load_sample_data.xml",
+    "activity_types_present": [
+      "DisplayValue",
+      "GetRowsCount",
+      "MemorySet",
+      "ReadCSV",
+      "TSQLStatement"
+    ]
+  },
+  {
+    "file": "example_while_2.json",
+    "control_flow": "while",
+    "example_index": 2,
+    "source_file": "2245_check_vcenter_access_v2.xml",
+    "activity_types_present": [
+      "DisplayValue",
+      "GetCellValue",
+      "GetRowsCount",
+      "MemorySet",
+      "MultiMemorySet",
+      "PowerShell",
+      "ReadCSV",
+      "ResultSetFilter",
+      "RunWorkflow"
+    ]
+  },
+  {
+    "file": "example_while_3.json",
+    "control_flow": "while",
+    "example_index": 3,
+    "source_file": "6368_build_rank_table.xml",
+    "activity_types_present": [
+      "CleanTable",
+      "CreateMemoryTable",
+      "DisplayValue",
+      "GetCellValue",
+      "GetDate",
+      "GetRowsCount",
+      "MemorySet",
+      "MultiMemorySet",
+      "ResultSetFilter",
+      "TSQLQuery",
+      "TSQLStatement"
+    ]
+  },
+  {
+    "file": "example_while_4.json",
+    "control_flow": "while",
+    "example_index": 4,
+    "source_file": "5639_VMware Snapshot Report.xml",
+    "activity_types_present": [
+      "CreateMemoryTable",
+      "GetCellValue",
+      "GetRowsCount",
+      "MultiMemorySet",
+      "VMHostList",
+      "VMList",
+      "VMListSnapshot",
+      "VMSnapshotInfo"
+    ]
+  },
+  {
+    "file": "example_while_5.json",
+    "control_flow": "while",
+    "example_index": 5,
+    "source_file": "133_Create VM Capacity Report.xml",
+    "activity_types_present": [
+      "ConvertToHTMLTable",
+      "CreateMemoryTable",
+      "GetCellValue",
+      "GetDate",
+      "GetRowsCount",
+      "SendEmail",
+      "SetCellValue",
+      "VMHostList",
+      "VMList",
+      "WriteXLS"
+    ]
+  },
+  {
+    "file": "example_while_ifelse_1.json",
+    "control_flow": "while_ifelse",
+    "example_index": 1,
+    "source_file": "1493_Trend Micro Remote Uninstall.xml",
+    "activity_types_present": [
+      "CreateMemoryTable",
+      "DeleteFile",
+      "FileCopy",
+      "GetCellValue",
+      "GetCellValueAdvanced",
+      "GetInstalledSoftware",
+      "GetRowsCount",
+      "MemorySet",
+      "PowerShell",
+      "WriteFile"
+    ]
+  },
+  {
+    "file": "example_while_ifelse_2.json",
+    "control_flow": "while_ifelse",
+    "example_index": 2,
+    "source_file": "6571_parse_system_logs.xml",
+    "activity_types_present": [
+      "DisplayValue",
+      "GetCellValue",
+      "GetRowsCount",
+      "Length",
+      "MemorySet",
+      "MultiMemorySet",
+      "PowerShell",
+      "ResultSetFilter",
+      "Split",
+      "TerminateWorkflow"
+    ]
+  },
+  {
+    "file": "example_while_ifelse_3.json",
+    "control_flow": "while_ifelse",
+    "example_index": 3,
+    "source_file": "5634_VCenter_HostInventory.xml",
+    "activity_types_present": [
+      "DeleteFolder",
+      "DisplayValue",
+      "FolderCreate",
+      "FolderExistRemote",
+      "FolderList",
+      "GetCellValue",
+      "GetDate",
+      "GetRowsCount",
+      "MemorySet",
+      "VMPowerCLI",
+      "Wait"
+    ]
+  },
+  {
+    "file": "example_while_ifelse_4.json",
+    "control_flow": "while_ifelse",
+    "example_index": 4,
+    "source_file": "130_Create power off VMs List.xml",
+    "activity_types_present": [
+      "AddMemoryTableRow",
+      "Continue",
+      "ConvertToHTMLTable",
+      "CreateMemoryTable",
+      "GetCellValue",
+      "GetDate",
+      "GetRowsCount",
+      "SendEmail",
+      "SetCellValue",
+      "VMList",
+      "VMPowerState",
+      "WriteXLS"
+    ]
+  },
+  {
+    "file": "example_while_ifelse_5.json",
+    "control_flow": "while_ifelse",
+    "example_index": 5,
+    "source_file": "6439_Sync_Evidence_com.xml",
+    "activity_types_present": [
+      "CreateMemoryTable",
+      "GetCellValue",
+      "GetRowsCount",
+      "MemorySet",
+      "MultiMemorySet",
+      "PowerShell",
+      "RunWorkflow",
+      "TSQLQuery",
+      "TerminateWorkflow",
+      "WriteFile"
+    ]
+  },
+  {
+    "file": "example_usergroup_1.json",
+    "control_flow": "usergroup",
+    "example_index": 1,
+    "source_file": "5545_get_image_files.xml",
+    "activity_types_present": [
+      "DeleteMemoryTableColumns",
+      "DisplayValue",
+      "GetRowsCount",
+      "MemoryTableGetUniqueRows",
+      "MultiMemorySet",
+      "ReadXLS",
+      "RenameMemoryTableColumn",
+      "ResultSetFilter"
+    ]
+  },
+  {
+    "file": "example_usergroup_2.json",
+    "control_flow": "usergroup",
+    "example_index": 2,
+    "source_file": "6182_parse_incoming_email.xml",
+    "activity_types_present": [
+      "AttachmentList",
+      "ConvertToDBStatement",
+      "ConvertToHTMLTable",
+      "CreateMemoryTable",
+      "DisplayValue",
+      "GetCellValue",
+      "GetDate",
+      "ReplaceString",
+      "Split",
+      "TSQLStatement"
+    ]
+  },
+  {
+    "file": "example_usergroup_3.json",
+    "control_flow": "usergroup",
+    "example_index": 3,
+    "source_file": "8909_aiTool_defaultTool.xml",
+    "activity_types_present": [
+      "ConvertTableToJSON",
+      "CreateMemoryTable",
+      "DisplayValue",
+      "GetCellValue",
+      "JSONtoTableAdvanced",
+      "MemorySet",
+      "NewEvent",
+      "ResultSetFilter",
+      "RunWorkflow",
+      "TableToEventBody"
+    ]
+  },
+  {
+    "file": "example_usergroup_4.json",
+    "control_flow": "usergroup",
+    "example_index": 4,
+    "source_file": "5480_error_handling_example.xml",
+    "activity_types_present": [
+      "DisplayValue",
+      "GetCellValue",
+      "GoTo",
+      "HTTPRequest",
+      "MemorySet"
+    ]
+  },
+  {
+    "file": "example_usergroup_5.json",
+    "control_flow": "usergroup",
+    "example_index": 5,
+    "source_file": "6577_Peoplesoft - AD Business Email Extraction_updated.xml",
+    "activity_types_present": [
+      "ADLDAPQuery",
+      "GetColumns",
+      "GetDate",
+      "MemorySet",
+      "MultiMemorySet",
+      "ReadXLS",
+      "ResultSetFilter",
+      "TerminateWorkflow",
+      "WriteXLS"
+    ]
+  }
+]

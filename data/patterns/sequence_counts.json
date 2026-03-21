@@ -1,0 +1,1620 @@
+[
+  {
+    "sequence": [
+      "ReadXLS",
+      "MemorySet"
+    ],
+    "count": 4
+  },
+  {
+    "sequence": [
+      "ConvertPasswordToPlaintext",
+      "WhileActivity",
+      "PowerShellScript",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetCellValue",
+      "IfElseActivity",
+      "Wait",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "count": 4
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "Ping"
+    ],
+    "count": 4
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetWindowEventLogs",
+      "GetRowsCount",
+      "IfElseActivity",
+      "ConvertToHTMLTable",
+      "SendEmail",
+      "Continue"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue",
+      "VMExists",
+      "IfElseActivity",
+      "VMPowerState",
+      "IfElseActivity",
+      "VMPowerOn",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "VMExists",
+      "VMPowerState",
+      "IfElseActivity",
+      "GetCellValue",
+      "ConvertPasswordToPlaintext",
+      "PowerShellScript",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetCellValue",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "StartCiscoSession",
+      "SendCiscoCommand",
+      "TerminateCiscoSession",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "Split",
+      "GetCellValue",
+      "GetCellValue",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "UserGroup",
+      "GetDate",
+      "GetCellValue",
+      "MemorySet",
+      "IfElseActivity",
+      "DisplayValue",
+      "ADAddtoGroup",
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue",
+      "ADRemoveFromGroup",
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "TSQLStatement"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "TSQLQuery"
+    ],
+    "count": 3
+  },
+  {
+    "sequence": [
+      "GetWindowEventLogs",
+      "GetRowsCount",
+      "IfElseActivity",
+      "ConvertToHTMLTable",
+      "SendEmail",
+      "Continue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "VMHostList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMList",
+      "GetRowsCount",
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue",
+      "GetDate",
+      "WriteXLS",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "VMList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMInfo",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "GetDate",
+      "WriteXLS",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "TSQLQuery",
+      "GetRowsCount",
+      "IfElseActivity",
+      "ConvertTableToJSON",
+      "MultiMemorySet",
+      "MultiMemorySet"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "CreateMemoryTable",
+      "CreateMemoryTable",
+      "CreateMemoryTable",
+      "UserGroup",
+      "ExcelWrite",
+      "ExcelWrite",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLQuery",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "StartXMLSession",
+      "UserGroup",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "GetDate",
+      "ConvertPasswordToPlaintext",
+      "IfElseActivity",
+      "UserGroup",
+      "TSQLQuery",
+      "IfElseActivity",
+      "TSQLStatement",
+      "DisplayValue",
+      "Contains",
+      "IfElseActivity",
+      "ReplaceString",
+      "TSQLStatement",
+      "IfElseActivity",
+      "UserGroup",
+      "WriteFile"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "SNGetRecord",
+      "GetCellValue",
+      "SNUploadAttachmentStandalone",
+      "UserGroup",
+      "SNGetRecord",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "SNDownloadAttachmentStandalone"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue",
+      "VMExists",
+      "IfElseActivity",
+      "VMPowerState",
+      "IfElseActivity",
+      "VMPowerOff",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "DisplayValue",
+      "DisplayValue",
+      "TerminateWorkflow",
+      "IfElseActivity",
+      "DisplayValue",
+      "DisplayValue",
+      "TerminateWorkflow",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "SNGetRecord",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetRows",
+      "GetCellValue",
+      "GetCellValue",
+      "WhileActivity",
+      "GetCellValue",
+      "IfElseActivity",
+      "DisplayValue",
+      "SNUpdateRecord",
+      "ConvertTableToJSON",
+      "NewEvent",
+      "DisplayValue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "ConvertPasswordToPlaintext",
+      "PowerShellScript",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "TSQLQuery",
+      "SelfServiceResponse"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "SelfServiceResponse"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "ConvertPasswordToPlaintext",
+      "TSQLQuery",
+      "GetRowsCount",
+      "IfElseActivity",
+      "TSQLQuery",
+      "SelfServiceResponse",
+      "SelfServiceResponse"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "UserGroup",
+      "CreateMemoryTable",
+      "DeleteMemoryTableRows",
+      "UserGroup",
+      "Split",
+      "GetRowsCount",
+      "WhileActivity",
+      "UserGroup",
+      "GetCellValue",
+      "AddMemoryTableRow",
+      "SetCellValue",
+      "SetCellValue",
+      "DisplayValue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "ReadXLS",
+      "UserGroup",
+      "GetRowsCount",
+      "IfElseActivity",
+      "RunWorkflow"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "UserGroup",
+      "AddMemoryTableRow",
+      "SetCellValue",
+      "SetCellValue",
+      "ResultSetFilter",
+      "Split",
+      "GetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "ResultSetFilter",
+      "Split",
+      "GetCellValue",
+      "SetCellValue",
+      "TSQLQuery"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "FolderList",
+      "ResultSetFilter",
+      "SortTable",
+      "GetCellValue",
+      "GetCellValue",
+      "SendEmail"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "SNGetRecord",
+      "GetCellValue",
+      "SNGetRecord",
+      "WhileActivity",
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "MemorySet",
+      "MemorySet",
+      "UserGroup",
+      "RunWorkflow",
+      "MemorySet",
+      "DisplayValue",
+      "ResultSetFilter",
+      "MemorySet"
+    ],
+    "count": 2
+  },
+  {
+    "sequence": [
+      "ReadFile",
+      "GetRows",
+      "GetCellValue",
+      "GetCellValue",
+      "IfElseActivity",
+      "ReplaceString",
+      "SetCellValue",
+      "ConvertToPlainText",
+      "WriteFile",
+      "SendEmail",
+      "Continue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ServiceList",
+      "ResultSetFilter",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "RunWorkflow",
+      "FileExist",
+      "IfElseActivity",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "UserGroup",
+      "TSQLQuery",
+      "RemoveEmptyRowsAndColumnsFromTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "IfElseActivity",
+      "DisplayValue",
+      "IfElseActivity",
+      "DisplayValue",
+      "DisplayValue",
+      "DisplayValue",
+      "WhileActivity",
+      "DisplayValue",
+      "WhileActivity",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "RunWorkflow",
+      "ProcessList",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "IfElseActivity",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "SetServiceStartUpType",
+      "ServiceStart"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "Split",
+      "GetCellValue",
+      "SendEmail",
+      "IfElseActivity",
+      "ADUnlockAccount",
+      "IfElseActivity",
+      "SendEmail",
+      "SendEmail",
+      "Continue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "SubStringByText",
+      "ESMGetEvent",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "SubStringByText",
+      "SNCreateRecord"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadCSV",
+      "ReadCSV",
+      "ReadCSV",
+      "GetRowsCount",
+      "GetRowsCount",
+      "GetRowsCount",
+      "WhileActivity",
+      "MemorySet",
+      "DisplayValue",
+      "TSQLStatement",
+      "WhileActivity",
+      "MemorySet",
+      "DisplayValue",
+      "TSQLStatement",
+      "WhileActivity",
+      "MemorySet",
+      "DisplayValue",
+      "TSQLStatement"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "StartSSHSession",
+      "SendSSHCommand",
+      "TerminateSSHSession"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "Ping",
+      "IfElseActivity",
+      "GetOperatingSystem",
+      "SetCellValue",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "WriteXLS",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetRowsCount",
+      "GetCellValue",
+      "Ping",
+      "IfElseActivity",
+      "CPU",
+      "Memory",
+      "DiskSpace",
+      "ServiceStatus",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "AddMemoryTableRow",
+      "GetCellValue",
+      "SetCellValue",
+      "DiskSpace",
+      "SetCellValue",
+      "DeleteFile",
+      "DeleteFile",
+      "FolderList",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "DeleteFolder",
+      "DiskSpace",
+      "SetCellValue",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ReadContinuousFile",
+      "IfElseActivity",
+      "GetRows",
+      "ConvertToHTMLTable",
+      "SendEmail",
+      "Continue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "DiskSpace",
+      "IfElseActivity",
+      "Continue",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "SendEmail",
+      "IfElseActivity",
+      "Continue",
+      "SendEyeShareIM",
+      "SendSMS"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ADUsersSynchronization"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "Ping",
+      "IfElseActivity",
+      "Continue",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "Ping",
+      "IfElseActivity",
+      "SystemUptime",
+      "IfElseActivity",
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "Continue",
+      "Continue",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "SendEmail",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ServerShutdown",
+      "Wait",
+      "SendEmail",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "WakeOnLan",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "TSQLStatement",
+      "TSQLStatement",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "HTTPRequest",
+      "GetCellValue",
+      "IfElseActivity",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetCellValue",
+      "HTTPRequest",
+      "StartJsonSession",
+      "JsonToTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "TSQLStatement",
+      "TSQLStatement",
+      "WhileActivity",
+      "Counter",
+      "IfElseActivity",
+      "SLNPMGetNode",
+      "MemorySet",
+      "MemorySet",
+      "SLNPMGetNode",
+      "MemorySet",
+      "MemorySet",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "WMI",
+      "Contains",
+      "IfElseActivity",
+      "ServerStandby",
+      "MemorySet",
+      "Continue",
+      "GetDate",
+      "WriteFile",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "TSQLStatement",
+      "TSQLStatement",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "PowerShell",
+      "ReadCSV",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement",
+      "DeleteFile"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "WakeOnLan",
+      "Wait",
+      "WhileActivity",
+      "GetCellValue",
+      "Ping",
+      "IfElseActivity",
+      "Continue",
+      "MemorySet",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "Split",
+      "GetCellValue",
+      "GetCellValue",
+      "ADUserExists",
+      "IfElseActivity",
+      "Continue",
+      "Terminate",
+      "ADGroupExists",
+      "IfElseActivity",
+      "Continue",
+      "Terminate",
+      "SendEmail",
+      "IfElseActivity",
+      "ADAddToGroup",
+      "SendEmail",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "VMList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMPowerState",
+      "IfElseActivity",
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "Continue",
+      "GetDate",
+      "WriteXLS",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMCreateSnapshot"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "VMList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMListSnapshot",
+      "GetRowsCount",
+      "WhileActivity",
+      "AddMemoryTableRow",
+      "GetCellValue",
+      "VMSnapshotInfo",
+      "GetCellValue",
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue",
+      "ConvertToHTMLTable",
+      "GetDate",
+      "WriteXLS",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "VMList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMListSnapshot",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMSnapshotInfo",
+      "GetCellValue",
+      "DateDifference",
+      "IfElseActivity",
+      "VMDeleteSnapshot",
+      "Continue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "VMDeleteSnapshot"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "VMClone",
+      "IfElseActivity",
+      "MemorySet",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADAddToGroup"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ApplicationPoolList",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ServiceStatus",
+      "IfElseActivity",
+      "Continue",
+      "IISReset",
+      "ServiceStatus",
+      "IfElseActivity",
+      "SendEmail",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "URLCheck",
+      "IfElseActivity",
+      "SendEmail",
+      "ApplicationPoolRecycle",
+      "ApplicationPoolStatus",
+      "URLCheck",
+      "IfElseActivity",
+      "SendEmail",
+      "IISReset",
+      "URLCheck",
+      "IfElseActivity",
+      "SendEmail",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "WhileActivity",
+      "URLCheck",
+      "IfElseActivity",
+      "ReadFile",
+      "IfElseActivity",
+      "ReplaceString",
+      "ReplaceString",
+      "ConvertToPlainText",
+      "WriteFile",
+      "Wait",
+      "ReadFile",
+      "ConvertToPlainText",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ApplicationPoolList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ApplicationPoolStatus",
+      "IfElseActivity",
+      "Continue",
+      "ApplicationPoolStart",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "MemorySet",
+      "ConditionalWait"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "StartIVRSession",
+      "IfElseActivity",
+      "PlayAudio",
+      "WaitForDTMF",
+      "IfElseActivity",
+      "Continue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadFile",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ReplaceString",
+      "RegistryQuery",
+      "IfElseActivity",
+      "RegistryWriteKeyValue",
+      "RegistryQuery",
+      "IfElseActivity",
+      "RegistryWriteKeyValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetInstalledSoftware",
+      "GetCellValueAdvanced",
+      "IfElseActivity",
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet",
+      "FileCopy",
+      "WriteFile",
+      "PowerShell",
+      "DeleteFile",
+      "DeleteFile",
+      "FileCopy",
+      "PowerShell",
+      "DeleteFile"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADIsAccountDisabled",
+      "IfElseActivity",
+      "GetRowsCount",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "Continue",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "UserGroup",
+      "PowerShell",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADIsAccountLocked",
+      "IfElseActivity",
+      "GetRowsCount",
+      "SetCellValue",
+      "AddMemoryTableRow",
+      "Continue",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "ADCreateAccount"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadCSV",
+      "TSQLQuery",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ReadCSV",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "MFSMAXAddComment"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADPassExpDaysLeft",
+      "IfElseActivity",
+      "MemorySet",
+      "Continue",
+      "MemorySet",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADIsAccountDisabled",
+      "IfElseActivity",
+      "ADDeleteAccount",
+      "MemorySet",
+      "Continue",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "ServiceStatus",
+      "IfElseActivity",
+      "Continue",
+      "Communicate",
+      "IfElseActivity",
+      "ServiceStart"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADEnableAccount",
+      "ConvertToHTMLTable",
+      "SendEmail",
+      "Wait",
+      "WhileActivity",
+      "GetCellValue",
+      "ADDisableAccount",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "RunWorkflow"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "AttachmentList",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "IfElseActivity",
+      "ReadCSV",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "MultiMemorySet",
+      "MultiMemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "DisplayValue",
+      "GetDate",
+      "PowerShell",
+      "PowerShell",
+      "FileExist",
+      "IfElseActivity",
+      "DateDifference",
+      "IfElseActivity",
+      "DeleteFile",
+      "MemorySet",
+      "Wait",
+      "GoTo"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "TSQLQuery",
+      "GetCellValue",
+      "GetCellValue",
+      "VMCreateSnapshot",
+      "IfElseActivity",
+      "UserGroup",
+      "MemorySet",
+      "MemorySet",
+      "UserGroup",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "TSQLQuery",
+      "GetCellValue",
+      "IfElseActivity",
+      "SLNPMUnManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "SLNPMUnManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "SLNPMUnManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "UserGroup",
+      "MemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "GetDate",
+      "IfElseActivity",
+      "UserGroup",
+      "TSQLQuery",
+      "IfElseActivity",
+      "TSQLStatement",
+      "DisplayValue",
+      "ReplaceString",
+      "IfElseActivity",
+      "TSQLStatement",
+      "TSQLStatement",
+      "IfElseActivity",
+      "UserGroup",
+      "WriteFile"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "DisplayValue",
+      "PowerShell",
+      "SingleSSHCommand",
+      "IfElseActivity",
+      "RunWorkflow",
+      "MemorySet",
+      "MemorySet",
+      "RunWorkflow",
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "TSQLQuery",
+      "GetCellValue",
+      "IfElseActivity",
+      "SLNPMManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "SLNPMManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "SLNPMManageNode",
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "HTTPRequest",
+      "StartJsonSession",
+      "JsonGetKeyPaths",
+      "GetCellValue",
+      "HTTPRequest",
+      "ReplaceStringAdvanced",
+      "NetBackupChangePolicy",
+      "MultiMemorySet"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "IfElseActivity",
+      "UserGroup",
+      "HTTPRequest",
+      "StartXMLSession",
+      "XMLEvaluateXpathExpression",
+      "HTTPRequest",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADComputerLoggedInDate",
+      "DateDifference",
+      "IfElseActivity",
+      "MemorySet",
+      "SendEmail"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "TSQLStatement",
+      "TSQLStatement",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "UserGroup",
+      "RunWorkflow",
+      "MultiMemorySet",
+      "DisplayValue",
+      "PowerShell",
+      "ReadCSV",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement",
+      "DeleteFile"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "UserGroup",
+      "MultiMemorySet",
+      "ReadCSV",
+      "UserGroup",
+      "GetRowsCount",
+      "DisplayValue",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "ResultSetFilter",
+      "GetCellValue",
+      "GetCellValue",
+      "MemorySet",
+      "RunWorkflow",
+      "PowerShell",
+      "DisplayValue",
+      "RunWorkflow"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MultiMemorySet",
+      "UserGroup",
+      "ReadCSV",
+      "MemorySet",
+      "UserGroup",
+      "GetRowsCount",
+      "DisplayValue",
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue",
+      "UserGroup",
+      "RunWorkflow",
+      "MultiMemorySet",
+      "DisplayValue"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "DisplayValue",
+      "RunWorkflow",
+      "MemorySet",
+      "SelfServiceResponse"
+    ],
+    "count": 1
+  },
+  {
+    "sequence": [
+      "MemorySet",
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue",
+      "ADUserLoggedInDate",
+      "DateDifference",
+      "IfElseActivity",
+      "MemorySet",
+      "SendEmail"
+    ],
+    "count": 1
+  }
+]

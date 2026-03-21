@@ -1,0 +1,799 @@
+[
+  {
+    "pattern_id": "p001",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "TerminateCiscoSession",
+      "ConvertToHTMLTable",
+      "SendEmail"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "notify",
+      "alert",
+      "format table",
+      "html table",
+      "email",
+      "table to html",
+      "send"
+    ]
+  },
+  {
+    "pattern_id": "p002",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "frequency": 3,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p003",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "ConvertPasswordToPlaintext",
+      "PowerShellScript",
+      "StartJsonSession"
+    ],
+    "frequency": 3,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p004",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "PowerShellScript",
+      "StartJsonSession",
+      "JsonToTable"
+    ],
+    "frequency": 3,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p005",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "StartCiscoSession",
+      "SendCiscoCommand",
+      "TerminateCiscoSession"
+    ],
+    "frequency": 3,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p006",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "SendCiscoCommand",
+      "TerminateCiscoSession",
+      "ConvertToHTMLTable"
+    ],
+    "frequency": 3,
+    "trigger_keywords": [
+      "table to html",
+      "format table",
+      "html table"
+    ]
+  },
+  {
+    "pattern_id": "p007",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "HTTPRequest",
+      "HTTPRequest",
+      "HTTPRequest"
+    ],
+    "frequency": 3,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p008",
+    "control_flow": "Linear",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "SortTable",
+      "GetCellValue"
+    ],
+    "frequency": 3,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p009",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "IfElseActivity",
+      "MultiMemorySet",
+      "MultiMemorySet"
+    ],
+    "frequency": 16,
+    "trigger_keywords": [
+      "based on",
+      "when",
+      "condition",
+      "check",
+      "if"
+    ]
+  },
+  {
+    "pattern_id": "p010",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "frequency": 16,
+    "trigger_keywords": [
+      "based on",
+      "when",
+      "store",
+      "condition",
+      "save value",
+      "check",
+      "if",
+      "set variable"
+    ]
+  },
+  {
+    "pattern_id": "p011",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "MultiMemorySet"
+    ],
+    "frequency": 16,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p012",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "StartJsonSession",
+      "JsonToTable",
+      "GetCellValue"
+    ],
+    "frequency": 11,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p013",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "DisplayValue",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "frequency": 11,
+    "trigger_keywords": [
+      "show",
+      "display",
+      "print",
+      "log"
+    ]
+  },
+  {
+    "pattern_id": "p014",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "PowerShellScript",
+      "StartJsonSession",
+      "JsonToTable"
+    ],
+    "frequency": 10,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p015",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "MultiMemorySet",
+      "MultiMemorySet",
+      "DisplayMultiValue"
+    ],
+    "frequency": 9,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p016",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "frequency": 9,
+    "trigger_keywords": [
+      "store",
+      "show",
+      "log",
+      "save value",
+      "print",
+      "set variable",
+      "display"
+    ]
+  },
+  {
+    "pattern_id": "p017",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "ConvertPasswordToPlaintext",
+      "PowerShellScript",
+      "StartJsonSession"
+    ],
+    "frequency": 9,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p018",
+    "control_flow": "IfElse",
+    "sequence_fragment": [
+      "TSQLQuery",
+      "GetRowsCount",
+      "IfElseActivity"
+    ],
+    "frequency": 8,
+    "trigger_keywords": [
+      "based on",
+      "number of",
+      "count rows",
+      "how many",
+      "when",
+      "condition",
+      "check",
+      "if"
+    ]
+  },
+  {
+    "pattern_id": "p019",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue"
+    ],
+    "frequency": 69,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "read table",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "column value",
+      "get cell",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p020",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 26,
+    "trigger_keywords": [
+      "every",
+      "memory table",
+      "number of",
+      "count rows",
+      "how many",
+      "iterate",
+      "for each",
+      "repeat",
+      "loop",
+      "new table",
+      "create table"
+    ]
+  },
+  {
+    "pattern_id": "p021",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "frequency": 25,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p022",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "frequency": 23,
+    "trigger_keywords": [
+      "every",
+      "read table",
+      "iterate",
+      "for each",
+      "column value",
+      "get cell",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p023",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 16,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p024",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "SetCellValue",
+      "SetCellValue",
+      "SetCellValue"
+    ],
+    "frequency": 9,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p025",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 5,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p026",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "GetRowsCount",
+      "SetCellValue",
+      "SetCellValue"
+    ],
+    "frequency": 5,
+    "trigger_keywords": [
+      "number of",
+      "count rows",
+      "how many"
+    ]
+  },
+  {
+    "pattern_id": "p027",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "GetRowsCount",
+      "WhileActivity",
+      "UserGroup"
+    ],
+    "frequency": 5,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "user",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "person",
+      "repeat",
+      "loop",
+      "group",
+      "assign"
+    ]
+  },
+  {
+    "pattern_id": "p028",
+    "control_flow": "While",
+    "sequence_fragment": [
+      "GetCellValue",
+      "GetCellValue",
+      "TSQLStatement"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p029",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "GetRowsCount",
+      "WhileActivity",
+      "GetCellValue"
+    ],
+    "frequency": 78,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "read table",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "column value",
+      "get cell",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p030",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "WhileActivity",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "frequency": 25,
+    "trigger_keywords": [
+      "every",
+      "read table",
+      "iterate",
+      "for each",
+      "column value",
+      "get cell",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p031",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "CreateMemoryTable",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 22,
+    "trigger_keywords": [
+      "every",
+      "memory table",
+      "number of",
+      "count rows",
+      "how many",
+      "iterate",
+      "for each",
+      "repeat",
+      "loop",
+      "new table",
+      "create table"
+    ]
+  },
+  {
+    "pattern_id": "p032",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "frequency": 21,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p033",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "ReadXLS",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 14,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p034",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "GetRowsCount",
+      "WhileActivity"
+    ],
+    "frequency": 14,
+    "trigger_keywords": [
+      "every",
+      "number of",
+      "iterate",
+      "count rows",
+      "how many",
+      "for each",
+      "repeat",
+      "loop"
+    ]
+  },
+  {
+    "pattern_id": "p035",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "IfElseActivity",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "frequency": 12,
+    "trigger_keywords": [
+      "based on",
+      "when",
+      "show",
+      "condition",
+      "log",
+      "check",
+      "if",
+      "print",
+      "display"
+    ]
+  },
+  {
+    "pattern_id": "p036",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "IfElseActivity",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "frequency": 11,
+    "trigger_keywords": [
+      "based on",
+      "when",
+      "store",
+      "condition",
+      "save value",
+      "check",
+      "if",
+      "set variable"
+    ]
+  },
+  {
+    "pattern_id": "p037",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "GetRowsCount",
+      "IfElseActivity"
+    ],
+    "frequency": 8,
+    "trigger_keywords": [
+      "based on",
+      "number of",
+      "count rows",
+      "how many",
+      "when",
+      "condition",
+      "check",
+      "if"
+    ]
+  },
+  {
+    "pattern_id": "p038",
+    "control_flow": "While+IfElse",
+    "sequence_fragment": [
+      "ADListOU",
+      "ResultSetFilter",
+      "GetRowsCount"
+    ],
+    "frequency": 8,
+    "trigger_keywords": [
+      "number of",
+      "count rows",
+      "how many"
+    ]
+  },
+  {
+    "pattern_id": "p039",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "UserGroup",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "frequency": 9,
+    "trigger_keywords": [
+      "user",
+      "store",
+      "person",
+      "save value",
+      "set variable",
+      "assign",
+      "group"
+    ]
+  },
+  {
+    "pattern_id": "p040",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "MemorySet",
+      "MemorySet",
+      "UserGroup"
+    ],
+    "frequency": 5,
+    "trigger_keywords": [
+      "user",
+      "store",
+      "person",
+      "save value",
+      "set variable",
+      "group",
+      "assign"
+    ]
+  },
+  {
+    "pattern_id": "p041",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "UserGroup",
+      "RunWorkflow",
+      "MemorySet"
+    ],
+    "frequency": 5,
+    "trigger_keywords": [
+      "user",
+      "store",
+      "person",
+      "save value",
+      "set variable",
+      "assign",
+      "group"
+    ]
+  },
+  {
+    "pattern_id": "p042",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "DisplayValue",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "show",
+      "display",
+      "print",
+      "log"
+    ]
+  },
+  {
+    "pattern_id": "p043",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "SetCellValue",
+      "SetCellValue",
+      "ResultSetFilter"
+    ],
+    "frequency": 4,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p044",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "SetCellValue",
+      "ResultSetFilter",
+      "Split"
+    ],
+    "frequency": 4,
+    "trigger_keywords": []
+  },
+  {
+    "pattern_id": "p045",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "Split",
+      "GetCellValue"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p046",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "Split",
+      "GetCellValue",
+      "SetCellValue"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p047",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "ResultSetFilter",
+      "GetCellValue",
+      "ResultSetFilter"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  },
+  {
+    "pattern_id": "p048",
+    "control_flow": "UserGroup",
+    "sequence_fragment": [
+      "GetCellValue",
+      "ResultSetFilter",
+      "GetCellValue"
+    ],
+    "frequency": 4,
+    "trigger_keywords": [
+      "column value",
+      "read table",
+      "get cell"
+    ]
+  }
+]

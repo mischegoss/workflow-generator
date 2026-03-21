@@ -1,0 +1,1357 @@
+[
+  {
+    "activity": "DisplayValue",
+    "next": "ReturnValue",
+    "rank": 936
+  },
+  {
+    "activity": "Contains",
+    "next": "ReturnValue",
+    "rank": 588
+  },
+  {
+    "activity": "DisplayValue",
+    "next": "SendEmail",
+    "rank": 315
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "ReturnValue",
+    "rank": 311
+  },
+  {
+    "activity": "DisplayValue",
+    "next": "MemorySet",
+    "rank": 300
+  },
+  {
+    "activity": "Continue",
+    "next": "ReturnValue",
+    "rank": 298
+  },
+  {
+    "activity": "DisplayValue",
+    "next": "Executor",
+    "rank": 219
+  },
+  {
+    "activity": "DisplayValue",
+    "next": "DisplayValue",
+    "rank": 216
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "SendEmail",
+    "rank": 214
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "ReturnValue",
+    "rank": 189
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "TerminateWorkflow",
+    "rank": 171
+  },
+  {
+    "activity": "DisplayValue",
+    "next": "AdvancedCommunicate",
+    "rank": 154
+  },
+  {
+    "activity": "Condition",
+    "next": "ReturnValue",
+    "rank": 138
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "AdvancedCommunicate",
+    "rank": 115
+  },
+  {
+    "activity": "Abs",
+    "next": "ReturnValue",
+    "rank": 110
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "Terminate",
+    "rank": 103
+  },
+  {
+    "activity": "ADComputerLoggedInDate",
+    "next": "ADCreateAccount",
+    "rank": 100
+  },
+  {
+    "activity": "DateDifference",
+    "next": "ReturnValue",
+    "rank": 99
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "ReturnValue",
+    "rank": 95
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "AddMemoryTableColumn",
+    "rank": 92
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "ADGetProperty",
+    "rank": 80
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "ConvertToHTMLTable",
+    "rank": 68
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "ConvertToPlainText",
+    "rank": 64
+  },
+  {
+    "activity": "ApplicationPoolStatus",
+    "next": "ReturnValue",
+    "rank": 62
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "GetRowsCount",
+    "rank": 59
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "GetRowsCount",
+    "rank": 57
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "ReplaceString",
+    "rank": 56
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "InStr",
+    "rank": 55
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "CloseIncident",
+    "rank": 54
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "SetCellValue",
+    "rank": 53
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "GetRowsCount",
+    "rank": 48
+  },
+  {
+    "activity": "Counter",
+    "next": "GetCellValue",
+    "rank": 45
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "GetRowsCount",
+    "rank": 44
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "DeleteFile",
+    "rank": 43
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "FolderList",
+    "rank": 37
+  },
+  {
+    "activity": "Counter",
+    "next": "ReturnValue",
+    "rank": 35
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "AdvancedCommunicate",
+    "rank": 34
+  },
+  {
+    "activity": "AttachmentList",
+    "next": "GetCellValue",
+    "rank": 34
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "CreateMemoryTable",
+    "rank": 32
+  },
+  {
+    "activity": "ADUserExists",
+    "next": "ReturnValue",
+    "rank": 32
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "Wait",
+    "rank": 31
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "AdvancedCommunicate",
+    "rank": 31
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "MemorySet",
+    "rank": 30
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "SendEmail",
+    "rank": 28
+  },
+  {
+    "activity": "ConvertToHTMLTable",
+    "next": "MemorySet",
+    "rank": 26
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "ReturnValue",
+    "rank": 25
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "Contains",
+    "rank": 24
+  },
+  {
+    "activity": "ChangeSeverity",
+    "next": "TerminateWorkflow",
+    "rank": 24
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "ResetIncident",
+    "rank": 24
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "ChangeSeverity",
+    "rank": 24
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "AdvancedCommunicate",
+    "rank": 23
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "TerminateWorkflow",
+    "rank": 22
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "ApplicationPoolStop",
+    "rank": 22
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "ReturnValue",
+    "rank": 22
+  },
+  {
+    "activity": "ADListGroup",
+    "next": "GetRowsCount",
+    "rank": 22
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "ReturnValue",
+    "rank": 20
+  },
+  {
+    "activity": "Contains",
+    "next": "Contains",
+    "rank": 20
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "NewIncident",
+    "rank": 19
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "SendEmail",
+    "rank": 18
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "ReturnValue",
+    "rank": 18
+  },
+  {
+    "activity": "Continue",
+    "next": "GoTo",
+    "rank": 15
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "ConvertToHTMLTable",
+    "rank": 15
+  },
+  {
+    "activity": "ConvertToPlainText",
+    "next": "WriteFile",
+    "rank": 15
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "MemorySet",
+    "rank": 15
+  },
+  {
+    "activity": "ADListOU",
+    "next": "ResultSetFilter",
+    "rank": 15
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "ReturnValue",
+    "rank": 15
+  },
+  {
+    "activity": "ADIsAccountDisabled",
+    "next": "ReturnValue",
+    "rank": 14
+  },
+  {
+    "activity": "Abs",
+    "next": "SendSSHCommand",
+    "rank": 14
+  },
+  {
+    "activity": "Continue",
+    "next": "GetCellValue",
+    "rank": 14
+  },
+  {
+    "activity": "Continue",
+    "next": "SendEmail",
+    "rank": 14
+  },
+  {
+    "activity": "Continue",
+    "next": "DisplayValue",
+    "rank": 13
+  },
+  {
+    "activity": "Continue",
+    "next": "ExtractLineFromText",
+    "rank": 13
+  },
+  {
+    "activity": "CPU",
+    "next": "ConvertToHTMLTable",
+    "rank": 13
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "DisplayValue",
+    "rank": 13
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "SendEmail",
+    "rank": 13
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "Split",
+    "rank": 13
+  },
+  {
+    "activity": "ADAddtoGroup",
+    "next": "ReturnValue",
+    "rank": 12
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "GetCellValue",
+    "rank": 12
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "SendEmail",
+    "rank": 12
+  },
+  {
+    "activity": "CloseIncident",
+    "next": "DisplayValue",
+    "rank": 11
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "ConvertToHTMLTable",
+    "rank": 11
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "ADListOU",
+    "rank": 11
+  },
+  {
+    "activity": "ADPassExpDaysLeft",
+    "next": "ReturnValue",
+    "rank": 11
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "SetCellValue",
+    "rank": 10
+  },
+  {
+    "activity": "Abs",
+    "next": "StrComp",
+    "rank": 10
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "RenameMemoryTableColumn",
+    "rank": 10
+  },
+  {
+    "activity": "DeleteFile",
+    "next": "TerminateWorkflow",
+    "rank": 10
+  },
+  {
+    "activity": "DateDifference",
+    "next": "FunctionCalculator",
+    "rank": 9
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "DisplayValue",
+    "rank": 9
+  },
+  {
+    "activity": "ADGetProperty",
+    "next": "SendSMS",
+    "rank": 9
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "ADSetPasswordProperties",
+    "rank": 9
+  },
+  {
+    "activity": "ADIsAccountDisabled",
+    "next": "ADIsAccountLocked",
+    "rank": 8
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "ConvertToHTMLTable",
+    "rank": 8
+  },
+  {
+    "activity": "ADSetPasswordProperties",
+    "next": "SendSMS",
+    "rank": 8
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "DisplayValue",
+    "rank": 8
+  },
+  {
+    "activity": "AssignSite",
+    "next": "ReturnValue",
+    "rank": 8
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "Counter",
+    "rank": 8
+  },
+  {
+    "activity": "CreateMemoryTable",
+    "next": "AttachmentList",
+    "rank": 7
+  },
+  {
+    "activity": "Counter",
+    "next": "DisplayValue",
+    "rank": 7
+  },
+  {
+    "activity": "Ceiling",
+    "next": "ReturnValue",
+    "rank": 7
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "GetRows",
+    "rank": 7
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "Wait",
+    "rank": 7
+  },
+  {
+    "activity": "ADRemoveFromGroup",
+    "next": "ReturnValue",
+    "rank": 7
+  },
+  {
+    "activity": "ADIsAccountLocked",
+    "next": "ReturnValue",
+    "rank": 7
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "GetCellValue",
+    "rank": 6
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "ReturnValue",
+    "rank": 6
+  },
+  {
+    "activity": "ADUnlockAccount",
+    "next": "ReturnValue",
+    "rank": 6
+  },
+  {
+    "activity": "ApplicationPoolList",
+    "next": "ConvertToHTMLTable",
+    "rank": 6
+  },
+  {
+    "activity": "ApplicationPoolRecycle",
+    "next": "ReturnValue",
+    "rank": 6
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "ConvertToHTMLTable",
+    "rank": 6
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "GetRowsCount",
+    "rank": 6
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "DiskSpace",
+    "rank": 6
+  },
+  {
+    "activity": "DateDifference",
+    "next": "ReadFile",
+    "rank": 6
+  },
+  {
+    "activity": "AttachmentList",
+    "next": "GetRowsCount",
+    "rank": 6
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "ConvertTextToTable",
+    "rank": 6
+  },
+  {
+    "activity": "Contains",
+    "next": "Length",
+    "rank": 6
+  },
+  {
+    "activity": "Counter",
+    "next": "HTTPGet",
+    "rank": 6
+  },
+  {
+    "activity": "ConvertTextToTable",
+    "next": "ReturnValue",
+    "rank": 6
+  },
+  {
+    "activity": "Counter",
+    "next": "ReplaceString",
+    "rank": 5
+  },
+  {
+    "activity": "Counter",
+    "next": "FunctionCalculator",
+    "rank": 5
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "ConvertToHTMLTable",
+    "rank": 5
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "ADUserExists",
+    "rank": 5
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "GetRowsCount",
+    "rank": 5
+  },
+  {
+    "activity": "ADIsAccountLocked",
+    "next": "GetRowsCount",
+    "rank": 5
+  },
+  {
+    "activity": "AddMemoryTableRow",
+    "next": "FunctionCalculator",
+    "rank": 5
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "SetCellValue",
+    "rank": 5
+  },
+  {
+    "activity": "Abs",
+    "next": "Abs",
+    "rank": 5
+  },
+  {
+    "activity": "Abs",
+    "next": "AdvancedCommunicate",
+    "rank": 5
+  },
+  {
+    "activity": "ADCreateAccount",
+    "next": "ADAddtoGroup",
+    "rank": 5
+  },
+  {
+    "activity": "ADListOU",
+    "next": "GetRows",
+    "rank": 4
+  },
+  {
+    "activity": "ADSetPasswordProperties",
+    "next": "SendEmail",
+    "rank": 4
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "ReturnValue",
+    "rank": 4
+  },
+  {
+    "activity": "AssignSite",
+    "next": "AdvancedCommunicate",
+    "rank": 4
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "Memory",
+    "rank": 4
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "SendEmail",
+    "rank": 4
+  },
+  {
+    "activity": "DateDifference",
+    "next": "GetDate",
+    "rank": 4
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "DeleteFolder",
+    "rank": 4
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "FileCopy",
+    "rank": 4
+  },
+  {
+    "activity": "Ceiling",
+    "next": "ConvertToHTMLTable",
+    "rank": 4
+  },
+  {
+    "activity": "BMCRemedyAddWorkLog",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "Contains",
+    "next": "Executor",
+    "rank": 3
+  },
+  {
+    "activity": "Contains",
+    "next": "GetRowsCount",
+    "rank": 3
+  },
+  {
+    "activity": "CPU",
+    "next": "ConvertToPlainText",
+    "rank": 3
+  },
+  {
+    "activity": "DateDifference",
+    "next": "DateDifference",
+    "rank": 3
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "FolderList",
+    "rank": 3
+  },
+  {
+    "activity": "DeleteIncident",
+    "next": "CloseIncident",
+    "rank": 3
+  },
+  {
+    "activity": "DiskSpace",
+    "next": "SNUpdateRecord",
+    "rank": 3
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "ConvertToPlainText",
+    "rank": 3
+  },
+  {
+    "activity": "ApplicationPoolStatus",
+    "next": "SelfServiceResponse",
+    "rank": 3
+  },
+  {
+    "activity": "ApplicationPoolStatus",
+    "next": "SendEmail",
+    "rank": 3
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "ADSetPasswordProperties",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "ADUnlockAccount",
+    "next": "ADPasswordReset",
+    "rank": 3
+  },
+  {
+    "activity": "ADRemoveFromGroup",
+    "next": "Contains",
+    "rank": 3
+  },
+  {
+    "activity": "ADSearchAccount",
+    "next": "ADUserExists",
+    "rank": 3
+  },
+  {
+    "activity": "Abs",
+    "next": "FunctionCalculator",
+    "rank": 3
+  },
+  {
+    "activity": "ADComputerLoggedInDate",
+    "next": "DateDifference",
+    "rank": 3
+  },
+  {
+    "activity": "ADGroupExists",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "ADListOU",
+    "next": "CreateMemoryTable",
+    "rank": 3
+  },
+  {
+    "activity": "ADListGroup",
+    "next": "ReturnValue",
+    "rank": 3
+  },
+  {
+    "activity": "ADListUserGroups",
+    "next": "ResultSetFilter",
+    "rank": 3
+  },
+  {
+    "activity": "ADIsAccountLocked",
+    "next": "ADSetProperty",
+    "rank": 2
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "GetCellValue",
+    "rank": 2
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "GetRowsCount",
+    "rank": 2
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "TSQLQuery",
+    "rank": 2
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "GetCellValue",
+    "rank": 2
+  },
+  {
+    "activity": "ADAddtoGroup",
+    "next": "ADAddtoGroup",
+    "rank": 2
+  },
+  {
+    "activity": "ADCreateGroup",
+    "next": "ADCreateAccount",
+    "rank": 2
+  },
+  {
+    "activity": "ADDisableAccount",
+    "next": "ADMoveAccount",
+    "rank": 2
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "Length",
+    "rank": 2
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "MemorySet",
+    "rank": 2
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "SendEmail",
+    "rank": 2
+  },
+  {
+    "activity": "ADSetPasswordProperties",
+    "next": "Terminate",
+    "rank": 2
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "ADDisableAccount",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolStatus",
+    "next": "ApplicationPoolStart",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolStatus",
+    "next": "ApplicationPoolStop",
+    "rank": 2
+  },
+  {
+    "activity": "AssignSite",
+    "next": "Condition",
+    "rank": 2
+  },
+  {
+    "activity": "AssignSite",
+    "next": "Contains",
+    "rank": 2
+  },
+  {
+    "activity": "AssignSite",
+    "next": "SendEmail",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "ReturnValue",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "ApplicationPoolRecycle",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "ApplicationPoolStart",
+    "rank": 2
+  },
+  {
+    "activity": "ApplicationPoolRecycle",
+    "next": "ApplicationPoolRecycle",
+    "rank": 2
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "GetCellValue",
+    "rank": 2
+  },
+  {
+    "activity": "ADUserLoggedInDate",
+    "next": "ADIsAccountDisabled",
+    "rank": 2
+  },
+  {
+    "activity": "ADUserLoggedInDate",
+    "next": "ReturnValue",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteMemoryTableRows",
+    "next": "GetDate",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "ConvertToPlainText",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "DeleteMemoryTableColumns",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "GetRowsCount",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteMemoryTableColumns",
+    "next": "ResultSetFilter",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteIncident",
+    "next": "NewIncident",
+    "rank": 2
+  },
+  {
+    "activity": "DeleteFolder",
+    "next": "FolderCreate",
+    "rank": 2
+  },
+  {
+    "activity": "DateDifference",
+    "next": "ConvertToHTMLTable",
+    "rank": 2
+  },
+  {
+    "activity": "CPU",
+    "next": "DisplayValue",
+    "rank": 2
+  },
+  {
+    "activity": "CPU",
+    "next": "GetCellValue",
+    "rank": 2
+  },
+  {
+    "activity": "CPU",
+    "next": "ReturnValue",
+    "rank": 2
+  },
+  {
+    "activity": "Contains",
+    "next": "MatchRegularExpression",
+    "rank": 2
+  },
+  {
+    "activity": "ConditionalWait",
+    "next": "DisplayValue",
+    "rank": 1
+  },
+  {
+    "activity": "ConditionalWait",
+    "next": "ReadFile",
+    "rank": 1
+  },
+  {
+    "activity": "ConditionalWait",
+    "next": "ReturnValue",
+    "rank": 1
+  },
+  {
+    "activity": "BMCRemedyAddWorkLog",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "AttachmentList",
+    "next": "GetDate",
+    "rank": 1
+  },
+  {
+    "activity": "Condition",
+    "next": "GetCellValue",
+    "rank": 1
+  },
+  {
+    "activity": "Condition",
+    "next": "GetRowsCount",
+    "rank": 1
+  },
+  {
+    "activity": "Condition",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "CPU",
+    "next": "CreateMemoryTable",
+    "rank": 1
+  },
+  {
+    "activity": "CreateWindowsEventLog",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "CSharpCode",
+    "next": "ReturnValue",
+    "rank": 1
+  },
+  {
+    "activity": "DeleteIncident",
+    "next": "RunWorkflow",
+    "rank": 1
+  },
+  {
+    "activity": "DeleteIncident",
+    "next": "Condition",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserLoggedInDate",
+    "next": "SetCellValue",
+    "rank": 1
+  },
+  {
+    "activity": "AdvancedCommunicate",
+    "next": "ReturnValue",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "Executor",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolRecycle",
+    "next": "SendEmail",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolRecycle",
+    "next": "Wait",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "SendEmail",
+    "rank": 1
+  },
+  {
+    "activity": "AttachmentList",
+    "next": "ExitWhile",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolStart",
+    "next": "SendEmail",
+    "rank": 1
+  },
+  {
+    "activity": "ApplicationPoolStop",
+    "next": "GetRowsCount",
+    "rank": 1
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "ADMoveAccount",
+    "rank": 1
+  },
+  {
+    "activity": "ADSetProperty",
+    "next": "ADSetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADUnlockAccount",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserExists",
+    "next": "TerminateWorkflow",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserLoggedInDate",
+    "next": "ADGetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADUnlockAccount",
+    "next": "SendSMS",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserExists",
+    "next": "ADIsAccountLocked",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserExists",
+    "next": "ADPasswordReset",
+    "rank": 1
+  },
+  {
+    "activity": "ADUserExists",
+    "next": "ExtractLineFromText",
+    "rank": 1
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "Terminate",
+    "rank": 1
+  },
+  {
+    "activity": "ADRemoveFromGroup",
+    "next": "ADGetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADRemoveFromGroup",
+    "next": "ConvertToHTMLTable",
+    "rank": 1
+  },
+  {
+    "activity": "ADRemoveFromGroup",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "ADSearchAccount",
+    "next": "ADListOU",
+    "rank": 1
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "PasswordGenerator",
+    "rank": 1
+  },
+  {
+    "activity": "ADSearchAccount",
+    "next": "DisplayValue",
+    "rank": 1
+  },
+  {
+    "activity": "ADSearchUserLogonName",
+    "next": "SendSMS",
+    "rank": 1
+  },
+  {
+    "activity": "ADSetPasswordProperties",
+    "next": "ADSetPasswordProperties",
+    "rank": 1
+  },
+  {
+    "activity": "ADDisableAccount",
+    "next": "ADSetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADDisableAccount",
+    "next": "DisplayValue",
+    "rank": 1
+  },
+  {
+    "activity": "ADDisableAccount",
+    "next": "Wait",
+    "rank": 1
+  },
+  {
+    "activity": "ADDeleteAccount",
+    "next": "TSQLQuery",
+    "rank": 1
+  },
+  {
+    "activity": "ADDisableAccount",
+    "next": "ADIsAccountDisabled",
+    "rank": 1
+  },
+  {
+    "activity": "ADCreateAccount",
+    "next": "ADSetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADAddtoGroup",
+    "next": "ADListGroup",
+    "rank": 1
+  },
+  {
+    "activity": "ADAddtoGroup",
+    "next": "ADRemoveFromGroup",
+    "rank": 1
+  },
+  {
+    "activity": "ADAddtoGroup",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "DisplayValue",
+    "rank": 1
+  },
+  {
+    "activity": "AddMemoryTableColumn",
+    "next": "WriteXLS",
+    "rank": 1
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "WriteXLS",
+    "rank": 1
+  },
+  {
+    "activity": "ADListGroup",
+    "next": "ADAddtoGroup",
+    "rank": 1
+  },
+  {
+    "activity": "ADListGroup",
+    "next": "CreateMemoryTable",
+    "rank": 1
+  },
+  {
+    "activity": "ADListGroup",
+    "next": "ResultSetFilter",
+    "rank": 1
+  },
+  {
+    "activity": "ADIsAccountLocked",
+    "next": "SetCellValue",
+    "rank": 1
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "ADGetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADLDAPQuery",
+    "next": "DeleteMemoryTableColumns",
+    "rank": 1
+  },
+  {
+    "activity": "ADIsAccountDisabled",
+    "next": "GetRowsCount",
+    "rank": 1
+  },
+  {
+    "activity": "ADIsAccountDisabled",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "ADIsAccountDisabled",
+    "next": "SetCellValue",
+    "rank": 1
+  },
+  {
+    "activity": "ADIsAccountLocked",
+    "next": "ADGetProperty",
+    "rank": 1
+  },
+  {
+    "activity": "ADMoveAccount",
+    "next": "MemorySet",
+    "rank": 1
+  },
+  {
+    "activity": "ADMoveAccount",
+    "next": "SendEmail",
+    "rank": 1
+  },
+  {
+    "activity": "ADMoveAccount",
+    "next": "SetCellValue",
+    "rank": 1
+  },
+  {
+    "activity": "ADMoveAccount",
+    "next": "SoapWebService",
+    "rank": 1
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "AdvancedCommunicate",
+    "rank": 1
+  },
+  {
+    "activity": "ADPasswordReset",
+    "next": "ADPasswordReset",
+    "rank": 1
+  },
+  {
+    "activity": "ADListOU",
+    "next": "ADUserExists",
+    "rank": 1
+  },
+  {
+    "activity": "ADListOU",
+    "next": "Terminate",
+    "rank": 1
+  },
+  {
+    "activity": "ADListUserGroups",
+    "next": "ConvertToHTMLTable",
+    "rank": 1
+  },
+  {
+    "activity": "ADListUserGroups",
+    "next": "MemorySet",
+    "rank": 1
+  }
+]

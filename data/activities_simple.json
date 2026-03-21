@@ -1,0 +1,2562 @@
+[
+  {
+    "number": 1,
+    "name": "ADComputerLoggedInDate",
+    "description": "Retrieves the last date a computer account was logged in"
+  },
+  {
+    "number": 2,
+    "name": "ADCopyUser",
+    "description": "Duplicates a user account"
+  },
+  {
+    "number": 3,
+    "name": "ADCreateAccount",
+    "description": "Creates a new user account"
+  },
+  {
+    "number": 4,
+    "name": "ADDeleteAccount",
+    "description": "Deletes a user or a computer account"
+  },
+  {
+    "number": 5,
+    "name": "ADDisableAccount",
+    "description": "Disables a user or a computer account"
+  },
+  {
+    "number": 6,
+    "name": "ADEnableAccount",
+    "description": "Enables a user or a computer account"
+  },
+  {
+    "number": 7,
+    "name": "ADGetProperty",
+    "description": "Retrieves a user's or a computer account's property"
+  },
+  {
+    "number": 8,
+    "name": "ADIsAccountDisabled",
+    "description": "Checks if a user or a computer account is disabled"
+  },
+  {
+    "number": 9,
+    "name": "ADIsAccountLocked",
+    "description": "Checks if a user account is locked"
+  },
+  {
+    "number": 10,
+    "name": "ADMoveAccount",
+    "description": "Moves a user or a computer account to a new OU"
+  },
+  {
+    "number": 11,
+    "name": "ADRenameAccount",
+    "description": "Renames a user or a computer account"
+  },
+  {
+    "number": 12,
+    "name": "ADSearchAccount",
+    "description": "Searches for a user's or a computer account's distinguished name based on the account's name"
+  },
+  {
+    "number": 13,
+    "name": "ADSearchUserLogonName",
+    "description": "Searches for a user account's name based on the account's properties"
+  },
+  {
+    "number": 14,
+    "name": "ADSetProperty",
+    "description": "Sets a user's or a computer account's property"
+  },
+  {
+    "number": 15,
+    "name": "ADUnlockAccount",
+    "description": "Unlocks a user account"
+  },
+  {
+    "number": 16,
+    "name": "ADUserExists",
+    "description": "Checks if a user account exists"
+  },
+  {
+    "number": 17,
+    "name": "ADUserLoggedInDate",
+    "description": "Retrieves the last date a user account was logged in"
+  },
+  {
+    "number": 18,
+    "name": "ADAddtoGroup",
+    "description": "Adds a user or a computer account to a group"
+  },
+  {
+    "number": 19,
+    "name": "ADCreateGroup",
+    "description": "Creates a new group"
+  },
+  {
+    "number": 20,
+    "name": "ADDeleteGroup",
+    "description": "Deletes an existing group"
+  },
+  {
+    "number": 21,
+    "name": "ADGroupExists",
+    "description": "Checks if a group exists"
+  },
+  {
+    "number": 22,
+    "name": "ADListGroup",
+    "description": "Retrieves a list of the group members"
+  },
+  {
+    "number": 23,
+    "name": "ADListUserGroups",
+    "description": "Retrieves a list of groups of which the user is a member"
+  },
+  {
+    "number": 24,
+    "name": "ADRemoveFromGroup",
+    "description": "Removes a user or a computer account from a group"
+  },
+  {
+    "number": 25,
+    "name": "ADPassExpDaysLeft",
+    "description": "Retrieves the number of days left until a user account's password is expired"
+  },
+  {
+    "number": 26,
+    "name": "ADPasswordReset",
+    "description": "Resets a user account's password"
+  },
+  {
+    "number": 27,
+    "name": "ADSetPasswordProperties",
+    "description": "Sets a user account's password properties"
+  },
+  {
+    "number": 28,
+    "name": "ADLDAPQuery",
+    "description": "Executes an LDAP query"
+  },
+  {
+    "number": 29,
+    "name": "ADListOU",
+    "description": "Retrieves the list of objects which reside in an OU"
+  },
+  {
+    "number": 30,
+    "name": "ADUsersSynchronization",
+    "description": "Synchronizes the Active Directory users and groups with the eyeShareDev database"
+  },
+  {
+    "number": 31,
+    "name": "AWSCopyImage",
+    "description": "Copies an Amazon Web Service image from a specified region"
+  },
+  {
+    "number": 32,
+    "name": "AWSCreateImage",
+    "description": "Create a new Amazon Web Service image based on an existing instance"
+  },
+  {
+    "number": 33,
+    "name": "AWSDeregisterImage",
+    "description": "Deregisters an Amazon Web Service image"
+  },
+  {
+    "number": 34,
+    "name": "AWSLaunchInstance",
+    "description": "Launches a new Amazon Web Service instance"
+  },
+  {
+    "number": 35,
+    "name": "AWSRebootInstance",
+    "description": "Reboots an Amazon Web Service instnace"
+  },
+  {
+    "number": 36,
+    "name": "AWSStartInstance",
+    "description": "Starts an Amazon Web Service instance"
+  },
+  {
+    "number": 37,
+    "name": "AWSStopInstance",
+    "description": "Stops an Amazon Web Service instance"
+  },
+  {
+    "number": 38,
+    "name": "AWSTerminateInstance",
+    "description": "Terminates an Amazon Web Service instance"
+  },
+  {
+    "number": 39,
+    "name": "AWSAttachNetworkInterface",
+    "description": "Attaches a network interface to an Amazon Web Service instance"
+  },
+  {
+    "number": 40,
+    "name": "AWSDetachNetworkInterface",
+    "description": "Detaches a network interface from an Amazon Web Service instance"
+  },
+  {
+    "number": 41,
+    "name": "AWSCopySnapshot",
+    "description": "Copies an Amazon Web Service snapshot"
+  },
+  {
+    "number": 42,
+    "name": "AWSCreateSnapshot",
+    "description": "Creates a new Amazon Web Service snapshot based on an existing volume"
+  },
+  {
+    "number": 43,
+    "name": "AWSDeleteSnapshot",
+    "description": "Deletes an Amazon Web Service snapshot"
+  },
+  {
+    "number": 44,
+    "name": "AWSAttachVolume",
+    "description": "Attaches a volume to an Amazon Web Service instance"
+  },
+  {
+    "number": 45,
+    "name": "AWSCreateVolume",
+    "description": "Creates a new Amazon Web Service volume"
+  },
+  {
+    "number": 46,
+    "name": "AWSDeleteVolume",
+    "description": "Deletes an Amazon Web Service volume"
+  },
+  {
+    "number": 47,
+    "name": "AWSDetachVolume",
+    "description": "Detaches a volume from an Amazon Web Service instance"
+  },
+  {
+    "number": 48,
+    "name": "AWSExecuteCLI",
+    "description": "Executes a command using the Amazon Web Service's CLI"
+  },
+  {
+    "number": 49,
+    "name": "AWSGetObject",
+    "description": "Retrieves information on various Amazon Web Service objects"
+  },
+  {
+    "number": 50,
+    "name": "BMCRemedyAddWorkLog",
+    "description": "Creates a new Work Log and saves it to an existing record in BMC Remedy"
+  },
+  {
+    "number": 51,
+    "name": "BMCRemedyCreateRecord",
+    "description": "Creates a new record in a BMC Remedy form"
+  },
+  {
+    "number": 52,
+    "name": "BMCRemedyGetRecord",
+    "description": "Retrievs a list of matching records of a specific BMC Remedy form"
+  },
+  {
+    "number": 53,
+    "name": "BMCRemedyUpdateRecord",
+    "description": "Updates a record in a BMC Remedy form"
+  },
+  {
+    "number": 54,
+    "name": "CASAcknowledgeAlert",
+    "description": "Acknowledges an existing alarm in the CA Spectrum console"
+  },
+  {
+    "number": 55,
+    "name": "CASCancelMaintenanceMode",
+    "description": "Cancels the maintenance mode of a CA Spectrum model"
+  },
+  {
+    "number": 56,
+    "name": "CASClearAlert",
+    "description": "Clears an existing alarm from CA Spectrum"
+  },
+  {
+    "number": 57,
+    "name": "CASCreateEvent",
+    "description": "Creates a new event in CA Spectrum"
+  },
+  {
+    "number": 59,
+    "name": "CASSetMaintenanceMode",
+    "description": "Puts the CA Spectrum model in maintenance mode"
+  },
+  {
+    "number": 60,
+    "name": "CASUnacknowledgeAlert",
+    "description": "Unacknowledges an alarm in the CA Spectrum console"
+  },
+  {
+    "number": 62,
+    "name": "EnablePrivilegedCommands",
+    "description": "Sends an “ena” Cisco command with its password"
+  },
+  {
+    "number": 63,
+    "name": "GetInterfacesStatus",
+    "description": "Retrieves a table of the Cisco session’s related interfaces and their status (up/down)"
+  },
+  {
+    "number": 64,
+    "name": "SendCiscoCommand",
+    "description": "Sends a command to a Cisco router"
+  },
+  {
+    "number": 65,
+    "name": "StartCiscoSession",
+    "description": "Starts a Cisco router session"
+  },
+  {
+    "number": 66,
+    "name": "TerminateCiscoSession",
+    "description": "Terminates a Cisco router session"
+  },
+  {
+    "number": 67,
+    "name": "AdvancedCommunicate",
+    "description": "Assigns a person to handle the event or the Incident that triggered the workflow"
+  },
+  {
+    "number": 68,
+    "name": "LastResponse",
+    "description": "Contacts the latest recipient who took responsibility for the workflow"
+  },
+  {
+    "number": 69,
+    "name": "SendEmail",
+    "description": "Sends an email to a User, a Duty or a Group"
+  },
+  {
+    "number": 70,
+    "name": "SendSMS",
+    "description": "Send an SMS to a User or a Group"
+  },
+  {
+    "number": 71,
+    "name": "SMTPSendEmail",
+    "description": "Sends an email via SMTP"
+  },
+  {
+    "number": 72,
+    "name": "ZipCompress",
+    "description": "Compresses a file or folder using the selected compression method"
+  },
+  {
+    "number": 73,
+    "name": "ZipDecompress",
+    "description": "Extracts a selected compressed file"
+  },
+  {
+    "number": 74,
+    "name": "CyberArkGetPassword",
+    "description": "Retrieves a password from a CyberArk safe"
+  },
+  {
+    "number": 75,
+    "name": "ConvertToDBStatement",
+    "description": "Converts a table into a DB2/Oracle/MySQL/TSQL Insert statement"
+  },
+  {
+    "number": 76,
+    "name": "DB2Query",
+    "description": "Executes a \"Select\" query on a DB2 database"
+  },
+  {
+    "number": 77,
+    "name": "DB2Statement",
+    "description": "Executes a statement on a DB2 database"
+  },
+  {
+    "number": 78,
+    "name": "MySQLQuery",
+    "description": "Executes a \"Select\" query on a MySQL database"
+  },
+  {
+    "number": 79,
+    "name": "MySQLStatement",
+    "description": "Executes a statement on a MySQL database"
+  },
+  {
+    "number": 80,
+    "name": "OracleQuery",
+    "description": "Executes a \"Select\" query on an Oracle database"
+  },
+  {
+    "number": 81,
+    "name": "OracleStatement",
+    "description": "Executes a statement on an Oracle database"
+  },
+  {
+    "number": 82,
+    "name": "TSQLQuery",
+    "description": "Executes a \"Select\" query on a Microsoft SQL database"
+  },
+  {
+    "number": 83,
+    "name": "TSQLStatement",
+    "description": "Executes a statement on a Microsoft SQL database"
+  },
+  {
+    "number": 85,
+    "name": "Executor",
+    "description": "Executes any external command or script"
+  },
+  {
+    "number": 86,
+    "name": "PowerShell",
+    "description": "Executes a Powershell script on a remote device"
+  },
+  {
+    "number": 87,
+    "name": "PowerShellScript",
+    "description": "Executes a Powershell script on a local device"
+  },
+  {
+    "number": 90,
+    "name": "AttachmentList",
+    "description": "Lists the files attached to the email that triggered the workflow"
+  },
+  {
+    "number": 91,
+    "name": "FileCopy",
+    "description": "Copies a specified file from a source location to a destination location"
+  },
+  {
+    "number": 92,
+    "name": "DeleteFile",
+    "description": "Deletes a file in a specified location"
+  },
+  {
+    "number": 93,
+    "name": "FileAccessedDate",
+    "description": "Returns the date on which the file was last accessed"
+  },
+  {
+    "number": 94,
+    "name": "FileChecksumComparison",
+    "description": "Compares two files and determines whether they are identical or not"
+  },
+  {
+    "number": 95,
+    "name": "FileCount",
+    "description": "Counts the number of files in a folder"
+  },
+  {
+    "number": 96,
+    "name": "FileCreatedDate",
+    "description": "Returns the date on which the file was created"
+  },
+  {
+    "number": 97,
+    "name": "FileExist",
+    "description": "Checks whether a specified file exists or not"
+  },
+  {
+    "number": 98,
+    "name": "FileHash",
+    "description": "Produces a 128-bit (16-byte) hash value"
+  },
+  {
+    "number": 99,
+    "name": "FileModifiedDate",
+    "description": "Returns the date on which the file was last modified"
+  },
+  {
+    "number": 100,
+    "name": "FileWritable",
+    "description": "Checks whether a specific file is writable or not"
+  },
+  {
+    "number": 101,
+    "name": "FileGetExt",
+    "description": "Retrieves the extension of a selected file"
+  },
+  {
+    "number": 102,
+    "name": "FileGetNameWithoutExt",
+    "description": "Retrieves a file's name without its extension"
+  },
+  {
+    "number": 103,
+    "name": "FileGetPath",
+    "description": "Retrieves a file's path"
+  },
+  {
+    "number": 104,
+    "name": "FileGetRoot",
+    "description": "Retrieves a file's root folder"
+  },
+  {
+    "number": 105,
+    "name": "FileSize",
+    "description": "Returns the size of a specified file"
+  },
+  {
+    "number": 106,
+    "name": "FileVersion",
+    "description": "Returns the version of a specified file"
+  },
+  {
+    "number": 107,
+    "name": "FileMove",
+    "description": "Cuts a file from a source location and pastes it in the destination location"
+  },
+  {
+    "number": 108,
+    "name": "FileRename",
+    "description": "Renames a specified file"
+  },
+  {
+    "number": 109,
+    "name": "SetFilePermissions",
+    "description": "Sets a file’s permissions"
+  },
+  {
+    "number": 110,
+    "name": "FolderCopy",
+    "description": "Copies the contents of a specified folder from a source location to a destination location"
+  },
+  {
+    "number": 111,
+    "name": "FolderCreate",
+    "description": "Creates a new folder"
+  },
+  {
+    "number": 112,
+    "name": "DeleteFolder",
+    "description": "Deletes a specified folder"
+  },
+  {
+    "number": 113,
+    "name": "FolderExist",
+    "description": "Checks whether a specified folder exists or not"
+  },
+  {
+    "number": 114,
+    "name": "FolderSize",
+    "description": "Returns the size of a specified folder"
+  },
+  {
+    "number": 115,
+    "name": "VolumeList",
+    "description": "Returns the volume list of a specified machine"
+  },
+  {
+    "number": 116,
+    "name": "FolderList",
+    "description": "Lists the files and folders under a specified folder, according to predefined time criteria"
+  },
+  {
+    "number": 117,
+    "name": "FolderRename",
+    "description": "Renames a specified folder"
+  },
+  {
+    "number": 118,
+    "name": "SetFolderPermissions",
+    "description": "Sets a folder’s permissions"
+  },
+  {
+    "number": 119,
+    "name": "ShareFolder",
+    "description": "Creates a new folder share"
+  },
+  {
+    "number": 120,
+    "name": "UnshareFolder",
+    "description": "Removes the specified folder share"
+  },
+  {
+    "number": 121,
+    "name": "ReadContinuousFile",
+    "description": "Returns the data that was added to a specified text file since it was last read"
+  },
+  {
+    "number": 122,
+    "name": "ReadCSV",
+    "description": "Reads a CSV file and returns its data"
+  },
+  {
+    "number": 123,
+    "name": "ReadXLS",
+    "description": "Reads an Excel file and returns its data"
+  },
+  {
+    "number": 124,
+    "name": "ReadFile",
+    "description": "Reads a text file and returns its data"
+  },
+  {
+    "number": 125,
+    "name": "ReadPDF",
+    "description": "Reads a PDF file and returns its data"
+  },
+  {
+    "number": 126,
+    "name": "WriteCSV",
+    "description": "Produces a CSV file out of a table"
+  },
+  {
+    "number": 127,
+    "name": "WriteXLS",
+    "description": "Produces an excel file out of a table"
+  },
+  {
+    "number": 128,
+    "name": "WriteFile",
+    "description": "Creates a new plain text file"
+  },
+  {
+    "number": 129,
+    "name": "FTPCreateFolder",
+    "description": "Creates a new folder on the FTP server"
+  },
+  {
+    "number": 130,
+    "name": "FTPDeleteFile",
+    "description": "Deletes a file from the FTP server"
+  },
+  {
+    "number": 131,
+    "name": "FTPDeleteFolder",
+    "description": "Deletes a folder from the FTP server"
+  },
+  {
+    "number": 132,
+    "name": "FTPFileExists",
+    "description": "Checks whether a file exists on the FTP server or not"
+  },
+  {
+    "number": 133,
+    "name": "FTPGetFile",
+    "description": "Downloads a file from the FTP server"
+  },
+  {
+    "number": 134,
+    "name": "FTPListFolder",
+    "description": "Lists the folders in a specific path on the FTP server"
+  },
+  {
+    "number": 135,
+    "name": "FTPPutFile",
+    "description": "Uploads a file to the FTP server"
+  },
+  {
+    "number": 136,
+    "name": "FTPRenameFile",
+    "description": "Renames a file on the FTP server"
+  },
+  {
+    "number": 137,
+    "name": "FTPRenameFolder",
+    "description": "Renames a folder on the FTP server"
+  },
+  {
+    "number": 138,
+    "name": "StartFTPSession",
+    "description": "Starts an FTP session"
+  },
+  {
+    "number": 139,
+    "name": "TerminateFTPSession",
+    "description": "Terminates an FTP session"
+  },
+  {
+    "number": 140,
+    "name": "HPOMAcknowledgeAlert",
+    "description": "Acknowledges an open HP Operation Manager alert"
+  },
+  {
+    "number": 141,
+    "name": "HPOMCreateAlert",
+    "description": "Creates a new HP Operation Manager alert"
+  },
+  {
+    "number": 142,
+    "name": "HPOMDisownAlert",
+    "description": "Disowns an owned HP Operation Manager alert"
+  },
+  {
+    "number": 143,
+    "name": "HPOMGetAlert",
+    "description": "Retrieves a list of HP Operation Manager alerts according to the selected criteria"
+  },
+  {
+    "number": 144,
+    "name": "HPOMOwnAlert",
+    "description": "Owns an open HP Operation Manager alert"
+  },
+  {
+    "number": 145,
+    "name": "HPOMUnacknowledgeAlert",
+    "description": "Unacknowledges a closed HP Operation Manager alert"
+  },
+  {
+    "number": 146,
+    "name": "HPOMUpdateAlert",
+    "description": "Updates an existing HP Operation Manager alert"
+  },
+  {
+    "number": 147,
+    "name": "HPOMAddAnnotation",
+    "description": "Adds an annotation to an open HP Operation Manager alert"
+  },
+  {
+    "number": 148,
+    "name": "HPOMDeleteAnnotation",
+    "description": "Removes an annotation from an HP Operation Manager alert"
+  },
+  {
+    "number": 149,
+    "name": "HPOMGetAnnotations",
+    "description": "Retrieves a list of all annotations of a specified HP Operation Manager alert"
+  },
+  {
+    "number": 150,
+    "name": "HPOMUpdateAnnotation",
+    "description": "Updates an existing annotation of a specific HP Operation Manager alert"
+  },
+  {
+    "number": 151,
+    "name": "HPOMDeleteCustomAttribute",
+    "description": "Removes a custom attribute from an open HP Operation Manager alert"
+  },
+  {
+    "number": 152,
+    "name": "HPOMSetCustomAttribute",
+    "description": "Sets a custom attribute to an existing HP Operation Manager alert"
+  },
+  {
+    "number": 153,
+    "name": "HPSMNewEntry",
+    "description": "Creates a new HP Service Manager entry"
+  },
+  {
+    "number": 154,
+    "name": "HPSMQueryEntry",
+    "description": "Retrieves a list of HP Service Manager entries according to the selected criteria"
+  },
+  {
+    "number": 155,
+    "name": "HPSMUpdateEntry",
+    "description": "Updates an existing HP Service Manager entry"
+  },
+  {
+    "number": 156,
+    "name": "IBMTOCreateAlert",
+    "description": "Creates a new IBM Tivoli Omnibus alert"
+  },
+  {
+    "number": 157,
+    "name": "IBMTOGetAlert",
+    "description": "Gets a list of IBM Tivoli Omnibus alerts according to the selected criteria"
+  },
+  {
+    "number": 158,
+    "name": "IBMTOUpdateAlert",
+    "description": "Updates an existing IBM Tivoli Omnibus alert"
+  },
+  {
+    "number": 160,
+    "name": "ChangeSeverity",
+    "description": "Changes the severity level of an Incident"
+  },
+  {
+    "number": 161,
+    "name": "ClearDisplayedIncident",
+    "description": "Removes an Incident from eyeShareDev Dashboard"
+  },
+  {
+    "number": 162,
+    "name": "CloseIncident",
+    "description": "Closes the Incident in eyeShareDev Dashboard"
+  },
+  {
+    "number": 163,
+    "name": "DeleteIncident",
+    "description": "Deletes an Incident from the eyeShareDev database"
+  },
+  {
+    "number": 164,
+    "name": "DisplayIncident",
+    "description": "Adds an Incident to eyeShareDev Dashboard"
+  },
+  {
+    "number": 165,
+    "name": "NewEvent",
+    "description": "Simulates an external event generation"
+  },
+  {
+    "number": 166,
+    "name": "NewIncident",
+    "description": "Creates an Incident and sends it to evaluation performed by the rule base engine"
+  },
+  {
+    "number": 167,
+    "name": "RemoveUserAssignment",
+    "description": "Removes an assigned user from the Incident that triggered the workflow"
+  },
+  {
+    "number": 168,
+    "name": "ResetIncident",
+    "description": "Resets the Incident that triggered the Workflow or any other Incident"
+  },
+  {
+    "number": 169,
+    "name": "UpdateIncidentEvent",
+    "description": "Updates the Incident with new information"
+  },
+  {
+    "number": 170,
+    "name": "SetIncidentTicketID",
+    "description": "Assigns an Incident with a ticket ID which can be used by another workflow"
+  },
+  {
+    "number": 171,
+    "name": "UserAssignment",
+    "description": "Assigns a user to handle the Incident which activated the workflow"
+  },
+  {
+    "number": 172,
+    "name": "IncidentOccurrences",
+    "description": "Returns the number of incidents that occurred over the last specified period"
+  },
+  {
+    "number": 173,
+    "name": "GetIncidentOpenDuration",
+    "description": "Returns the open duration of an Incident (in minutes)"
+  },
+  {
+    "number": 174,
+    "name": "GetIncidentSeverity",
+    "description": "Returns the severity of a selected incident or its currently active instance"
+  },
+  {
+    "number": 175,
+    "name": "IncidentStatus",
+    "description": "Returms the incident's status"
+  },
+  {
+    "number": 176,
+    "name": "GetIncidentTicketID",
+    "description": "Returns the Incident's ticket ID (used to retrieve ticket numbers generated by an integration)"
+  },
+  {
+    "number": 177,
+    "name": "IncidentNumberOfInstances",
+    "description": "Returns the Incident's number of concurrent instances"
+  },
+  {
+    "number": 178,
+    "name": "GetOpenIncidents",
+    "description": "Returns a list of the currently open Incidents in Ayehu Live, according to the selected criteria"
+  },
+  {
+    "number": 179,
+    "name": "IncidentCounter",
+    "description": "Returns the number of currently open Incidents, according to the selected criteria and duration"
+  },
+  {
+    "number": 180,
+    "name": "IncidentHistoryReport",
+    "description": "Creates a report containing the incident history, according to a specified filter"
+  },
+  {
+    "number": 183,
+    "name": "JiraCreateIssue",
+    "description": "Creates a new Jira issue"
+  },
+  {
+    "number": 184,
+    "name": "JiraGenericCommand",
+    "description": "Executes a Jira command"
+  },
+  {
+    "number": 185,
+    "name": "JiraGetIssue",
+    "description": "Gets a list of Jira issues according to the selected criteria"
+  },
+  {
+    "number": 186,
+    "name": "JiraUpdateIssue",
+    "description": "Updates a Jira issue"
+  },
+  {
+    "number": 187,
+    "name": "Abs",
+    "description": "Returns the absolute value of a specified number"
+  },
+  {
+    "number": 188,
+    "name": "Ceiling",
+    "description": "Returns the smallest integral value greater than or equal to the specified number"
+  },
+  {
+    "number": 189,
+    "name": "Floor",
+    "description": "Returns the largest integer smaller than or equal to the specified number"
+  },
+  {
+    "number": 190,
+    "name": "Max",
+    "description": "Returns the higher of two numbers"
+  },
+  {
+    "number": 191,
+    "name": "Min",
+    "description": "Returns the lower of two numbers"
+  },
+  {
+    "number": 192,
+    "name": "Pow",
+    "description": "Returns a specified number raised to the specified power"
+  },
+  {
+    "number": 193,
+    "name": "Round",
+    "description": "Rounds a decimal value to the nearest integral value"
+  },
+  {
+    "number": 194,
+    "name": "Sgn",
+    "description": "Returns a value indicating the sign of a decimal number"
+  },
+  {
+    "number": 195,
+    "name": "Sqr",
+    "description": "Returns the square root of a specified number"
+  },
+  {
+    "number": 196,
+    "name": "Truncate",
+    "description": "Calculates the integral part of a specified decimal number"
+  },
+  {
+    "number": 197,
+    "name": "Counter",
+    "description": "Increases the value of a counter (represented by the activity name) by 1"
+  },
+  {
+    "number": 198,
+    "name": "FunctionCalculator",
+    "description": "Performs various calculations on variables"
+  },
+  {
+    "number": 199,
+    "name": "RandomNumberGenerator",
+    "description": "Generates a random number within a specified range"
+  },
+  {
+    "number": 200,
+    "name": "ESMAcknowledgeAlert",
+    "description": "Acknowledges an existing alert in the McAfee ESM console"
+  },
+  {
+    "number": 201,
+    "name": "ESMDeleteAlert",
+    "description": "Deletes an existing alert from the McAfee ESM console"
+  },
+  {
+    "number": 202,
+    "name": "ESMGetAlert",
+    "description": "Retrieves a list of McAfee ESM alerts according to the selected time frame and criteria"
+  },
+  {
+    "number": 203,
+    "name": "ESMGetEvent",
+    "description": "Retrieves a list of McAfee ESM events according to the selected time frame and criteria"
+  },
+  {
+    "number": 204,
+    "name": "ESMUnAcknowledgeAlert",
+    "description": "Un-acknowledges an alert in the McAfee ESM console"
+  },
+  {
+    "number": 205,
+    "name": "MQCounter",
+    "description": "Returns the amount of messages in a queue"
+  },
+  {
+    "number": 206,
+    "name": "MQGetAllMessages",
+    "description": "Returns the list of messages in a queue"
+  },
+  {
+    "number": 207,
+    "name": "MQPeek",
+    "description": "Returns the first message in a queue"
+  },
+  {
+    "number": 208,
+    "name": "MQPurge",
+    "description": "Deletes all messages in a queue"
+  },
+  {
+    "number": 209,
+    "name": "MQSend",
+    "description": "Inserts a new message to a queue"
+  },
+  {
+    "number": 210,
+    "name": "XCHAddDistributionGroupMember",
+    "description": "Adds a user to an MS Exchange distribution group"
+  },
+  {
+    "number": 211,
+    "name": "XCHRemoveDistributionGroupMember",
+    "description": "Removes a user from an MS Exchange distribution group"
+  },
+  {
+    "number": 212,
+    "name": "XCHDisableMailbox",
+    "description": "Disables an MS Exchange mailbox"
+  },
+  {
+    "number": 213,
+    "name": "XCHEnableMailbox",
+    "description": "Enables an MS Exchange mailbox"
+  },
+  {
+    "number": 214,
+    "name": "XCHGetMailbox",
+    "description": "Retrieves an MS Exchange mailbox's object attributes"
+  },
+  {
+    "number": 215,
+    "name": "XCHGetMailboxDatabase",
+    "description": "Retrieves a mailbox's database object from an Exchange server"
+  },
+  {
+    "number": 216,
+    "name": "XCHGetMailboxPermission",
+    "description": "Retrieves an MS Exchange mailbox's permissions"
+  },
+  {
+    "number": 217,
+    "name": "XCHGetMailboxServer",
+    "description": "Retrieves mailbox’s server objects from an MS Exchange server"
+  },
+  {
+    "number": 218,
+    "name": "XCHGetMailboxStatistics",
+    "description": "Retrieves an MS Exchange mailbox size,  number of messages and the last time it was accessed"
+  },
+  {
+    "number": 219,
+    "name": "XCHNewMailbox",
+    "description": "Creates a new mailbox in an MS Exchange server"
+  },
+  {
+    "number": 220,
+    "name": "XCHRemoveMailboxContent",
+    "description": "Deletes all emails from a user’s MS Exchange mailbox"
+  },
+  {
+    "number": 221,
+    "name": "XCHSetMailbox",
+    "description": "Modifies an attribute of an MS Exchange mailbox"
+  },
+  {
+    "number": 222,
+    "name": "XCHManagementShell",
+    "description": "Execute an MS Exchange powershell command"
+  },
+  {
+    "number": 223,
+    "name": "SCOMCreateAlert",
+    "description": "Creates a new alert in MS Operations Manager"
+  },
+  {
+    "number": 224,
+    "name": "SCOMGetAlert",
+    "description": "Retrieves a list of MS Operations Manager alerts according to the selected criteria"
+  },
+  {
+    "number": 225,
+    "name": "SCOMStartMaintenanceMode",
+    "description": "Starts a maintenance mode of a specified MS Operations Manager monitor for a predefined duration"
+  },
+  {
+    "number": 226,
+    "name": "SCOMStopMaintenanceMode",
+    "description": "Stops a maintenance mode of a specified MS Operations Manager monitor"
+  },
+  {
+    "number": 227,
+    "name": "SCOMUpdateAlert",
+    "description": "Updates an existing MS Operations Manager alert"
+  },
+  {
+    "number": 228,
+    "name": "GetExternalInternetIPAddress",
+    "description": "Returns the external IP address of the eyeShareDev server"
+  },
+  {
+    "number": 229,
+    "name": "Ping",
+    "description": "Runs a \"Ping\" command"
+  },
+  {
+    "number": 230,
+    "name": "PingLatency",
+    "description": "Retrieves the elapsed time passing between sending a ping command and retrieving an answer"
+  },
+  {
+    "number": 231,
+    "name": "SendSyslog",
+    "description": "Sends a Syslog message (creates a log entry)"
+  },
+  {
+    "number": 232,
+    "name": "Telnet",
+    "description": "Runs a \"Telnet\" command"
+  },
+  {
+    "number": 233,
+    "name": "Tracert",
+    "description": "Returns the route over the network between two systems"
+  },
+  {
+    "number": 234,
+    "name": "WakeonLan",
+    "description": "Turns on a selected machine using its MAC address"
+  },
+  {
+    "number": 235,
+    "name": "ProcessCPUUsage",
+    "description": "Returns the CPU usage value of a specified process"
+  },
+  {
+    "number": 236,
+    "name": "ProcessMemoryUsage",
+    "description": "Returns the memory usage value of a specified process (in MB)"
+  },
+  {
+    "number": 237,
+    "name": "ProcessOwner",
+    "description": "Returns a list of process ID’s and process owners"
+  },
+  {
+    "number": 238,
+    "name": "ProcessKill",
+    "description": "Terminates all active instances of a specified process"
+  },
+  {
+    "number": 239,
+    "name": "ProcessCounter",
+    "description": "Returns the number of active instances of a specified process in the operating system"
+  },
+  {
+    "number": 240,
+    "name": "ProcessList",
+    "description": "Lists the currently active processes on a selected machine"
+  },
+  {
+    "number": 241,
+    "name": "ProcessStart",
+    "description": "Starts a specified process"
+  },
+  {
+    "number": 242,
+    "name": "SelfServiceResponse",
+    "description": "Sends a response to the self service request"
+  },
+  {
+    "number": 243,
+    "name": "SNCreateRecord",
+    "description": "Creates a new Service Now record"
+  },
+  {
+    "number": 244,
+    "name": "SNDeleteRecord",
+    "description": "Deletes an existing ServiceNow record"
+  },
+  {
+    "number": 245,
+    "name": "SNGetRecord",
+    "description": "Retrieves a list of ServiceNow records according to the selected criteria"
+  },
+  {
+    "number": 246,
+    "name": "SNUpdateRecord",
+    "description": "Updates an existing ServiceNow record"
+  },
+  {
+    "number": 247,
+    "name": "SNUploadAttachment",
+    "description": "Uploads an attachment to an existing Service Now record"
+  },
+  {
+    "number": 248,
+    "name": "ServiceList",
+    "description": "Lists all services on a specified machine"
+  },
+  {
+    "number": 249,
+    "name": "ServiceStartupType",
+    "description": "Returns the service’s startup type (Manual/Auto/Disabled)"
+  },
+  {
+    "number": 250,
+    "name": "ServiceStatus",
+    "description": "Returns the status of the specified Service"
+  },
+  {
+    "number": 251,
+    "name": "ServicePause",
+    "description": "Pauses a Service"
+  },
+  {
+    "number": 252,
+    "name": "ServiceRestart",
+    "description": "Restarts a Service"
+  },
+  {
+    "number": 253,
+    "name": "ServiceResume",
+    "description": "Resumes a paused service"
+  },
+  {
+    "number": 254,
+    "name": "SetServiceLogonCredentials",
+    "description": "Sets the service's logon account"
+  },
+  {
+    "number": 255,
+    "name": "SetServiceStartupType",
+    "description": "Determines the service’s startup type (Manual/Automatic/ Disabled)"
+  },
+  {
+    "number": 256,
+    "name": "ServiceStart",
+    "description": "Starts a Service"
+  },
+  {
+    "number": 257,
+    "name": "ServiceStop",
+    "description": "Stops a Service"
+  },
+  {
+    "number": 258,
+    "name": "SNMPGetNext",
+    "description": "Retrieves the value of the next Object ID of a specified device"
+  },
+  {
+    "number": 259,
+    "name": "SNMPGet",
+    "description": "Retrieves the value of an SNMP object ID of a specified device"
+  },
+  {
+    "number": 260,
+    "name": "SNMPSendTrap",
+    "description": "Sends an SNMP trap containing a specific SNMP object assigned with a value"
+  },
+  {
+    "number": 261,
+    "name": "SNMPSetRequest",
+    "description": "Sends an SNMP request containing a specific SNMP object assigned with a value"
+  },
+  {
+    "number": 262,
+    "name": "SNMPWalk",
+    "description": "Retrieves a list of object ID's of a specified device based on a given OID range"
+  },
+  {
+    "number": 263,
+    "name": "SLNPMAcknowledgeAlert",
+    "description": "Acknowledges a SolarWinds NPM alert"
+  },
+  {
+    "number": 264,
+    "name": "SLNPMAddNote",
+    "description": "Adds a SolarWinds NPM note"
+  },
+  {
+    "number": 265,
+    "name": "SLNPMGetAlert",
+    "description": "Retrieves a list of SolarWinds NPM alerts according to the selected criteria"
+  },
+  {
+    "number": 266,
+    "name": "SLNPMGetNode",
+    "description": "Retrieves a list of SolarWinds NPM nodes according to the selected criteria"
+  },
+  {
+    "number": 267,
+    "name": "SLNPMManageNode",
+    "description": "Manages a SolarWinds NPM node after a maintenance procedure"
+  },
+  {
+    "number": 268,
+    "name": "SLNPMUnManageNode",
+    "description": "Un-manages a SolarWinds NPM node during maintenance procedures"
+  },
+  {
+    "number": 269,
+    "name": "SLNPMUnacknowledgeAlert",
+    "description": "Un-acknowledges a SolarWinds NPM alert"
+  },
+  {
+    "number": 270,
+    "name": "MultiSSHCommands",
+    "description": "Sends multiple SSH protocol commands"
+  },
+  {
+    "number": 271,
+    "name": "SendSSHCommand",
+    "description": "Sends a single SSH protocol command to an open SSH session"
+  },
+  {
+    "number": 272,
+    "name": "SendSSHPassword",
+    "description": "Sends an encrypted password to an open SSH session"
+  },
+  {
+    "number": 273,
+    "name": "SingleSSHCommand",
+    "description": "Sends a single SSH protocol command"
+  },
+  {
+    "number": 274,
+    "name": "StartSSHSession",
+    "description": "Starts an SSH session"
+  },
+  {
+    "number": 275,
+    "name": "TerminateSSHSession",
+    "description": "Terminates an SSH session"
+  },
+  {
+    "number": 276,
+    "name": "GetCellValue",
+    "description": "Retrieves a cell's value according to its location in a table"
+  },
+  {
+    "number": 277,
+    "name": "SetCellValue",
+    "description": "Sets a new value to a table's cell"
+  },
+  {
+    "number": 278,
+    "name": "SumCells",
+    "description": "Sums up a sequence of table cell values"
+  },
+  {
+    "number": 279,
+    "name": "AddMemoryTableColumn",
+    "description": "Adds a single or multiple column/s to a table"
+  },
+  {
+    "number": 280,
+    "name": "DeleteMemoryTableColumns",
+    "description": "Deletes a column or columns from a table, indicated by their numbers"
+  },
+  {
+    "number": 281,
+    "name": "GetColumnName",
+    "description": "Retrieves a column's name"
+  },
+  {
+    "number": 282,
+    "name": "GetColumnsCount",
+    "description": "Counts the number of columns in a table"
+  },
+  {
+    "number": 283,
+    "name": "RenameMemoryTableColumn",
+    "description": "Renames a selected Column in a table"
+  },
+  {
+    "number": 284,
+    "name": "AddMemoryTableRow",
+    "description": "Adds a single or multiple row/s to a table"
+  },
+  {
+    "number": 285,
+    "name": "DeleteMemoryTableRows",
+    "description": "Deletes specified rows from a table, indicated by their numbers"
+  },
+  {
+    "number": 286,
+    "name": "GetRows",
+    "description": "Returns the selected rows from a table, according to a line number or a certain text phrase"
+  },
+  {
+    "number": 287,
+    "name": "GetRowsCount",
+    "description": "Counts the number of rows in a table"
+  },
+  {
+    "number": 288,
+    "name": "SearchRowByInterval",
+    "description": "Searches for a row containing certain keywords within a specified range of rows"
+  },
+  {
+    "number": 289,
+    "name": "ConvertToHTMLTable",
+    "description": "Converts a table variable into an HTML table and stores it in a different variable"
+  },
+  {
+    "number": 290,
+    "name": "ConvertToPlainText",
+    "description": "Converts a table variable into plain text and stores it in a different variable"
+  },
+  {
+    "number": 291,
+    "name": "CreateMemoryTable",
+    "description": "Creates a table and saves it to the workflow memory"
+  },
+  {
+    "number": 292,
+    "name": "MemoryTableComparison",
+    "description": "Compares two tables (or two specific columns in the tables) and displays the equivalent/inequivalent rows"
+  },
+  {
+    "number": 293,
+    "name": "MemoryTableUnion",
+    "description": "Merges two identical schema tables into one and saves the new table in the target table's variable name"
+  },
+  {
+    "number": 294,
+    "name": "ResultSetFilter",
+    "description": "Filters a table according to a specified statement"
+  },
+  {
+    "number": 295,
+    "name": "RotateTable",
+    "description": "Rotates a table by 90 degrees"
+  },
+  {
+    "number": 296,
+    "name": "SortTable",
+    "description": "Sorts a table according to the selected column name or column number"
+  },
+  {
+    "number": 297,
+    "name": "SendTelnetCommand",
+    "description": "Sends a Telnet Command"
+  },
+  {
+    "number": 298,
+    "name": "StartTelnetSession",
+    "description": "Starts a Telnet Session"
+  },
+  {
+    "number": 299,
+    "name": "TerminateTelnetSession",
+    "description": "Terminates a Telnet Session"
+  },
+  {
+    "number": 300,
+    "name": "Contains",
+    "description": "Checks if a sub string exists within a string/table"
+  },
+  {
+    "number": 301,
+    "name": "ExtractByPattern",
+    "description": "Extracts all rows within a defined pattern"
+  },
+  {
+    "number": 302,
+    "name": "ExtractLineFromText",
+    "description": "Extracts a line from a string, according to its location or a matching keyword"
+  },
+  {
+    "number": 303,
+    "name": "Length",
+    "description": "Returns the number of characters in a string"
+  },
+  {
+    "number": 304,
+    "name": "IndexOf",
+    "description": "Returns the index (location) of a sub string within a string"
+  },
+  {
+    "number": 305,
+    "name": "InStr",
+    "description": "Returns the position of the first occurrence of a sub string within a string"
+  },
+  {
+    "number": 306,
+    "name": "InStrRev",
+    "description": "Returns the position of the first occurrence of a sub string within a string, starting to search at the last character of the string"
+  },
+  {
+    "number": 307,
+    "name": "IsAlertHtml",
+    "description": "Checks whether or not the email that triggered the Workflow is HTML formatted"
+  },
+  {
+    "number": 308,
+    "name": "IsEmpty",
+    "description": "Checks if a text is empty"
+  },
+  {
+    "number": 309,
+    "name": "IsNumeric",
+    "description": "Checks if a string contains a valid numeric value"
+  },
+  {
+    "number": 310,
+    "name": "Left",
+    "description": "Extracts a specified number of characters from the left side of a string"
+  },
+  {
+    "number": 311,
+    "name": "MatchRegularExpression",
+    "description": "Searches for all matches between a Regular Expression and a given text"
+  },
+  {
+    "number": 312,
+    "name": "Right",
+    "description": "Extracts a specified number of characters from the right side of a string"
+  },
+  {
+    "number": 313,
+    "name": "Split",
+    "description": "Splits a selected string into sub strings (according to a specified delimiter) and returns a one-dimensional table containing the sub strings"
+  },
+  {
+    "number": 314,
+    "name": "StrComp",
+    "description": "Compares two strings"
+  },
+  {
+    "number": 315,
+    "name": "SubString",
+    "description": "Extracts a sub string from a string according to its index and number of characters"
+  },
+  {
+    "number": 316,
+    "name": "SubStringByText",
+    "description": "Extracts a sub string from a string according to a given start and end string"
+  },
+  {
+    "number": 317,
+    "name": "ConvertTextToTable",
+    "description": "Converts a text variable into a table according to predefined column/row delimiters"
+  },
+  {
+    "number": 318,
+    "name": "LeftTrim",
+    "description": "Removes the leading blank spaces from a string"
+  },
+  {
+    "number": 319,
+    "name": "LowerCase",
+    "description": "Switches all characters in a string to lower case"
+  },
+  {
+    "number": 320,
+    "name": "ReplaceParagraph",
+    "description": "Replaces one paragraph with other text"
+  },
+  {
+    "number": 321,
+    "name": "ReplaceString",
+    "description": "Returns a new string in which all occurrences of a specified sub string are replaced with another sub string"
+  },
+  {
+    "number": 322,
+    "name": "ReplaceStringAdvanced",
+    "description": "Returns a new string in which all occurrences of a specified sub string are replaced with another sub string"
+  },
+  {
+    "number": 323,
+    "name": "RightTrim",
+    "description": "Removes the trailing blank spaces from a string"
+  },
+  {
+    "number": 324,
+    "name": "StrReverse",
+    "description": "Reverses a string"
+  },
+  {
+    "number": 325,
+    "name": "Trim",
+    "description": "Removes both leading and trailing blank spaces from a string"
+  },
+  {
+    "number": 326,
+    "name": "TrimbyString",
+    "description": "Removes specific characters from the beginning or the end of a given string"
+  },
+  {
+    "number": 327,
+    "name": "UpperCase",
+    "description": "Capitalizes all characters in a string"
+  },
+  {
+    "number": 328,
+    "name": "PasswordGenerator",
+    "description": "Generates a strong password"
+  },
+  {
+    "number": 329,
+    "name": "ConditionalWait",
+    "description": "Puts the Workflow on hold until a specified condition applies"
+  },
+  {
+    "number": 330,
+    "name": "DateDifference",
+    "description": "Calculates the difference between two time stamps"
+  },
+  {
+    "number": 332,
+    "name": "GetDate",
+    "description": "Returns current, future or past time in the selected format, in a specific time zone"
+  },
+  {
+    "number": 333,
+    "name": "Wait",
+    "description": "Pauses the Workflow for a specified period of time"
+  },
+  {
+    "number": 334,
+    "name": "WaitforCMD",
+    "description": "Pauses the Workflow until an eyeShareDev CMD message that complies with a specified condition is received"
+  },
+  {
+    "number": 335,
+    "name": "WaitForEmail",
+    "description": "Pauses the Workflow until an email that complies with a specified condition is received"
+  },
+  {
+    "number": 336,
+    "name": "WaitforInput",
+    "description": "Pauses the Workflow until a recipient's input that complies with a specified condition is received"
+  },
+  {
+    "number": 337,
+    "name": "WaitforSMS",
+    "description": "Pauses the Workflow until an SMS that complies with a specified condition is received"
+  },
+  {
+    "number": 339,
+    "name": "VMClone",
+    "description": "Clones a Virtual Machine"
+  },
+  {
+    "number": 341,
+    "name": "VMCreate",
+    "description": "Creates a Virtual Machine"
+  },
+  {
+    "number": 342,
+    "name": "VMCreateConfigurationSpec",
+    "description": "Creates a Virtual Machine configuration specification file, used to clone a Virtual Machine"
+  },
+  {
+    "number": 343,
+    "name": "VMCreateFromTemplate",
+    "description": "Creates a Virtual Machine from a template"
+  },
+  {
+    "number": 344,
+    "name": "VMDelete",
+    "description": "Deletes a Virtual Machine"
+  },
+  {
+    "number": 345,
+    "name": "VMDeleteConfigurationSpec",
+    "description": "Deletes a Virtual Machine's configuration specification"
+  },
+  {
+    "number": 346,
+    "name": "VMExists",
+    "description": "Checks whether or not a specific Virtual Machine exists"
+  },
+  {
+    "number": 347,
+    "name": "VMInfo",
+    "description": "Retrieves a Virtual Machine's info"
+  },
+  {
+    "number": 348,
+    "name": "VMIPAddress",
+    "description": "Retrives a Virtual Machine's IP Addresses"
+  },
+  {
+    "number": 349,
+    "name": "VMList",
+    "description": "Retrieves a list of Virtual Machines on the entire vCenter or a specific host"
+  },
+  {
+    "number": 350,
+    "name": "VMModifyCPU",
+    "description": "Modifies the count of CPUs of a Virtual Machine"
+  },
+  {
+    "number": 351,
+    "name": "VMModifyMemory",
+    "description": "Modifies the Virtual Machine's available memory"
+  },
+  {
+    "number": 352,
+    "name": "VMMountISO",
+    "description": "Mounts an ISO image file on a Virtual Machine"
+  },
+  {
+    "number": 353,
+    "name": "VMRename",
+    "description": "Renames a Virtual Machine"
+  },
+  {
+    "number": 354,
+    "name": "VMResizeDisk",
+    "description": "Resizes a Virtual Machine's disk"
+  },
+  {
+    "number": 355,
+    "name": "VMPowerOff",
+    "description": "Switches a Virtual Machine off"
+  },
+  {
+    "number": 356,
+    "name": "VMPowerOn",
+    "description": "Switches a Virtual Machine on"
+  },
+  {
+    "number": 357,
+    "name": "VMPowerState",
+    "description": "Retrieves the current power state of a Virtual Machine"
+  },
+  {
+    "number": 358,
+    "name": "VMReboot",
+    "description": "Reboots a Virtual Machine"
+  },
+  {
+    "number": 359,
+    "name": "VMReset",
+    "description": "Resets a Virtual Machine"
+  },
+  {
+    "number": 360,
+    "name": "VMShutdown",
+    "description": "Shuts down a Virtual Machine"
+  },
+  {
+    "number": 361,
+    "name": "VMStandby",
+    "description": "Puts a Virtual Machine into standby mode"
+  },
+  {
+    "number": 362,
+    "name": "VMSuspend",
+    "description": "Suspends a Virtual Machine"
+  },
+  {
+    "number": 363,
+    "name": "VMFolderCreate",
+    "description": "Creates a Virtual Machine folder on a vCenter"
+  },
+  {
+    "number": 364,
+    "name": "VMHostEnterMaintenanceMode",
+    "description": "Puts a host into maintenance mode"
+  },
+  {
+    "number": 365,
+    "name": "VMHostExitMaintenanceMode",
+    "description": "Terminates the host's maintenance mode"
+  },
+  {
+    "number": 366,
+    "name": "VMHostList",
+    "description": "Retreives a list of all VM hosts in the vCenter"
+  },
+  {
+    "number": 367,
+    "name": "VMHostReboot",
+    "description": "Reboots a host"
+  },
+  {
+    "number": 368,
+    "name": "VMCreateSnapshot",
+    "description": "Snapshots a Virtual Machine's state"
+  },
+  {
+    "number": 369,
+    "name": "VMCurrentSnapshot",
+    "description": "Retrieves the name of the Virtual Machine's current Snapshot"
+  },
+  {
+    "number": 370,
+    "name": "VMDeleteAllSnapshots",
+    "description": "Deletes all Snapshots of a Virtual Machine"
+  },
+  {
+    "number": 371,
+    "name": "VMDeleteSnapshot",
+    "description": "Deletes a selected Snapshot of a Virtual Machine"
+  },
+  {
+    "number": 372,
+    "name": "VMListSnapshot",
+    "description": "Retrieves a list of all Snapshots of a Virtual Machine"
+  },
+  {
+    "number": 373,
+    "name": "VMRenameSnapshot",
+    "description": "Renames a Snapshot of a Virtual Machine"
+  },
+  {
+    "number": 374,
+    "name": "VMReverttoCurrentSnapshot",
+    "description": "Reverts to the current Snapshot of a Virtual Machine"
+  },
+  {
+    "number": 375,
+    "name": "VMReverttoSnapshot",
+    "description": "Reverts to a Snapshot of a Virtual Machine"
+  },
+  {
+    "number": 376,
+    "name": "VMSnapshotInfo",
+    "description": "Retrieves the info of a Virtual Machine's selected Snapshot"
+  },
+  {
+    "number": 377,
+    "name": "VMListTemplates",
+    "description": "Lists the templates in the vCenter"
+  },
+  {
+    "number": 378,
+    "name": "VMMarkTemplate",
+    "description": "Converts a Virtual Machine to a template"
+  },
+  {
+    "number": 379,
+    "name": "VMUnmarkTemplate",
+    "description": "Converts a template to a Virtual Machine"
+  },
+  {
+    "number": 380,
+    "name": "VMPowerCLI",
+    "description": "Allows executing any PowerCLI command on the vCenter or ESX"
+  },
+  {
+    "number": 381,
+    "name": "ApplicationPoolRecycle",
+    "description": "Recycles the specified application pool on the designated server"
+  },
+  {
+    "number": 382,
+    "name": "ApplicationPoolStart",
+    "description": "Starts the specified application pool on the designated server"
+  },
+  {
+    "number": 383,
+    "name": "ApplicationPoolStatus",
+    "description": "Returns the specified application pool's status"
+  },
+  {
+    "number": 384,
+    "name": "ApplicationPoolStop",
+    "description": "Stops the specified application pool on the designated server"
+  },
+  {
+    "number": 385,
+    "name": "ApplicationPoolList",
+    "description": "Retrieves a list of application pools on a selected machine"
+  },
+  {
+    "number": 386,
+    "name": "FileDownload",
+    "description": "Downloads a file from a web site"
+  },
+  {
+    "number": 390,
+    "name": "URLCheck",
+    "description": "Checks the availability of a URL based on a return code or an existance of a specific phrase"
+  },
+  {
+    "number": 391,
+    "name": "IISReset",
+    "description": "Restarts the Internet Information Server"
+  },
+  {
+    "number": 392,
+    "name": "IISStart",
+    "description": "Starts the Internet Information Server"
+  },
+  {
+    "number": 393,
+    "name": "IISStop",
+    "description": "Stops the Internet Information Server"
+  },
+  {
+    "number": 394,
+    "name": "CreateVirtualDirectory",
+    "description": "Creates a Virtual Directory on an IIS website"
+  },
+  {
+    "number": 395,
+    "name": "EditVirtualDirectory",
+    "description": "Edits a Virtual Directory on an IIS website"
+  },
+  {
+    "number": 398,
+    "name": "CPU",
+    "description": "Returns the current Available CPU/CPU Usage of the selected machine"
+  },
+  {
+    "number": 399,
+    "name": "DiskSpace",
+    "description": "Returns the current Disk Space value (usage and availability) of the selected machine"
+  },
+  {
+    "number": 400,
+    "name": "GetInstalledSoftware",
+    "description": "Retrieves a list of the installed software on a selected server"
+  },
+  {
+    "number": 401,
+    "name": "Memory",
+    "description": "Returns the Available Memory/Memory Usage of the selected machine (in MB)"
+  },
+  {
+    "number": 402,
+    "name": "GetOperatingSystem",
+    "description": "Returns the selected machine's operating system type"
+  },
+  {
+    "number": 403,
+    "name": "SystemUptime",
+    "description": "Returns the system's uptime (in seconds)"
+  },
+  {
+    "number": 404,
+    "name": "GetWindowEventLogs",
+    "description": "Returns a table of all events according to the specified event type"
+  },
+  {
+    "number": 405,
+    "name": "WMI",
+    "description": "Queries a WMI object"
+  },
+  {
+    "number": 406,
+    "name": "RegistryDelete",
+    "description": "Deletes a selected entry from the registry according to a selected registry key and path"
+  },
+  {
+    "number": 407,
+    "name": "RegistryQuery",
+    "description": "Queries a selected entry in the registry according to a selected registry key and path"
+  },
+  {
+    "number": 408,
+    "name": "CreateWindowsEventLog",
+    "description": "Creates an entry in the selected Windows event log"
+  },
+  {
+    "number": 409,
+    "name": "PerformanceMonitor",
+    "description": "Requests for the current value of performance counters at a specified time interval"
+  },
+  {
+    "number": 410,
+    "name": "ServerHibernate",
+    "description": "Puts the selected work station into Hibernate mode"
+  },
+  {
+    "number": 411,
+    "name": "ServerLogoff",
+    "description": "Logs a user off a Server"
+  },
+  {
+    "number": 412,
+    "name": "ServerRestart",
+    "description": "Restarts a Server"
+  },
+  {
+    "number": 413,
+    "name": "ServerShutdown",
+    "description": "Shuts down a Server"
+  },
+  {
+    "number": 414,
+    "name": "ServerStandby",
+    "description": "Puts the selected work station into Standby mode"
+  },
+  {
+    "number": 415,
+    "name": "UserAuthentication",
+    "description": "Validates a user's access to a target machine"
+  },
+  {
+    "number": 416,
+    "name": "XMLAddAttribute",
+    "description": "Adds the specified attribute as the last node in the collection"
+  },
+  {
+    "number": 417,
+    "name": "XMLDeleteAttribute",
+    "description": "Removes the selected attribute from the specified Xpath"
+  },
+  {
+    "number": 418,
+    "name": "XMLEditAttribute",
+    "description": "Changes a specified XML attribute’s value"
+  },
+  {
+    "number": 419,
+    "name": "XMLAddNode",
+    "description": "Adds a new node in the specified Xpath"
+  },
+  {
+    "number": 420,
+    "name": "XMLEditNode",
+    "description": "Changes a specified XML node's value"
+  },
+  {
+    "number": 421,
+    "name": "XMLDeleteNodebyXpath",
+    "description": "Deletes an XML node according to its path"
+  },
+  {
+    "number": 422,
+    "name": "XMLEvaluateXpathExpression",
+    "description": "Queries for an XML value"
+  },
+  {
+    "number": 423,
+    "name": "DisplayXMLSession",
+    "description": "Displays the selected XML session"
+  },
+  {
+    "number": 424,
+    "name": "SaveXMLSession",
+    "description": "Saves an XML session to a file"
+  },
+  {
+    "number": 425,
+    "name": "StartXMLSession",
+    "description": "Starts an XML Session"
+  },
+  {
+    "number": 426,
+    "name": "TabletoXML",
+    "description": "Converts a table to an XML"
+  },
+  {
+    "number": 427,
+    "name": "XMLElementstoTable",
+    "description": "Converts a specific table with its attributes within the specified XML to a table variable"
+  },
+  {
+    "number": 428,
+    "name": "XMLtoTable",
+    "description": "Converts a specific table within the specified XML to a table variable"
+  },
+  {
+    "number": 429,
+    "name": "IfElseActivity",
+    "description": "Executes one activity branch or another, according to a different activity's return value or a system variable's value"
+  },
+  {
+    "number": 430,
+    "name": "MemorySet",
+    "description": "Allocates a value to a Workflow/Global  variable"
+  },
+  {
+    "number": 431,
+    "name": "DisplayValue",
+    "description": "Displays an eyeShare variable value in the active logs"
+  },
+  {
+    "number": 432,
+    "name": "WhileActivity",
+    "description": "Runs an activity or a group of activities for a number of iterations, dictated by an Exit While activity"
+  },
+  {
+    "number": 433,
+    "name": "RunWorkflow",
+    "description": "Runs a \"child\" Workflow within the current one"
+  },
+  {
+    "number": 434,
+    "name": "StopWorkflow",
+    "description": "Terminates all instances of a specified Workflow"
+  },
+  {
+    "number": 435,
+    "name": "TerminateWorkflow",
+    "description": "Terminates the entire current Workflow (all running branches)"
+  },
+  {
+    "number": 436,
+    "name": "Terminate",
+    "description": "Terminates the current branch in the current Workflow, even if it is the only branch"
+  },
+  {
+    "number": 437,
+    "name": "LockExecutor",
+    "description": "Locks the selected executor to be exclusively used by the activities of the running workflow"
+  },
+  {
+    "number": 438,
+    "name": "UnlockExecutor",
+    "description": "Unlocks a locked executor (follows a Lock Executor activity)"
+  },
+  {
+    "number": 439,
+    "name": "GoTo",
+    "description": "Redirects to another activity in the Workflow and executes it"
+  },
+  {
+    "number": 440,
+    "name": "ParallelActivity",
+    "description": "Executes two parallel activity branches or more"
+  },
+  {
+    "number": 441,
+    "name": "WorkflowCounter",
+    "description": "Returns the number of currently active instances of the selected Workflow"
+  },
+  {
+    "number": 443,
+    "name": "MemoryClean",
+    "description": "Clears a variable's value from its allocated memory cell"
+  },
+  {
+    "number": 446,
+    "name": "ExitWhile",
+    "description": "Exit While loop immediately"
+  },
+  {
+    "number": 450,
+    "name": "RemedyForceCreateRecord",
+    "description": "Remedy Force Create Record"
+  },
+  {
+    "number": 451,
+    "name": "RemedyForceExecuteSOQL",
+    "description": "Remedy Force Execute SOQL"
+  },
+  {
+    "number": 452,
+    "name": "RemedyForceGetRecord",
+    "description": "RemedyForceGetRecord"
+  },
+  {
+    "number": 453,
+    "name": "RemedyForceUpdateRecord",
+    "description": "Remedy Force Update Record"
+  },
+  {
+    "number": 454,
+    "name": "CiscoChangeVlan",
+    "description": "Cisco Change Vlan"
+  },
+  {
+    "number": 458,
+    "name": "HPArcsightDeleteCase",
+    "description": "HP Arcsight Delete Case"
+  },
+  {
+    "number": 459,
+    "name": "HPArcsightGetCase",
+    "description": "HP Arcsight Get Case"
+  },
+  {
+    "number": 460,
+    "name": "HPArcsightGetEvent",
+    "description": "HP Arcsight Get Event"
+  },
+  {
+    "number": 461,
+    "name": "HPArcsightUpdateCase",
+    "description": "HP Arcsight Update Case"
+  },
+  {
+    "number": 462,
+    "name": "JsonGetKeyPaths",
+    "description": "Json Get Key Paths"
+  },
+  {
+    "number": 463,
+    "name": "JsonToTable",
+    "description": "Json To Table"
+  },
+  {
+    "number": 464,
+    "name": "StartJsonSession",
+    "description": "Start Json Session"
+  },
+  {
+    "number": 482,
+    "name": "SalesforceCreateRecord",
+    "description": "Salesforce Create Record"
+  },
+  {
+    "number": 483,
+    "name": "SalesforceExecuteSOQL",
+    "description": "Salesforce Execute SOQL"
+  },
+  {
+    "number": 484,
+    "name": "SalesforceGetRecord",
+    "description": "Salesforce Get Record"
+  },
+  {
+    "number": 485,
+    "name": "SalesforceUpdateRecord",
+    "description": "Salesforce Update Record"
+  },
+  {
+    "number": 486,
+    "name": "SNDownloadAttachment",
+    "description": "SN Download Attachment"
+  },
+  {
+    "number": 487,
+    "name": "VTHashCheck",
+    "description": "VT Hash Check"
+  },
+  {
+    "number": 488,
+    "name": "VTSubmitFile",
+    "description": "VT Submit File"
+  },
+  {
+    "number": 489,
+    "name": "VTUrlCheck",
+    "description": "VT Url Check"
+  },
+  {
+    "number": 490,
+    "name": "VMChangeVlan",
+    "description": "VM Change Vlan"
+  },
+  {
+    "number": 491,
+    "name": "GetHeaderValue",
+    "description": "Get Header Value"
+  },
+  {
+    "number": 492,
+    "name": "HTTPRequest",
+    "description": "Sends an HTTP request (including headers)"
+  },
+  {
+    "number": 499,
+    "name": "CherwellCreateRecord",
+    "description": "Cherwell Create Record"
+  },
+  {
+    "number": 500,
+    "name": "CherwellGetRecord",
+    "description": "Cherwell Get Record"
+  },
+  {
+    "number": 501,
+    "name": "CherwellUpdateRecord",
+    "description": "Cherwell Update Record"
+  },
+  {
+    "number": 502,
+    "name": "CherwellUploadAttachment",
+    "description": "Cherwell Upload Attachment"
+  },
+  {
+    "number": 503,
+    "name": "CherwellDownloadAttachment",
+    "description": "Cherwell Download Attachment"
+  },
+  {
+    "number": 504,
+    "name": "CherwellCreateJournal",
+    "description": "Cherwell Create Journal"
+  },
+  {
+    "number": 505,
+    "name": "CherwellGetAttachmentList",
+    "description": "Cherwell Get Attachment List"
+  },
+  {
+    "number": 508,
+    "name": "FormatDate",
+    "description": "Converts a date to a specified target format"
+  },
+  {
+    "number": 509,
+    "name": "AddDate",
+    "description": "Adds an interval to a given date"
+  },
+  {
+    "number": 510,
+    "name": "SNGetCatalogVariables",
+    "description": "Get Catalog Variables Items"
+  },
+  {
+    "number": 517,
+    "name": "WebServiceResponse",
+    "description": "Respond to Ayehu web service request."
+  },
+  {
+    "number": 520,
+    "name": "SlackCreateChannel",
+    "description": "Creates a new channel"
+  },
+  {
+    "number": 551,
+    "name": "ReplaceValuesInTable",
+    "description": "Returns a new table with updated values based on key pair mappings defined in a table in global variables"
+  },
+  {
+    "number": 552,
+    "name": "SplunkGetAlert",
+    "description": "Splunk Get Alert"
+  },
+  {
+    "number": 553,
+    "name": "SplunkGetAlertEvents",
+    "description": "Splunk Get Alert Events"
+  },
+  {
+    "number": 555,
+    "name": "SplunkCreateEvent",
+    "description": "Splunk Create Event"
+  },
+  {
+    "number": 556,
+    "name": "SplunkGetEvents",
+    "description": "Splunk Get Events"
+  },
+  {
+    "number": 557,
+    "name": "SplunkGetReport",
+    "description": "Splunk Get Report"
+  },
+  {
+    "number": 560,
+    "name": "QRadarGetOffenseEvents",
+    "description": "QRadar Get Offense Events"
+  },
+  {
+    "number": 561,
+    "name": "QRadarCloseOffense",
+    "description": "QRadar Close Offense"
+  },
+  {
+    "number": 562,
+    "name": "QRadarAssignOffense",
+    "description": "QRadar Assign Offense"
+  },
+  {
+    "number": 563,
+    "name": "QRadarAddOffenseNote",
+    "description": "QRadar Add Offense Note"
+  },
+  {
+    "number": 564,
+    "name": "QRadarGetEventDetails",
+    "description": "QRadar Get Event Details"
+  },
+  {
+    "number": 565,
+    "name": "QRadarGetOffense",
+    "description": "QRadar Get Offense"
+  },
+  {
+    "number": 566,
+    "name": "HyperVRestart",
+    "description": "Restart virtual machine"
+  },
+  {
+    "number": 567,
+    "name": "HyperVAddDisk",
+    "description": "Add disk to a virtual machine"
+  },
+  {
+    "number": 568,
+    "name": "HyperVCalcHostRating",
+    "description": "Calculate host rating"
+  },
+  {
+    "number": 571,
+    "name": "HyperVImport",
+    "description": "Import virtual machine"
+  },
+  {
+    "number": 572,
+    "name": "HyperVInfo",
+    "description": "Get information for specific virtual machine name"
+  },
+  {
+    "number": 573,
+    "name": "HyperVList",
+    "description": "Get list of virtual machine names"
+  },
+  {
+    "number": 575,
+    "name": "HyperVModifyMemory",
+    "description": "Modify the amount of memory for a virual machine"
+  },
+  {
+    "number": 576,
+    "name": "HyperVNew",
+    "description": "New virtual machine"
+  },
+  {
+    "number": 578,
+    "name": "HyperVPowerOFF",
+    "description": "Power off virtual machine"
+  },
+  {
+    "number": 579,
+    "name": "HyperVPowerON",
+    "description": "Power on virtual machine"
+  },
+  {
+    "number": 581,
+    "name": "HyperVRefreshVM",
+    "description": "Refresh VM"
+  },
+  {
+    "number": 583,
+    "name": "HyperVStaticMac",
+    "description": "Modify Static MAC"
+  },
+  {
+    "number": 584,
+    "name": "PythonCode",
+    "description": "Activity execute predefined Python script"
+  },
+  {
+    "number": 585,
+    "name": "SlackInvitetoChannel",
+    "description": "Invites a user to a channel"
+  },
+  {
+    "number": 586,
+    "name": "SlackKickfromChannel",
+    "description": "Kicks a user from a channel"
+  },
+  {
+    "number": 587,
+    "name": "SlackArchiveChannel",
+    "description": "Archives a channel"
+  },
+  {
+    "number": 591,
+    "name": "HyperVExpandDiskSize",
+    "description": "Expand disk size to a virtual machine"
+  },
+  {
+    "number": 592,
+    "name": "BMCHelixRemedyforceCreateRecord",
+    "description": "BMC Helix Remedyforce Create Record"
+  },
+  {
+    "number": 593,
+    "name": "BMCHelixRemedyforceExecuteSOQL",
+    "description": "BMC Helix Remedyforce Execute SOQL"
+  },
+  {
+    "number": 594,
+    "name": "BMCHelixRemedyforceGetRecord",
+    "description": "BMC Helix Remedyforce Get Record"
+  },
+  {
+    "number": 595,
+    "name": "BMCHelixRemedyforceUpdateRecord",
+    "description": "BMC Helix Remedyforce Update Record"
+  },
+  {
+    "number": 596,
+    "name": "TSOMUpdateEvent",
+    "description": "Update an event in TrueSight OM based on defined properties."
+  },
+  {
+    "number": 597,
+    "name": "TSOMGetEvent",
+    "description": "Return a list of TrueSight events that match the specified criteria"
+  },
+  {
+    "number": 598,
+    "name": "TSOMCreateEvent",
+    "description": "Create a new event in TSOM based on defined properties"
+  },
+  {
+    "number": 599,
+    "name": "AzureADUsersSynchronization",
+    "description": "Synchronizes the Azure Active Directory users and groups with the Ayehu NG database"
+  },
+  {
+    "number": 600,
+    "name": "MultiMemorySet",
+    "description": "Allocates a value to one or more Workflow/Global variables"
+  },
+  {
+    "number": 601,
+    "name": "DisplayMultiValue",
+    "description": "Displays constant and/or variable's values (table or simple text) in the audit trail"
+  },
+  {
+    "number": 602,
+    "name": "SplunkGetDynamicAlertEvents",
+    "description": "Retrieve dynamic list of alert events for a specific Splunk SID"
+  },
+  {
+    "number": 603,
+    "name": "LoadFile",
+    "description": "Loads a file and returns its data in Base64 format"
+  },
+  {
+    "number": 604,
+    "name": "SendResolveIM",
+    "description": "Send on Resolve IM to a specified user or group"
+  },
+  {
+    "number": 605,
+    "name": "LoadRemoteFile",
+    "description": "Loads a file and returns its data in Base64 format"
+  },
+  {
+    "number": 786,
+    "name": "DataMapping",
+    "description": "Used to map data from a previous activity to multiple variables"
+  },
+  {
+    "number": 870,
+    "name": "SelfServiceInput",
+    "description": "Allows you to define multiple runtime inputs for a Self Service workflow"
+  },
+  {
+    "number": 1528,
+    "name": "ForEachActivity",
+    "description": "Runs an activity or group of activities for each row in a table"
+  },
+  {
+    "number": 1589,
+    "name": "ContinueActivity",
+    "description": "Immediately proceeds to the next iteration in a loop activity (e.g. ForEach, While)"
+  },
+  {
+    "number": 1590,
+    "name": "BreakActivity",
+    "description": "Exits a loop activity sequence (e.g ForEach, While)"
+  },
+  {
+    "number": 1711,
+    "name": "DownloadEmailAttachment",
+    "description": "Downloads email attachment from current event store to a destination location."
+  },
+  {
+    "number": 1949,
+    "name": "SlackListUsers",
+    "description": "Lists all users"
+  }
+]
