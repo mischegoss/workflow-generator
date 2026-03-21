@@ -1,7 +1,8 @@
+import os
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
-import os
+
 MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
 
 INSTRUCTION = """
@@ -25,7 +26,7 @@ OUTPUT FORMAT:
     {
       "step_id": "s1",
       "description": "one sentence description of what this step does",
-      "intent": "get_date | format_date | query_servicenow | count_rows | branch | loop | get_cell | set_variable | display | send_email | initialize_variable | exit_loop | other",
+      "intent": "get_date | format_date | query_servicenow | count_rows | branch | loop | get_cell | set_variable | display | send_email | initialize_variable | exit_loop | date_difference | create_table | other",
       "control_flow": "linear | ifelse | while | foreach | parallel | usergroup"
     }
   ],
@@ -47,6 +48,13 @@ VARIABLE CONTRACT RULES:
 - This contract is the single source of truth for variable names.
 - All downstream agents use ONLY these names — never invent new ones.
 - ForEach does not exist in the real platform corpus (0 of 625 workflows). Use While for all loops.
+
+LOOP ROW ACCESS RULES — CRITICAL:
+- In the variable contract, when describing loop row access, note that GetCellValue RowNumber
+  references the ExitWhile xName, NOT the WhileActivity xName.
+- Example: if WhileActivity xName will be "loopCerts1" and ExitWhile xName will be "exitWhile1",
+  then GetCellValue RowNumber="%exitWhile1%" — never "%loopCerts1%"
+- This is confirmed across all real platform workflows. Always document this in the variable contract.
 
 Output only the JSON object. No prose.
 """

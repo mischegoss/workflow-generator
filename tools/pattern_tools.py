@@ -2,43 +2,30 @@ import json
 import os
 from typing import Annotated
 
-_pattern_library: list[dict] | None = None
-_activity_ranks: list[dict] | None = None
+_pattern_library: list | None = None
+_activity_ranks: list | None = None
 
 
-def load_pattern_library() -> list[dict]:
-    """
-    Loads pattern_library.json from data/patterns/. Cached after first load.
-    Returns empty list if file does not exist — pipeline falls through to example-guided mode.
-    """
+def load_pattern_library() -> list:
+    """Loads the mined pattern library from data/patterns/pattern_library.json."""
     global _pattern_library
     if _pattern_library is not None:
         return _pattern_library
     data_dir = os.getenv("DATA_DIR", "/app/data")
     path = os.path.join(data_dir, "patterns", "pattern_library.json")
-    if not os.path.exists(path):
-        print("[patterns] pattern_library.json not found — NO_MATCH mode only.")
-        _pattern_library = []
-        return _pattern_library
     with open(path, encoding="utf-8") as f:
         _pattern_library = json.load(f)
     print(f"[patterns] Loaded {len(_pattern_library)} patterns.")
     return _pattern_library
 
 
-def load_activity_ranks() -> list[dict]:
-    """
-    Loads activity_ranks.json — 271 activity pair frequencies from real execution history.
-    Used for co-occurrence validation (e.g. flag if GetRowsCount missing before WhileActivity).
-    """
+def load_activity_ranks() -> list:
+    """Loads activity co-occurrence rank pairs from data/activity_ranks.json."""
     global _activity_ranks
     if _activity_ranks is not None:
         return _activity_ranks
     data_dir = os.getenv("DATA_DIR", "/app/data")
     path = os.path.join(data_dir, "activity_ranks.json")
-    if not os.path.exists(path):
-        _activity_ranks = []
-        return _activity_ranks
     with open(path, encoding="utf-8") as f:
         _activity_ranks = json.load(f)
     print(f"[patterns] Loaded {len(_activity_ranks)} activity rank pairs.")
@@ -47,62 +34,78 @@ def load_activity_ranks() -> list[dict]:
 
 def match_pattern(
     decomposition: Annotated[dict, "Decomposition output from DecomposerAgent"],
-) -> list[dict]:
+) -> list:
     """
-    Finds candidate patterns from the library matching the decomposition.
-    Scores on: control_flow type match (0.6 weight) + trigger keyword hits (0.4 weight).
-    Returns top 5 candidates sorted by score descending.
+    Matches decomposition steps against the pattern library using keyword overlap.
+    Returns top candidate patterns sorted by score descending.
     """
-    library = load_pattern_library()
-    if not library:
-        return []
-
-    loop_type = (
-        decomposition.get("variable_contract", {})
-        .get("loop_type", "none")
-        .lower()
-    )
+    patterns = load_pattern_library()
     steps = decomposition.get("steps", [])
-    step_text = " ".join(
-        s.get("description", "") for s in steps
-    ).lower()
+    step_text = " ".join(s.get("description", "") for s in steps).lower()
 
-    # Map decomposition loop_type to pattern control_flow labels
-    cf_map = {
-        "while": "While",
-        "foreach": "While",   # ForEach not in corpus — map to While
-        "none": "Linear",
-        "ifelse": "IfElse",
-        "usergroup": "UserGroup",
-    }
-    target_cf = cf_map.get(loop_type, "Linear")
-
-    scored = []
-    for pattern in library:
-        pattern_cf = pattern.get("control_flow", "Linear")
-        cf_score = 1.0 if pattern_cf == target_cf else 0.0
-
+    candidates = []
+    for pattern in patterns:
         keywords = pattern.get("trigger_keywords", [])
-        kw_hits = sum(1 for kw in keywords if kw.lower() in step_text)
-        kw_score = min(kw_hits / max(len(keywords), 1), 1.0)
+        if not keywords:
+            continue
+        hits = sum(1 for kw in keywords if kw.lower() in step_text)
+        if hits > 0:
+            score = hits / max(len(keywords), 1)
+            candidates.append({**pattern, "_score": round(score, 3)})
 
-        raw_score = (cf_score * 0.6) + (kw_score * 0.4)
-        if raw_score > 0:
-            scored.append({**pattern, "_score": round(raw_score, 3)})
+    return sorted(candidates, key=lambda x: x["_score"], reverse=True)
 
-    return sorted(scored, key=lambda x: x["_score"], reverse=True)[:5]
+
+def _detect_fallback_cf(decomposition: dict) -> str:
+    """
+    Detects the best fallback control flow type from decomposition.
+    Used when no pattern matches above the threshold.
+    """
+    if not decomposition:
+        return "Linear"
+
+    steps = decomposition.get("steps", [])
+    loop_type = decomposition.get("variable_contract", {}).get("loop_type", "none")
+    if isinstance(loop_type, str):
+        loop_type = loop_type.lower()
+
+    has_loop = loop_type in ("while", "foreach") or any(
+        s.get("control_flow") in ("while", "foreach") or s.get("intent") == "loop"
+        for s in steps
+    )
+    has_branch = any(
+        s.get("control_flow") == "ifelse" or s.get("intent") == "branch"
+        for s in steps
+    )
+    has_usergroup = any(s.get("control_flow") == "usergroup" for s in steps)
+
+    if has_loop and has_branch:
+        return "while_ifelse"
+    elif has_loop:
+        return "While"
+    elif has_branch:
+        return "IfElse"
+    elif has_usergroup:
+        return "UserGroup"
+    else:
+        return "Linear"
 
 
 def score_pattern_match(
     candidates: Annotated[list, "Top candidates from match_pattern"],
-    threshold: Annotated[float, "Match threshold (default from env)"] = None,
+    decomposition: Annotated[dict, "Decomposition from DecomposerAgent"] = None,
+    threshold: Annotated[float, "Match threshold, defaults to env var"] = None,
 ) -> dict:
     """
-    Applies threshold gate to top candidate.
-    Returns MATCHED with scaffold, or NO_MATCH with fallback example IDs.
+    Applies threshold gate to pattern candidates.
+    Returns MATCHED with scaffold or NO_MATCH with fallback control flow type.
+    Fallback detects whether the workflow needs While+IfElse, While, IfElse,
+    UserGroup, or Linear examples based on decomposition steps.
     """
     if threshold is None:
         threshold = float(os.getenv("PATTERN_MATCH_THRESHOLD", "0.80"))
+
+    fallback_cf = _detect_fallback_cf(decomposition)
 
     if not candidates:
         return {
@@ -111,7 +114,7 @@ def score_pattern_match(
             "pattern_name": None,
             "score": 0.0,
             "scaffold": None,
-            "fallback_examples": [],
+            "fallback_examples": [fallback_cf],
         }
 
     top = candidates[0]
@@ -127,106 +130,86 @@ def score_pattern_match(
             "fallback_examples": [],
         }
 
-    # No match — return closest control_flow type for example selection
-    cf = top.get("control_flow", "Linear")
     return {
         "match_status": "NO_MATCH",
         "pattern_id": None,
         "pattern_name": None,
-        "score": score,
+        "score": round(score, 3),
         "scaffold": None,
-        "fallback_examples": [cf],   # used by StructureBuilder to pick examples
+        "fallback_examples": [fallback_cf],
     }
 
 
 def get_examples_for_control_flow(
-    control_flow: Annotated[str, "Control flow type: Linear | IfElse | While | While+IfElse | UserGroup"],
-    max_examples: Annotated[int, "Max examples to return"] = 2,
-) -> list[dict]:
+    control_flow_type: Annotated[str, "Control flow type: Linear, IfElse, While, while_ifelse, UserGroup"],
+    max_examples: Annotated[int, "Maximum number of examples to return"] = 2,
+) -> list:
     """
-    Loads up to max_examples example workflows for the given control flow type.
-    Used by StructureBuilder in example-guided mode.
-    Returns list of workflow_raw_data dicts.
+    Retrieves example workflows for the given control flow type from data/examples/.
+    Supports: Linear, IfElse, While, while_ifelse, UserGroup.
+    Returns list of workflow dicts with source_file and workflow_raw_data.
     """
     data_dir = os.getenv("DATA_DIR", "/app/data")
-    index_path = os.path.join(data_dir, "examples", "examples_index.json")
+    examples_dir = os.path.join(data_dir, "examples")
 
-    if not os.path.exists(index_path):
-        return []
-
-    with open(index_path, encoding="utf-8") as f:
-        index = json.load(f)
-
-    # Normalize control_flow label for matching
-    cf_norm = control_flow.lower().replace("+", "_").replace(" ", "_")
-    cf_map = {
+    type_map = {
+        "linear": "linear",
+        "ifelse": "ifelse",
+        "while": "while",
         "while_ifelse": "while_ifelse",
         "while+ifelse": "while_ifelse",
-        "while": "while",
-        "ifelse": "ifelse",
-        "linear": "linear",
         "usergroup": "usergroup",
     }
-    target = cf_map.get(cf_norm, "linear")
+    normalized = type_map.get(control_flow_type.lower(), "linear")
 
-    matches = [e for e in index if e.get("control_flow", "").lower() == target]
     examples = []
-    for entry in matches[:max_examples]:
-        ex_path = os.path.join(data_dir, "examples", entry["file"])
-        if os.path.exists(ex_path):
-            with open(ex_path, encoding="utf-8") as f:
-                ex = json.load(f)
-            examples.append({
-                "source_file": entry["source_file"],
-                "control_flow": entry["control_flow"],
-                "activity_types_present": entry["activity_types_present"],
-                "workflow_raw_data": ex.get("workflow_raw_data", {}),
-            })
+    for i in range(1, 6):
+        path = os.path.join(examples_dir, f"example_{normalized}_{i}.json")
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                examples.append(json.load(f))
+        if len(examples) >= max_examples:
+            break
+
     return examples
 
 
 def check_cooccurrence(
-    activity_sequence: Annotated[list, "Ordered list of activity type names in the workflow"],
-) -> list[dict]:
+    activity_list: Annotated[list, "List of activity CustomTypeNames to check"],
+) -> list:
     """
-    Checks the sequence against known high-frequency pairs from activity_ranks.json.
-    Flags missing expected follow-on activities as warnings (not errors).
-    E.g. flags if WhileActivity appears but GetRowsCount does not precede it.
+    Checks activity co-occurrence against the mined rank pairs.
+    Returns warnings for missing strongly associated activities.
     """
     ranks = load_activity_ranks()
-    if not ranks:
-        return []
-
-    # Build a set of high-confidence pairs (rank > 50)
-    strong_pairs = {
-        (r["activity"], r["next"]): r["rank"]
-        for r in ranks if r.get("rank", 0) > 50
-    }
-
     warnings = []
-    seq_set = set(activity_sequence)
 
-    # Key structural rules derived from corpus
-    if "WhileActivity" in seq_set and "GetRowsCount" not in seq_set:
+    has_while = "WhileActivity" in activity_list
+    has_count = "GetRowsCount" in activity_list
+
+    if has_while and not has_count:
         warnings.append({
             "type": "missing_cooccurrence",
-            "message": "WhileActivity present but GetRowsCount not found. "
-                       "GetRowsCount → WhileActivity appears 147x in corpus — "
-                       "verify loop bound source.",
-            "severity": "warning",
+            "message": (
+                "WhileActivity present but GetRowsCount not found. "
+                "GetRowsCount must precede WhileActivity — confirmed in 80 of 97 loop sequences."
+            ),
         })
 
-    if "ForEachActivity" in seq_set:
-        warnings.append({
-            "type": "corpus_mismatch",
-            "message": "ForEachActivity used but appears in 0 of 625 real workflows. "
-                       "Consider WhileActivity instead.",
-            "severity": "warning",
-        })
-
-    if "SendEmail" in seq_set and "ConvertToHTMLTable" not in seq_set:
-        # ConvertToHTMLTable → SendEmail is 214x in corpus
-        # Not a hard rule but worth noting for table-based content
-        pass  # Only flag if table data is in the workflow — skip for now
+    activity_set = set(activity_list)
+    for pair in ranks[:50]:
+        a1 = pair.get("activity1", "")
+        a2 = pair.get("activity2", "")
+        freq = pair.get("frequency", 0)
+        if freq < 10:
+            break
+        if a1 in activity_set and a2 not in activity_set:
+            warnings.append({
+                "type": "missing_cooccurrence",
+                "message": (
+                    f"'{a1}' is present but strongly associated '{a2}' "
+                    f"is missing (co-occurrence frequency: {freq})."
+                ),
+            })
 
     return warnings

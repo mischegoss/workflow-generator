@@ -1,6 +1,5 @@
+import datetime
 import xml.etree.ElementTree as ET
-import random
-import time
 
 
 class WorkflowXmlComposer:
@@ -31,18 +30,20 @@ class WorkflowXmlComposer:
     }
 
     SKIP_FIELDS = {
-    "CustomTypeName",   # used for routing, not an XML attribute
-    "modulePermissions", # null, not in real XOML
-    "notes",            # pipeline-internal only
-}
+        "CustomTypeName",
+        "modulePermissions",
+        "notes",
+    }
 
     SEQUENCE_CONTAINERS = {"WhileActivity", "ForEachActivity"}
 
     def compose(self, workflow_json: dict, workflow_name: str, pnumber: str) -> str:
         raw_data = workflow_json.get("workflow_raw_data", {})
         xoml = self._build_xoml(raw_data, workflow_name)
+        now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000")
 
         total_export = ET.Element("TotalExport", attrib={"sourceSystem": "NG"})
+
         workflows_elem = ET.SubElement(total_export, "Workflows")
         ET.SubElement(workflows_elem, "WorkflowInfo", attrib={
             "Pnumber":               pnumber,
@@ -58,12 +59,31 @@ class WorkflowXmlComposer:
             "Permissions":           "",
             "ErrorHandling":         "",
             "CurrentRevisionNumber": "1",
+            "DateCreated":           now,
+            "DateCreatedUser":       "1",
+            "DateModified":          now,
+            "DateModifiedUser":      "1",
         })
 
+        # Objects block — required by platform for valid import
+        objects_elem = ET.SubElement(total_export, "Objects")
+        for tag in [
+            "Hosts", "ErrorHandlers", "ErrorMessages", "MessageTemplates",
+            "Sites", "Developments", "Users", "Groups", "UsersGroupsArray",
+            "Domains", "Commands", "Classifications", "Incidents", "TimeFrames",
+            "Variables", "Modules", "Conditions", "ConditionArrays",
+            "ConditionObjects", "SoapWebServices", "Triggers",
+            "TriggerConditionArrays", "LogCategory", "LogTriggerCategory",
+            "Schedules", "CustomActivities", "ActivitiesSource",
+            "ScheduleCategoriesRelations",
+        ]:
+            ET.SubElement(objects_elem, tag)
+
+        ET.SubElement(total_export, "ObjectsRelations")
+        ET.SubElement(total_export, "ExportKeys")
+
         ET.indent(total_export, space="  ")
-        return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(
-            total_export, encoding="unicode", xml_declaration=False
-        )
+        return ET.tostring(total_export, encoding="unicode", xml_declaration=False)
 
     def _build_xoml(self, raw_data: dict, workflow_name: str) -> str:
         used_namespaces = self._collect_namespaces(raw_data)

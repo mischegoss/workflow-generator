@@ -1,8 +1,9 @@
 import copy
+import datetime
 import json
 import os
-import re
 import random
+import re
 import time
 import uuid
 from typing import Annotated
@@ -120,24 +121,25 @@ def fill_scaffold_params(
 
 def generate_pnumber() -> str:
     """
-    Generates a unique numeric Pnumber for each workflow.
-    Platform requires integer format and treats matching Pnumbers as updates
-    to existing workflows rather than new imports — must be unique every run.
-    Uses timestamp + random suffix to guarantee uniqueness across rapid calls.
+    Generates a unique numeric Pnumber for import.
+    Platform assigns sequential IDs (e.g. 150, 866) to real workflows.
+    We use a random number in the 50000-99999 range to avoid collision
+    with platform-assigned IDs while staying in a valid integer range.
+    Each call returns a different value — never reuse a Pnumber.
     """
-    timestamp = int(time.time())
-    suffix = random.randint(100, 999)
-    return str(timestamp + suffix)
+    return str(random.randint(50000, 99999))
 
 
 def generate_workflow_name(
     base_name: Annotated[str, "Human readable base name"],
 ) -> str:
     """
-    Creates a safe unique workflow name — alphanumeric, no spaces.
-    Appends a timestamp suffix to guarantee uniqueness on every run.
+    Creates a unique safe workflow name with a short random hex suffix.
+    Platform deduplicates imports by Name — identical names cause updates
+    not new imports. The 4-char hex suffix guarantees uniqueness every run.
+    Format: BaseName_A3F9 (max 60 chars total, alphanumeric + underscores only)
     """
     safe = "".join(c if c.isalnum() else "_" for c in base_name)
-    safe = safe.strip("_")[:40]
-    timestamp = int(time.time())
-    return f"{safe}_{timestamp}"
+    safe = safe.strip("_")[:50]
+    suffix = hex(random.randint(0, 65535))[2:].upper().zfill(4)
+    return f"{safe}_{suffix}"

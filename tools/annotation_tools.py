@@ -1,4 +1,5 @@
 import copy
+import json as _json
 from typing import Annotated
 
 PLATFORM_GLOBAL_VARIABLES = {
@@ -27,12 +28,29 @@ MANUAL_CONFIG_ACTIVITIES = {
     ),
 }
 
-# Activities whose CLR namespaces are not yet confirmed from platform exports
 UNCONFIRMED_NAMESPACE_ACTIVITIES = {
     "GetDate", "FormatDate", "CreateMemoryTable", "PowerShellScript",
     "TSQLStatement", "TSQLQuery", "ReadCSV", "ReadXLS", "WriteXLS",
     "PowerShell", "HTTPRequest", "RunWorkflow",
 }
+
+
+def _ensure_dict(value) -> dict:
+    """
+    Safely converts string JSON to dict.
+    Agents sometimes pass session state as JSON strings instead of dicts
+    when output_key values are serialized between pipeline stages.
+    """
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            result = _json.loads(value)
+            if isinstance(result, dict):
+                return result
+        except Exception:
+            pass
+    return {}
 
 
 def inject_unavailable_stubs(
@@ -42,6 +60,9 @@ def inject_unavailable_stubs(
     """
     Replaces UNAVAILABLE steps with DisplayValue placeholder activities.
     """
+    workflow_json = _ensure_dict(workflow_json)
+    activity_manifest = _ensure_dict(activity_manifest)
+
     result = copy.deepcopy(workflow_json)
     raw = result.get("workflow_raw_data", {})
     manifest_steps = activity_manifest.get("steps", [])
@@ -94,6 +115,7 @@ def annotate_placeholders(
     Replaces SMTP and module-level credential fields with PLACEHOLDER_ strings.
     Leaves platform global variable references (%varName%) intact.
     """
+    workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
 
     def _is_global_variable_ref(value: str) -> bool:
@@ -124,19 +146,18 @@ def add_verify_notes(
     Adds VERIFY notes to activities requiring post-import manual configuration.
     Also flags activities with unconfirmed CLR namespaces.
     """
+    workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
 
     def process_node(node: dict) -> dict:
         custom_type = node.get("CustomTypeName", "")
 
-        # Manual config activities
         if custom_type in MANUAL_CONFIG_ACTIVITIES:
             existing = node.get("notes", "")
             verify_msg = MANUAL_CONFIG_ACTIVITIES[custom_type]
             if verify_msg not in existing:
                 node["notes"] = (existing + "  " + verify_msg).strip()
 
-        # Unconfirmed namespace
         if custom_type in UNCONFIRMED_NAMESPACE_ACTIVITIES:
             existing = node.get("notes", "")
             ns_msg = (
@@ -147,11 +168,9 @@ def add_verify_notes(
             if "CLR namespace" not in existing:
                 node["notes"] = (existing + "  " + ns_msg).strip()
 
-        # DateLic must always be empty
         if "DateLic" in node:
             node["DateLic"] = ""
 
-        # Recurse
         for key, value in node.items():
             if isinstance(value, dict):
                 node[key] = process_node(value)
@@ -170,6 +189,7 @@ def collect_placeholder_summary(
     Walks the workflow JSON and collects all PLACEHOLDER_ values and VERIFY notes.
     Returns a list of items for the chat response to the user.
     """
+    workflow_json = _ensure_dict(workflow_json)
     items = []
 
     def walk(node: dict, path: str = ""):

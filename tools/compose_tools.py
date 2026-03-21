@@ -1,7 +1,40 @@
+import json as _json
 import os
 from typing import Annotated
 from serializer.xml_composer import WorkflowXmlComposer
 from tools.build_tools import generate_pnumber, generate_workflow_name
+
+
+def _ensure_dict(value) -> dict:
+    """
+    Safely converts string JSON to dict.
+    Agents sometimes pass session state as JSON strings instead of dicts
+    when output_key values are serialized between pipeline stages.
+    """
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            result = _json.loads(value)
+            if isinstance(result, dict):
+                return result
+        except Exception:
+            pass
+    return {}
+
+
+def _ensure_list(value) -> list:
+    """Safely converts string JSON to list."""
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            result = _json.loads(value)
+            if isinstance(result, list):
+                return result
+        except Exception:
+            pass
+    return []
 
 
 def serialize_to_xml(
@@ -10,6 +43,7 @@ def serialize_to_xml(
     pnumber: Annotated[str, "Unique Pnumber for this workflow"],
 ) -> str:
     """Converts workflow JSON to a TotalExport XML string importable by Resolve Actions."""
+    workflow_json = _ensure_dict(workflow_json)
     composer = WorkflowXmlComposer()
     return composer.compose(
         workflow_json=workflow_json,
@@ -41,6 +75,10 @@ def format_chat_response(
     Builds the structured chat response returned to the user.
     Includes status, output file path, and all items needing review.
     """
+    validation_result = _ensure_dict(validation_result)
+    composer_result = _ensure_dict(composer_result)
+    placeholder_summary = _ensure_list(placeholder_summary)
+
     if validation_result.get("status") == "invalid":
         errors = validation_result.get("errors", [])
         return (
@@ -52,8 +90,8 @@ def format_chat_response(
     output_file = composer_result.get("output_file", "unknown")
     workflow_name = composer_result.get("workflow_name", "unknown")
 
-    placeholders = [i for i in placeholder_summary if i["kind"] == "placeholder"]
-    verify_notes = [i for i in placeholder_summary if i["kind"] == "verify"]
+    placeholders = [i for i in placeholder_summary if i.get("kind") == "placeholder"]
+    verify_notes = [i for i in placeholder_summary if i.get("kind") == "verify"]
 
     if not placeholders and not verify_notes:
         status = "complete"
@@ -95,6 +133,5 @@ def format_chat_response(
     lines.append(
         "\nTo import: open Resolve Actions → Workflows → Import → select the XML file above."
     )
-
 
     return "\n".join(lines)
