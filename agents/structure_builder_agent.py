@@ -53,8 +53,7 @@ def _load_example(control_flow_type: str, index: int) -> str:
 
 # Load examples at module import time so they are baked into the instruction.
 # while_ifelse_4: CreateMemoryTable → GetRowsCount → WhileActivity → GetCellValue →
-#                 VMPowerState → IfElseActivity → (action branch + Continue default)
-# This is the closest structural match to the cert workflow pattern.
+#                 VMPowerState → IfElseActivity → (action branch + empty default)
 _EXAMPLE_WHILE_IFELSE = _load_example("while_ifelse", 4)
 
 # while_5: CreateMemoryTable → GetRowsCount → WhileActivity → GetCellValue →
@@ -92,42 +91,8 @@ MODE 2 — EXAMPLE-GUIDED (pattern_match.match_status == "NO_MATCH")
 5. Return the assembled workflow JSON.
 
 ═══════════════════════════════════════════════
-CONFIRMED WORKING EXAMPLE A — While + IfElse pattern
-(source: 130_Create power off VMs List.xml — confirmed importable)
-Use this as your structural template for any workflow with a loop + branch:
-═══════════════════════════════════════════════
-{_EXAMPLE_WHILE_IFELSE}
-
-Key things to observe in Example A:
-- GetRowsCount xName="getRowsCount1", ExitWhile Counter="%getRowsCount1%"
-- GetCellValue RowNumber="%exitWhile1%"  ← ExitWhile xName, NOT WhileActivity xName
-- IfElseActivity is INSIDE SequenceActivity which is INSIDE WhileActivity
-- Default branch has ReturnValue Type="StoredValue" + Continue activity
-- SequenceActivity has full attributes: name, IsValid, Description, description
-
-═══════════════════════════════════════════════
-CONFIRMED WORKING EXAMPLE B — While loop with SendEmail after loop
-(source: 133_Create VM Capacity Report.xml — confirmed importable)
-Use this when the workflow sends an email as a final action after processing:
-═══════════════════════════════════════════════
-{_EXAMPLE_WHILE_WITH_EMAIL}
-
-Key things to observe in Example B:
-- SendEmail comes AFTER the WhileActivity closes, not inside the loop
-- ConvertToHTMLTable feeds into SendEmail Body
-- GetDate for timestamps appears after the loop
-
-═══════════════════════════════════════════════
-COMPLETENESS CHECK — verify before returning:
-- Every step in decomposition.steps has a corresponding activity in workflow_raw_data.
-- If the prompt mentions sending an email → SendEmail MUST be present.
-- If the prompt mentions a condition, branch, or check → IfElseActivity MUST be present.
-- If the prompt mentions calculating days or date difference → DateDifference MUST be present.
-- If any step is missing, add it before returning.
-- The workflow must implement the FULL prompt — never return a partial workflow.
-
-═══════════════════════════════════════════════
 PLATFORM RULES — enforce exactly:
+═══════════════════════════════════════════════
 
 LOOP STRUCTURE:
 - Always use WhileActivity for loops. ForEachActivity does not exist in this corpus.
@@ -153,17 +118,38 @@ XNAME RULES:
 
 IFELSE STRUCTURE:
 - IfElseActivity contains IfElseBranchActivity children.
-- Each IfElseBranchActivity: ReturnValue first, then branch activities.
+- Each IfElseBranchActivity: ReturnValue first, then branch activities (if any).
 - Valid ConditionType values: "", "Equals", "Contains", "Not Contains",
   "Not Equals", "Formula", ">", "<", ">=", "<="
 - Default branch: Type="StoredValue", ConditionType="", Formula=null,
   Value="", IsValid="False", UseBranchWhenTimeout="True"
-- Use Continue activity when a branch should skip to next loop iteration (see Example A).
+
+EMPTY BRANCH RULE — CRITICAL:
+- If a branch performs NO action (e.g. the else/default branch just skips),
+  it should contain ONLY the ReturnValue condition header and NO other activities.
+- Do NOT add Continue, DisplayValue, or any filler activity to an empty branch.
+- WRONG:  IfElseBranchActivity → ReturnValue + Continue
+- CORRECT: IfElseBranchActivity → ReturnValue   (nothing else)
+
+WORKFLOW TERMINATION:
+- Workflows end automatically when the last activity completes.
+- Do NOT add any end, terminate, or exit activity at the end of the workflow.
+- The platform does not require an explicit termination activity.
+
+FORMULA FIELD:
+- Do NOT set the Formula field on ReturnValue. It is computed deterministically
+  by the serializer from ConditionType and Value. Leave Formula out of your output
+  entirely — the serializer will generate: =ConditionType(&&&,Value).
 
 VARIABLE REFERENCES:
 - Use ONLY variable names from decomposition.variable_contract.variables.
 - Variable references use %variableName% syntax.
 - Never invent variable names not in the contract.
+
+FREQUENCY HINT:
+- activity_manifest steps may include a frequency_tier field (high/medium/low).
+- Prefer high-frequency activities when multiple options are available for a step.
+- High-frequency activities are the platform's standard tool for that job.
 
 CERT WORKFLOW PATTERN — for date-check + email workflows:
 CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
@@ -176,9 +162,19 @@ CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
       IfElseBranchActivity (condition days <= 5) →
         ReturnValue (ConditionType="<=", Type="UserDefinedValue")
         SendEmail
-      IfElseBranchActivity (default) →
+      IfElseBranchActivity (default — no action) →
         ReturnValue (Type="StoredValue", UseBranchWhenTimeout="True")
-        Continue
+        [no other activities — leave empty]
+
+═══════════════════════════════════════════════
+EXAMPLE A — while_ifelse structure (trimmed):
+═══════════════════════════════════════════════
+{_EXAMPLE_WHILE_IFELSE}
+
+═══════════════════════════════════════════════
+EXAMPLE B — while with post-loop email (trimmed):
+═══════════════════════════════════════════════
+{_EXAMPLE_WHILE_WITH_EMAIL}
 
 OUTPUT:
 {{

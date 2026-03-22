@@ -37,6 +37,29 @@ def _ensure_list(value) -> list:
     return []
 
 
+def _ensure_list_of_dicts(value) -> list:
+    """
+    Safely converts a list (or JSON string of a list) where individual items
+    may themselves be JSON strings rather than dicts.
+
+    ADK sometimes serializes list items to JSON strings when passing session
+    state between pipeline stages — this unwraps them.
+    """
+    items = _ensure_list(value)
+    result = []
+    for item in items:
+        if isinstance(item, dict):
+            result.append(item)
+        elif isinstance(item, str):
+            try:
+                parsed = _json.loads(item)
+                if isinstance(parsed, dict):
+                    result.append(parsed)
+            except Exception:
+                pass  # drop unparseable items silently
+    return result
+
+
 def serialize_to_xml(
     workflow_json: Annotated[dict, "Validated workflow JSON from session state"],
     workflow_name: Annotated[str, "Human-readable workflow name"],
@@ -77,7 +100,10 @@ def format_chat_response(
     """
     validation_result = _ensure_dict(validation_result)
     composer_result = _ensure_dict(composer_result)
-    placeholder_summary = _ensure_list(placeholder_summary)
+
+    # ADK sometimes serializes list items individually to JSON strings.
+    # _ensure_list_of_dicts handles both the outer container and inner items.
+    placeholder_summary = _ensure_list_of_dicts(placeholder_summary)
 
     if validation_result.get("status") == "invalid":
         errors = validation_result.get("errors", [])

@@ -180,6 +180,8 @@ def check_cooccurrence(
     """
     Checks activity co-occurrence against the mined rank pairs.
     Returns warnings for missing strongly associated activities.
+
+    Fields in activity_ranks.json: activity, next, rank
     """
     ranks = load_activity_ranks()
     warnings = []
@@ -198,9 +200,9 @@ def check_cooccurrence(
 
     activity_set = set(activity_list)
     for pair in ranks[:50]:
-        a1 = pair.get("activity1", "")
-        a2 = pair.get("activity2", "")
-        freq = pair.get("frequency", 0)
+        a1 = pair.get("activity", "")   # fixed: was "activity1"
+        a2 = pair.get("next", "")       # fixed: was "activity2"
+        freq = pair.get("rank", 0)      # fixed: was "frequency"
         if freq < 10:
             break
         if a1 in activity_set and a2 not in activity_set:
@@ -208,7 +210,7 @@ def check_cooccurrence(
                 "type": "missing_cooccurrence",
                 "message": (
                     f"'{a1}' is present but strongly associated '{a2}' "
-                    f"is missing (co-occurrence frequency: {freq})."
+                    f"is missing (co-occurrence rank: {freq})."
                 ),
             })
 

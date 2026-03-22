@@ -1,35 +1,36 @@
 import datetime
 import json
 import os
+import re
 import xml.etree.ElementTree as ET
 
 
 class WorkflowXmlComposer:
 
     NAMESPACE_REGISTRY = {
-    "IfElseActivity":       (None, None, None),
-    "IfElseBranchActivity": (None, None, None),
-    "SequenceActivity":     (None, None, None),
-    "ParallelActivity":     (None, None, None),
-    "ReturnValue":          (None, None, None),  # ← was ns_retval
-    "Continue":             (None, None, None),  # ← was ns_continue
-    "SendEmail":            (None, None, None),  # ← was ns_sendemail
-    "ServiceStatus":  ("ns_svcstatus", "ServiceStatus", "ServiceStatus, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null"),
-    "ServiceStart":   ("ns_svcstart",  "ServiceStart",  "ServiceStart, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null"),
-    "WhileActivity":     (None, None, None),
-    "ExitWhile":         (None, None, None),
-    "ForEachActivity":   (None, None, None),
-    "UserGroup":         (None, None, None),
-    "MemorySet":         (None, None, None),
-    "DisplayValue":      (None, None, None),
-    "GetRowsCount":      (None, None, None),
-    "GetCellValue":      (None, None, None),
-    "RunWorkflow":       (None, None, None),
-    "Ping":              (None, None, None),
-    "MultiMemorySet":    (None, None, None),
-    "DisplayMultiValue": (None, None, None),
-    "GetRows":           (None, None, None),
-}
+        "IfElseActivity":       (None, None, None),
+        "IfElseBranchActivity": (None, None, None),
+        "SequenceActivity":     (None, None, None),
+        "ParallelActivity":     (None, None, None),
+        "ReturnValue":          (None, None, None),
+        "Continue":             (None, None, None),
+        "SendEmail":            (None, None, None),
+        "ServiceStatus":  ("ns_svcstatus", "ServiceStatus", "ServiceStatus, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null"),
+        "ServiceStart":   ("ns_svcstart",  "ServiceStart",  "ServiceStart, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null"),
+        "WhileActivity":     (None, None, None),
+        "ExitWhile":         (None, None, None),
+        "ForEachActivity":   (None, None, None),
+        "UserGroup":         (None, None, None),
+        "MemorySet":         (None, None, None),
+        "DisplayValue":      (None, None, None),
+        "GetRowsCount":      (None, None, None),
+        "GetCellValue":      (None, None, None),
+        "RunWorkflow":       (None, None, None),
+        "Ping":              (None, None, None),
+        "MultiMemorySet":    (None, None, None),
+        "DisplayMultiValue": (None, None, None),
+        "GetRows":           (None, None, None),
+    }
 
     SKIP_FIELDS = {
         "CustomTypeName",
@@ -39,15 +40,15 @@ class WorkflowXmlComposer:
 
     # Control flow containers — do NOT get standard activity defaults
     NO_DEFAULTS = {
-    "IfElseActivity", "IfElseBranchActivity", "SequenceActivity",
-    "ParallelActivity", "WhileActivity", "ForEachActivity",
-    "UserGroup", "ExitWhile", "ReturnValue",
-}
+        "IfElseActivity", "IfElseBranchActivity", "SequenceActivity",
+        "ParallelActivity", "WhileActivity", "ForEachActivity",
+        "UserGroup", "ExitWhile", "ReturnValue",
+    }
 
     SEQUENCE_CONTAINERS = {"WhileActivity", "ForEachActivity"}
 
-
-    # Standard attributes present on every real leaf activity
+    # Standard attributes present on every real leaf activity.
+    # These are set deterministically — never accepted from LLM output.
     ACTIVITY_DEFAULTS = {
         "visible":                 "True",
         "disabled":                "False",
@@ -68,6 +69,36 @@ class WorkflowXmlComposer:
 
     _id_lookup: dict | None = None
 
+    # ------------------------------------------------------------------ #
+    #  Formula builder — deterministic, never LLM-generated              #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _build_formula(condition_type: str, value: str) -> str | None:
+        """
+        Builds the ReturnValue Formula string deterministically.
+
+        Rules confirmed from real workflow exports:
+          - Empty ConditionType (default/else branch) → null  ({x:Null})
+          - Non-empty ConditionType → =ConditionType(&&&,Value)
+            - &&&  is the unquoted variable placeholder
+            - Value is unquoted
+            - No quotes around either operand
+
+        Examples:
+          ConditionType=""         → None   (serializer writes {x:Null})
+          ConditionType="Equals"   → "=Equals(&&&,Success)"
+          ConditionType="<="       → "=<=(&&&,5)"
+          ConditionType="Contains" → "=Contains(&&&,ERROR)"
+        """
+        if not condition_type:
+            return None
+        return f"={condition_type}(&&&,{value})"
+
+    # ------------------------------------------------------------------ #
+    #  Template id lookup                                                 #
+    # ------------------------------------------------------------------ #
+
     def _load_id_lookup(self) -> dict:
         """Load activity id values from activity_json_syntax.json."""
         if self.__class__._id_lookup is not None:
@@ -86,6 +117,10 @@ class WorkflowXmlComposer:
         except Exception:
             self.__class__._id_lookup = {}
         return self.__class__._id_lookup
+
+    # ------------------------------------------------------------------ #
+    #  Public entry point                                                 #
+    # ------------------------------------------------------------------ #
 
     def compose(self, workflow_json: dict, workflow_name: str, pnumber: str) -> str:
         raw_data = workflow_json.get("workflow_raw_data", {})
@@ -134,6 +169,10 @@ class WorkflowXmlComposer:
         ET.indent(total_export, space="  ")
         return ET.tostring(total_export, encoding="unicode", xml_declaration=False)
 
+    # ------------------------------------------------------------------ #
+    #  XOML builder                                                       #
+    # ------------------------------------------------------------------ #
+
     def _build_xoml(self, raw_data: dict, workflow_name: str) -> str:
         used_namespaces = self._collect_namespaces(raw_data)
 
@@ -170,6 +209,10 @@ class WorkflowXmlComposer:
                 self._collect_namespaces(value, seen)
         return seen
 
+    # ------------------------------------------------------------------ #
+    #  Activity serializer                                                #
+    # ------------------------------------------------------------------ #
+
     def _serialize_activity(self, activity: dict) -> ET.Element | None:
         custom_type = activity.get("CustomTypeName", "")
         if not custom_type:
@@ -196,7 +239,9 @@ class WorkflowXmlComposer:
             else:
                 attribs[key] = str(value)
 
-        # Inject standard platform attributes for leaf activities
+        # ------------------------------------------------------------------ #
+        #  Inject standard platform attributes for leaf activities            #
+        # ------------------------------------------------------------------ #
         if custom_type not in self.NO_DEFAULTS:
             for k, v in self.ACTIVITY_DEFAULTS.items():
                 if k not in attribs:
@@ -204,15 +249,44 @@ class WorkflowXmlComposer:
             # id from template lookup
             if "id" not in attribs and custom_type in id_lookup:
                 attribs["id"] = id_lookup[custom_type]
-            # name = CustomTypeName
-            if "name" not in attribs:
-                attribs["name"] = custom_type
-            # DisplayName and label default to CustomTypeName
-            if "DisplayName" not in attribs:
-                attribs["DisplayName"] = custom_type
-            if "label" not in attribs:
-                attribs["label"] = custom_type
 
+            # ------------------------------------------------------------------ #
+            #  Self-referential fields — always derived from CustomTypeName       #
+            #  Never accepted from LLM; set here unconditionally.                 #
+            # ------------------------------------------------------------------ #
+            attribs["name"] = custom_type
+            attribs["TypeName"] = custom_type
+            attribs["DisplayName"] = custom_type
+            attribs["label"] = custom_type
+
+            # description (lowercase) always mirrors Description (uppercase)
+            if "Description" in attribs and "description" not in attribs:
+                attribs["description"] = attribs["Description"]
+            elif "description" not in attribs:
+                attribs["description"] = ""
+
+        # ------------------------------------------------------------------ #
+        #  GetCellValue — ColumnType is always "Name" in real workflows        #
+        # ------------------------------------------------------------------ #
+        if custom_type == "GetCellValue":
+            attribs["ColumnType"] = "Name"
+
+        # ------------------------------------------------------------------ #
+        #  ReturnValue — Formula is computed deterministically                 #
+        #  Never trust the LLM-generated Formula string.                       #
+        # ------------------------------------------------------------------ #
+        if custom_type == "ReturnValue":
+            condition_type = attribs.get("ConditionType", "")
+            value = attribs.get("Value", "")
+            formula = self._build_formula(condition_type, value)
+            if formula is None:
+                attribs["Formula"] = "{x:Null}"
+            else:
+                attribs["Formula"] = formula
+
+        # ------------------------------------------------------------------ #
+        #  Assemble element                                                    #
+        # ------------------------------------------------------------------ #
         elem = ET.Element(tag, attrib=attribs)
 
         if custom_type in self.SEQUENCE_CONTAINERS:
@@ -244,3 +318,4 @@ class WorkflowXmlComposer:
         if prefix is None:
             return custom_type
         return f"{prefix}:{custom_type}"
+    

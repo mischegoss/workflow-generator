@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Annotated
 
 _controls_index: dict | None = None
@@ -15,11 +16,22 @@ CONTAINER_TYPES = {
     "IfElseCondition",
 }
 
+# All propertiesControl fields across all activities are opaque UI blobs
+# that cannot be serialized from outside the platform. Confirmed from
+# activities_controls.json — all 4 propertiesControl fieldKeys.
+# Also includes TargetModuleName and TemplateName which require UI selection.
 EXCLUDED_REQUIRED_FIELDS = {
     "XMLTableResult",
+    "XMLTableSelectionResult",
+    "DictionaryAsXml",
+    "FieldsList",
     "TargetModuleName",
     "TemplateName",
 }
+
+# Formula pattern: =ConditionType(&&&,Value) — no quotes on either operand
+# Valid examples: =Equals(&&&,Success)  =<=(&&&,5)  =Contains(&&&,ERROR)
+_FORMULA_PATTERN = re.compile(r'^=.+\(&&&,.+\)$')
 
 
 def _ensure_dict(value) -> dict:
@@ -91,7 +103,7 @@ def validate_activity_schema(
 ) -> dict:
     """
     Checks required fields per activities_controls.json.
-    Skips EXCLUDED_REQUIRED_FIELDS (e.g. XMLTableResult — configured manually after import).
+    Skips EXCLUDED_REQUIRED_FIELDS (propertiesControl blobs and UI-configured fields).
     If activity not in index, adds a VERIFY note instead of failing.
     """
     workflow_json = _ensure_dict(workflow_json)
@@ -138,26 +150,37 @@ def validate_control_flow_rules(
 ) -> dict:
     """
     Enforces platform-specific control flow rules confirmed from real workflow exports.
-    SequenceActivity inside WhileActivity is allowed to have full attributes —
-    confirmed across all 5 While examples in the corpus.
+
+    Rules enforced:
+    - WhileActivity must not carry Counter (belongs on ExitWhile)
+    - ExitWhile must have Counter
+    - ForEachOutputVariableName must not start with 'forEach'
+    - ReturnValue ConditionType must be a confirmed valid value
+    - ReturnValue Formula must match =ConditionType(&&&,Value) format when ConditionType is set
+      (Formula is now built deterministically by the serializer, but we validate here as a safety net)
+    - Continue inside IfElseBranchActivity is flagged as a VERIFY warning (likely filler)
     """
     workflow_json = _ensure_dict(workflow_json)
     errors = []
+    verify_notes = []
 
     def check_node(node: dict, parent_type: str = "", path: str = ""):
         type_name = node.get("CustomTypeName", "")
 
+        # --- WhileActivity: Counter must NOT be at this level ---
         if type_name == "WhileActivity" and "Counter" in node:
             errors.append(
                 f"[{path}] WhileActivity must not have Counter at its own level — "
                 "Counter belongs on ExitWhile only."
             )
 
+        # --- ExitWhile: Counter is required ---
         if type_name == "ExitWhile" and "Counter" not in node:
             errors.append(
                 f"[{path}] ExitWhile is missing required Counter attribute."
             )
 
+        # --- ForEachOutputVariableName prefix check ---
         if "ForEachOutputVariableName" in node:
             val = node["ForEachOutputVariableName"]
             if val.lower().startswith("foreach"):
@@ -166,13 +189,39 @@ def validate_control_flow_rules(
                     "with 'forEach' — causes xName collision."
                 )
 
-        if type_name == "ReturnValue" and "ConditionType" in node:
-            ct = node["ConditionType"]
+        # --- ReturnValue: ConditionType and Formula validation ---
+        if type_name == "ReturnValue":
+            ct = node.get("ConditionType", "")
             if ct not in VALID_CONDITION_TYPES:
                 errors.append(
                     f"[{path}] ReturnValue has unconfirmed ConditionType '{ct}'. "
                     f"Confirmed values: {sorted(VALID_CONDITION_TYPES)}."
                 )
+
+            # Formula format check — safety net for serializer
+            # If ConditionType is set and IsValid is True, Formula must be well-formed
+            formula = node.get("Formula", "")
+            is_valid = node.get("IsValid", "True")
+            if (
+                ct
+                and is_valid == "True"
+                and formula
+                and formula != "{x:Null}"
+                and not _FORMULA_PATTERN.match(formula)
+            ):
+                errors.append(
+                    f"[{path}] ReturnValue Formula '{formula}' is malformed. "
+                    f"Expected format: =ConditionType(&&&,Value) with no quoted operands. "
+                    f"Example for ConditionType='{ct}': ={ct}(&&&,<value>)"
+                )
+
+        # --- Continue inside IfElseBranchActivity is almost always filler ---
+        if type_name == "Continue" and parent_type == "IfElseBranchActivity":
+            verify_notes.append(
+                f"[{path}] Continue inside IfElseBranchActivity is likely unnecessary filler. "
+                "If this branch performs no action, remove Continue and leave the branch empty. "
+                "The workflow proceeds automatically without an explicit continue."
+            )
 
         for key, value in node.items():
             if isinstance(value, dict):
@@ -182,8 +231,8 @@ def validate_control_flow_rules(
     check_node(raw)
 
     if errors:
-        return {"passed": False, "errors": errors}
-    return {"passed": True, "errors": []}
+        return {"passed": False, "errors": errors, "verify_notes": verify_notes}
+    return {"passed": True, "errors": [], "verify_notes": verify_notes}
 
 
 def validate_required_fields(
@@ -237,12 +286,14 @@ def run_all_validators(
     r3 = validate_control_flow_rules(workflow_json)
     results["control_flow_rules"] = r3
     all_errors.extend(r3.get("errors", []))
+    all_verify_notes.extend(r3.get("verify_notes", []))
 
     r4 = validate_required_fields(workflow_json)
     results["required_fields"] = r4
     all_errors.extend(r4.get("errors", []))
 
     return {
+        
         "status": "valid" if not all_errors else "invalid",
         "errors": all_errors,
         "verify_notes": all_verify_notes,
