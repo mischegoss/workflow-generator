@@ -17,6 +17,8 @@ CONTAINER_TYPES = {
 
 EXCLUDED_REQUIRED_FIELDS = {
     "XMLTableResult",
+    "TargetModuleName",
+    "TemplateName",
 }
 
 

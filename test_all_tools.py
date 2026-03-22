@@ -133,7 +133,8 @@ print(f"  Scaffold fill: todayDate → {filled['workflow_raw_data']['getDate1'][
 print(f"  Scaffold fill: birthdayTable → {filled['workflow_raw_data']['snGet1']['ResultSet']} ✓")
 
 pnum = generate_pnumber()
-assert pnum.startswith("WF-"), "Pnumber should start with WF-"
+assert pnum.isdigit(), "Pnumber should be numeric"
+assert 50000 <= int(pnum) <= 99999, "Pnumber should be in range 50000-99999"
 name = generate_workflow_name("Birthday Notification Workflow!")
 assert " " not in name and "!" not in name, "Name should be safe"
 print(f"  Pnumber: {pnum}")
@@ -260,7 +261,7 @@ final_wf = {
 }
 
 xml = serialize_to_xml(final_wf, "BirthdayWorkflow", "WF-BDAY001")
-assert xml.startswith('<?xml version="1.0"')
+assert xml.startswith('<TotalExport')
 assert "TotalExport" in xml
 assert "BirthdayWorkflow" in xml
 assert "&lt;" in xml

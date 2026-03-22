@@ -14,11 +14,13 @@ PLATFORM_GLOBAL_VARIABLES = {
 }
 
 SMTP_FIELD_MAP = {
-    "SmtpServer":   "PLACEHOLDER_SMTP_SERVER",
-    "SmtpPort":     "PLACEHOLDER_SMTP_PORT",
-    "Username":     "PLACEHOLDER_SMTP_USER",
-    "Password":     "PLACEHOLDER_SMTP_PASS",
-    "From":         "PLACEHOLDER_SMTP_FROM",
+    "SmtpServer":       "PLACEHOLDER_SMTP_SERVER",
+    "SmtpPort":         "PLACEHOLDER_SMTP_PORT",
+    "Username":         "PLACEHOLDER_SMTP_USER",
+    "Password":         "PLACEHOLDER_SMTP_PASS",
+    "From":             "PLACEHOLDER_SMTP_FROM",
+    "TargetModuleName": "PLACEHOLDER_EMAIL_MODULE",
+    "TargetModuleID":   "PLACEHOLDER_EMAIL_MODULE_ID",
 }
 
 MANUAL_CONFIG_ACTIVITIES = {

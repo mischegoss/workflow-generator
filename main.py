@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import os
+import uuid
 
 from dotenv import load_dotenv
 from google.adk.runners import InMemoryRunner
@@ -30,12 +31,15 @@ async def run(prompt: str) -> str:
             f"{estimate.get('suggested_split', '')}"
         )
 
+    # Fresh unique user_id every run — prevents ADK from reusing cached session state
+    run_user_id = f"system_{uuid.uuid4().hex[:8]}"
+
     pipeline = build_pipeline()
     runner = InMemoryRunner(agent=pipeline, app_name="workflow_generator")
 
     session = await runner.session_service.create_session(
         app_name="workflow_generator",
-        user_id="system",
+        user_id=run_user_id,
     )
 
     user_message = Content(role="user", parts=[Part(text=prompt)])
@@ -44,7 +48,7 @@ async def run(prompt: str) -> str:
     event_count = 0
 
     async for event in runner.run_async(
-        user_id="system",
+        user_id=run_user_id,
         session_id=session.id,
         new_message=user_message,
     ):

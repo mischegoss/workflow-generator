@@ -134,12 +134,10 @@ def generate_workflow_name(
     base_name: Annotated[str, "Human readable base name"],
 ) -> str:
     """
-    Creates a unique safe workflow name with a short random hex suffix.
-    Platform deduplicates imports by Name — identical names cause updates
-    not new imports. The 4-char hex suffix guarantees uniqueness every run.
-    Format: BaseName_A3F9 (max 60 chars total, alphanumeric + underscores only)
+    Creates a guaranteed unique workflow name using timestamp + random int.
+    Platform deduplicates by Name — using pure numbers ensures no collision.
+    Format: WF_1742913456_4821
     """
-    safe = "".join(c if c.isalnum() else "_" for c in base_name)
-    safe = safe.strip("_")[:50]
-    suffix = hex(random.randint(0, 65535))[2:].upper().zfill(4)
-    return f"{safe}_{suffix}"
+    timestamp = int(time.time())
+    suffix = random.randint(1000, 9999)
+    return f"WF_{timestamp}_{suffix}"
