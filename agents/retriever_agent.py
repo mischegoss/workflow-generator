@@ -1,59 +1,75 @@
+import os
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
-from tools.retrieval_tools import retrieve_activities, validate_activity, load_activity_list
-from google.adk.models import Gemini
-import os
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+from tools.retrieval_tools import load_activity_list, retrieve_all_steps
 
+MODEL = LiteLlm(
+    model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
+    temperature=0.0,
+)
 
 INSTRUCTION = """
+OUTPUT RULE: Output only the JSON list described below. No prose, no explanation, no markdown.
+
 You are the activity retrieval stage of a workflow generation pipeline for Resolve Actions.
 
-Input: 'decomposition' from session state — contains a list of steps.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You have no memory of previous conversations. Your only input is the session state key listed
+below. Do not assume or invent any information not present in session state.
 
-Your job:
-1. Call load_activity_list once to ensure the activity list is loaded.
-2. For each step in decomposition.steps:
-   a. Call retrieve_activities with a search query describing what that step needs to do.
-   b. Call validate_activity on your selected candidate to confirm it exists.
-   c. If validate_activity returns valid=false, mark the step UNAVAILABLE.
-3. Return a JSON manifest listing the selected activity per step.
+Session state inputs:
+- 'decomposition': contains a steps list (set by DecomposerAgent)
 
-CONTROL FLOW HANDLING:
-- IfElseActivity, IfElseBranchActivity, SequenceActivity, ParallelActivity are WF built-ins.
-  They are NOT in the activity list. Mark these as CONTROL_FLOW status, not UNAVAILABLE.
-  They are resolved by StructureBuilder from syntax files, not from the activity list.
-- WhileActivity and ExitWhile ARE in the activity list — validate them normally.
-- ForEachActivity is NOT used in this platform (0 of 625 real workflows). Use WhileActivity instead.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AVAILABLE TOOLS (these are the only tools you may call)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- load_activity_list
+- retrieve_all_steps
 
-EMPTY TEMPLATE RULE:
-- If an activity passes validate_activity but its template would be empty
-  (e.g. WaitforCMD), mark it UNAVAILABLE and inject a DisplayValue stub.
+PROHIBITED TOOL NAMES — do NOT call these under any circumstances:
+- retrieve_activities      (does not exist as a callable tool in this agent)
+- validate_activity        (does not exist as a callable tool in this agent)
+- get_activities
+- search_activities
+- find_activities
 
-OUTPUT FORMAT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOOL CALL SEQUENCE — follow exactly, in this order, each tool called once
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1. Call load_activity_list once to load the activity list into memory.
+Step 2. Call retrieve_all_steps ONCE with the complete list of steps from decomposition.steps.
+        Pass ALL steps in a single call. Do NOT call retrieve_all_steps per step in a loop.
+        Per-step looping causes the pipeline to stall. One call, all steps, no exceptions.
+Step 3. Return the manifest exactly as returned by retrieve_all_steps. Do not modify it.
+
+Do not skip any step. Do not reorder steps. Call each tool exactly once.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Return the list exactly as returned by retrieve_all_steps. Each item has this shape:
 {
-  "steps": [
-    {
-      "step_id": "s1",
-      "query": "the search query you used",
-      "candidates": [{"activity_name": "...", "keyword_hits": 3}, ...],
-      "selected_activity": "ActivityName" or null,
-      "status": "MATCHED" or "UNAVAILABLE" or "CONTROL_FLOW"
-    }
-  ]
+  "step_id": "s1",
+  "query": "the search query used",
+  "candidates": [{"activity_name": "...", "keyword_hits": 3, "combined_score": 0.9}, ...],
+  "selected_activity": "ActivityName" or null,
+  "status": "MATCHED" or "UNAVAILABLE" or "CONTROL_FLOW",
+  "frequency_tier": "high" or "medium" or "low"
 }
 
-Rules:
-- selected_activity must be the validated top candidate, or null if UNAVAILABLE.
-- NEVER invent an activity name not returned by retrieve_activities.
-- Do not call retrieve_activities more than once per step.
-- Output only the JSON manifest. No prose.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS-THROUGH RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Do not add, remove, modify, or enrich any entry in the manifest returned by retrieve_all_steps.
+Return the tool output exactly as received. Do not validate, re-score, or reorder entries.
 """
 
 retriever_agent = LlmAgent(
     name="ActivityRetrieverAgent",
     model=MODEL,
     instruction=INSTRUCTION,
-    tools=[load_activity_list, retrieve_activities, validate_activity],
+    tools=[load_activity_list, retrieve_all_steps],
     output_key="activity_manifest",
 )

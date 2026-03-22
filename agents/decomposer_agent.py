@@ -1,35 +1,66 @@
 import os
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
-from google.adk.models import Gemini
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
-
+MODEL = LiteLlm(
+    model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
+    temperature=0.0,
+)
 
 INSTRUCTION = """
+OUTPUT RULE: Output only the JSON object described below. No prose, no explanation, no markdown.
+
 You are the first stage of a workflow generation pipeline for Resolve Actions (a Windows Workflow
 Foundation automation platform).
 
-MVP LIMIT: Single workflow only, maximum 25 activities. If estimated count exceeds 25, return:
-{"status": "REJECTED", "reason": "Exceeds 25-activity MVP limit", "estimated_total": <n>,
- "suggested_split": "Break into smaller focused workflows of 25 activities or fewer."}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You have no memory of previous conversations. Your only input is the user's prompt from the
+current session. Do not assume or invent any information not present in that prompt.
 
-Your job:
-1. Call assess_complexity with the user's prompt.
-2. Call estimate_activity_count to get the estimated activity count.
-3. If estimate > 25: return the REJECTED response above.
-4. Call decompose_workflow to produce the step list.
-5. Return the decomposition JSON.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AVAILABLE TOOLS (these are the only tools you may call)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- assess_complexity
+- estimate_activity_count
+- decompose_workflow
 
-OUTPUT FORMAT:
+Do NOT call any tool not listed above.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MVP LIMIT CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Single workflow only, maximum 25 activities. If estimated count exceeds 25, return immediately:
+{
+  "status": "REJECTED",
+  "reason": "Exceeds 25-activity MVP limit",
+  "estimated_total": <n>,
+  "suggested_split": "Break into smaller focused workflows of 25 activities or fewer."
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOOL CALL SEQUENCE — follow exactly, in this order, each tool called once
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step 1. Call assess_complexity with the user's prompt.
+Step 2. Call estimate_activity_count with the prompt and complexity result from Step 1.
+Step 3. If estimate_activity_count returns estimated_total > 25, return the REJECTED response above. Stop here.
+Step 4. Call decompose_workflow with the prompt and complexity from Step 1 to produce the step list.
+Step 5. Return the decomposition JSON below.
+
+Do not skip any step. Do not reorder steps. Call each tool exactly once.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "steps": [
     {
       "step_id": "s1",
       "description": "one sentence description of what this step does",
-      "intent": "get_date | format_date | query_servicenow | count_rows | branch | loop | get_cell | set_variable | display | send_email | initialize_variable | exit_loop | date_difference | create_table | other",
-      "control_flow": "linear | ifelse | while | foreach | parallel | usergroup"
+      "intent": "<value from INTENT ENUM below>",
+      "control_flow": "<value from CONTROL FLOW ENUM below>"
     }
   ],
   "variable_contract": {
@@ -37,28 +68,52 @@ OUTPUT FORMAT:
       {"name": "camelCaseName", "type": "string | table", "source": "where this value comes from"}
     ],
     "loop_type": "While | none",
-    "loop_source": "description of what is being iterated or null"
+    "loop_source": "description of what is being iterated, or null"
   },
   "complexity": "simple | moderate | complex",
   "estimated_activity_count": <integer>
 }
 
-VARIABLE CONTRACT RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INTENT ENUM — use ONLY these exact values, no others, no variations
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+get_date | format_date | query_servicenow | count_rows | branch | loop |
+get_cell | set_variable | display | send_email | initialize_variable |
+exit_loop | date_difference | create_table | other
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTROL FLOW ENUM — use ONLY these exact values, no others, no variations
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+linear | ifelse | while | usergroup
+
+CRITICAL: "foreach" and "parallel" are NOT valid values and must never appear in output.
+ForEachActivity does not exist in the Resolve Actions platform (confirmed across 625 real
+exported workflows). All iteration uses WhileActivity only — map any loop intent to "while".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP COUNT CONSTRAINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Produce between 3 and 20 steps. Never fewer than 3, never more than 20.
+Each step maps to roughly one platform activity. Keep steps atomic and single-purpose.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VARIABLE CONTRACT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Extract and name ALL variables created or referenced during execution.
 - Use short camelCase names. No spaces or special characters.
-- Do NOT use %syntax% in the contract — StructureBuilder adds that.
+- Do NOT use %syntax% in the contract — StructureBuilder adds that later.
 - This contract is the single source of truth for variable names.
 - All downstream agents use ONLY these names — never invent new ones.
-- ForEach does not exist in the real platform corpus (0 of 625 workflows). Use While for all loops.
+- loop_type MUST be exactly "While" or "none" — no other values.
 
-LOOP ROW ACCESS RULES — CRITICAL:
-- In the variable contract, when describing loop row access, note that GetCellValue RowNumber
-  references the ExitWhile xName, NOT the WhileActivity xName.
-- Example: if WhileActivity xName will be "loopCerts1" and ExitWhile xName will be "exitWhile1",
-  then GetCellValue RowNumber="%exitWhile1%" — never "%loopCerts1%"
-- This is confirmed across all real platform workflows. Always document this in the variable contract.
-
-Output only the JSON object. No prose.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOOP ROW ACCESS RULES — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When describing loop row access in the variable contract, note that GetCellValue RowNumber
+references the ExitWhile xName, NOT the WhileActivity xName.
+- CORRECT: ExitWhile xName="exitWhile1" → GetCellValue RowNumber="%exitWhile1%"
+- WRONG:   WhileActivity xName="loopCerts1" → GetCellValue RowNumber="%loopCerts1%"
+This is confirmed across all 625 real platform workflows.
 """
 
 decomposer_agent = LlmAgent(
