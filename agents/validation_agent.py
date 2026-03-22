@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.models import Gemini
 from tools.validation_tools import (
     validate_xname_uniqueness,
     validate_activity_schema,
@@ -9,7 +10,8 @@ from tools.validation_tools import (
 )
 
 import os
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+
 
 INSTRUCTION = """
 You are the validation stage of a workflow generation pipeline for Resolve Actions.

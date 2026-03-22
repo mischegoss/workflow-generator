@@ -1,10 +1,12 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.models import Gemini
 from tools.compose_tools import serialize_to_xml, write_output_file, format_chat_response
 from tools.build_tools import generate_pnumber, generate_workflow_name
 
 import os
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+
 
 INSTRUCTION = """
 You are the final composition stage of a workflow generation pipeline for Resolve Actions.

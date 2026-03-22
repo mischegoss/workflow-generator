@@ -1,9 +1,11 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.models import Gemini
 from tools.pattern_tools import load_pattern_library, match_pattern, score_pattern_match
 
 import os
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+
 
 INSTRUCTION = """
 You are the pattern matching stage of a workflow generation pipeline for Resolve Actions.

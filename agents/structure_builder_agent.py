@@ -1,5 +1,7 @@
 import os
 import json
+from google.adk.models import Gemini
+from google.genai import types
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from tools.build_tools import (
@@ -8,7 +10,12 @@ from tools.build_tools import (
 )
 from tools.pattern_tools import get_examples_for_control_flow
 
-MODEL = LiteLlm(model=os.getenv("MODEL", "anthropic/claude-sonnet-4-5-20250929"))
+MODEL = Gemini(
+    model=os.getenv("MODEL", "gemini-2.5-flash"),
+    generate_content_config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_level="HIGH")
+    )
+)
 
 # Fields to keep when trimming examples for injection — enough structure to follow,
 # lean enough to not blow the context window

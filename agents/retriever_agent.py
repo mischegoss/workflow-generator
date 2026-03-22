@@ -1,9 +1,10 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 from tools.retrieval_tools import retrieve_activities, validate_activity, load_activity_list
-
+from google.adk.models import Gemini
 import os
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+
 
 INSTRUCTION = """
 You are the activity retrieval stage of a workflow generation pipeline for Resolve Actions.

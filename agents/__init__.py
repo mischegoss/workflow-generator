@@ -1,6 +1,8 @@
 import os
 from google.adk.agents import SequentialAgent, LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.models import Gemini
+from google.genai import types
 
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 from tools.retrieval_tools import retrieve_all_steps, load_activity_list
@@ -20,11 +22,18 @@ from agents.composer_agent import INSTRUCTION as COMPOSER_INSTRUCTION
 
 
 def _model():
-    return LiteLlm(model=os.getenv("MODEL", "anthropic/claude-sonnet-4-5-20250929"))
+    return Gemini(
+        model=os.getenv("MODEL", "gemini/gemini-2.5-flash"),
+        generate_content_config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_level="HIGH"
+            )
+        )
+    )
 
 
 def _model_fast():
-    return LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+    return LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
 
 
 def build_pipeline() -> SequentialAgent:

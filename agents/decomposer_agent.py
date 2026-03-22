@@ -1,9 +1,11 @@
 import os
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.models import Gemini
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 
-MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "anthropic/claude-haiku-4-5-20251001"))
+MODEL = LiteLlm(model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"))
+
 
 INSTRUCTION = """
 You are the first stage of a workflow generation pipeline for Resolve Actions (a Windows Workflow
