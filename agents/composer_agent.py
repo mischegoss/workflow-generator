@@ -1,13 +1,13 @@
 import os
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
-from tools.compose_tools import serialize_to_xml, write_output_file, format_chat_response
+from tools.compose_tools import serialize_to_xml, format_chat_response
 from tools.build_tools import generate_pnumber, generate_workflow_name
 from tools.xml_validation_tools import validate_xml_output
 
 MODEL = LiteLlm(
     model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
-    temperature=0.0,
+    api_key=os.getenv("GOOGLE_API_KEY"),
 )
 
 INSTRUCTION = """
@@ -23,7 +23,6 @@ below. Do not assume or invent any information not present in session state.
 
 Session state inputs:
 - 'validation_result': contains status, workflow_json, placeholder_summary, errors, verify_notes
-  (set by ValidationAgent)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AVAILABLE TOOLS (these are the only tools you may call)
@@ -32,10 +31,10 @@ AVAILABLE TOOLS (these are the only tools you may call)
 - generate_workflow_name
 - serialize_to_xml
 - validate_xml_output
-- write_output_file
 - format_chat_response
 
 Do NOT call any tool not listed above.
+Do NOT call write_output_file — file writing is handled outside the pipeline.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TOOL CALL SEQUENCE — VALID PATH
@@ -60,18 +59,12 @@ Step 3. Call serialize_to_xml with:
 Step 4. Call validate_xml_output with the string returned by serialize_to_xml in Step 3.
         - If validate_xml_output returns {"valid": true}: continue to Step 5.
         - If validate_xml_output returns {"valid": false}: return XML_ERROR PATH output below.
-          Do NOT call write_output_file on invalid XML.
 
-Step 5. Call write_output_file with:
-        - xml_content = the XML string from Step 3
-        - workflow_name = exact value from Step 2
-
-Step 6. Call format_chat_response with:
+Step 5. Call format_chat_response with:
         - validation_result = validation_result from session state
-        - file_result = result from write_output_file in Step 5
         - placeholder_summary = validation_result['placeholder_summary']
 
-Step 7. Return the VALID PATH output JSON below.
+Step 6. Return the VALID PATH output JSON below.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TOOL CALL SEQUENCE — INVALID PATH
@@ -86,7 +79,7 @@ OUTPUT FORMAT — VALID PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "complete",
-  "output_file": "<path returned by write_output_file>",
+  "xml_content": "<the full XML string returned by serialize_to_xml>",
   "workflow_name": "<exact value returned by generate_workflow_name>",
   "chat_response": "<full formatted string from format_chat_response>"
 }
@@ -96,7 +89,7 @@ OUTPUT FORMAT — INVALID PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "error",
-  "output_file": null,
+  "xml_content": null,
   "workflow_name": null,
   "chat_response": "<full formatted string from format_chat_response, listing all errors>"
 }
@@ -106,7 +99,7 @@ OUTPUT FORMAT — XML ERROR PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "xml_error",
-  "output_file": null,
+  "xml_content": null,
   "workflow_name": "<exact value returned by generate_workflow_name>",
   "xml_error": "<the error string from validate_xml_output>",
   "xml_error_stage": "<'outer' or 'xoml' from validate_xml_output>",
@@ -118,9 +111,10 @@ RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - The Pnumber in your output MUST exactly match the value returned by generate_pnumber.
 - workflow_name in your output MUST exactly match generate_workflow_name return value.
+- xml_content MUST be the exact string returned by serialize_to_xml — do not truncate or modify it.
 - DateLic is always empty string — platform assigns it on first save.
-- Never write invalid XML to disk. If validate_xml_output returns valid=false, return xml_error
-  status immediately without calling write_output_file.
+- Never return invalid XML in xml_content. If validate_xml_output returns valid=false,
+  return xml_error status with xml_content=null.
 - Do not invent, compute, or guess any value that should come from a tool call.
 """
 
@@ -130,11 +124,11 @@ composer_agent = LlmAgent(
     instruction=INSTRUCTION,
     tools=[
         serialize_to_xml,
-        write_output_file,
         format_chat_response,
         generate_pnumber,
         generate_workflow_name,
         validate_xml_output,
     ],
     output_key="composer_result",
+    include_contents="none",
 )

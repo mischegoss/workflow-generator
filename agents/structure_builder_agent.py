@@ -12,7 +12,7 @@ from tools.pattern_tools import get_examples_for_control_flow
 # 400 errors on tool schema serialization (additional_properties=null ADK bug).
 # temperature=0.2: reduced creativity on the most complex assembly task.
 MODEL = LiteLlm(
-    model=os.getenv("MODEL", "gemini/gemini-2.5-flash"),
+    model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
     temperature=0.2,
 )
 
@@ -71,7 +71,8 @@ listed below. Do not assume or invent any information not present in session sta
 
 Session state inputs:
 - 'decomposition': step list and variable contract (from DecomposerAgent)
-- 'activity_manifest': selected activity per step (from ActivityRetrieverAgent)
+- 'activity_manifest': compact list — each entry has step_id, selected_activity, status,
+  and frequency_tier only. No candidates array. (from ActivityRetrieverAgent)
 - 'pattern_match': scaffold or NO_MATCH with fallback type (from PatternMatcherAgent)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -124,6 +125,7 @@ Step 1. Call get_examples_for_control_flow with:
         - Valid values: "Linear", "IfElse", "While", "while_ifelse", "UserGroup"
         - max_examples = 2
 Step 2. Call load_activity_template for each MATCHED activity in the activity_manifest.
+        Use the selected_activity field from each entry where status == "MATCHED".
         If load_activity_template returns an empty dict, treat that activity as UNAVAILABLE.
 Step 3. Call resolve_control_flow with the steps list from decomposition.
 Step 4. Call build_activity_json to assemble the final workflow dict.

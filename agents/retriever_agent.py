@@ -42,28 +42,22 @@ Step 1. Call load_activity_list once to load the activity list into memory.
 Step 2. Call retrieve_all_steps ONCE with the complete list of steps from decomposition.steps.
         Pass ALL steps in a single call. Do NOT call retrieve_all_steps per step in a loop.
         Per-step looping causes the pipeline to stall. One call, all steps, no exceptions.
-Step 3. Return the manifest exactly as returned by retrieve_all_steps. Do not modify it.
+Step 3. From the list returned by retrieve_all_steps, keep only the fields listed in
+        OUTPUT FORMAT below. Drop all other fields. Return the trimmed list.
 
 Do not skip any step. Do not reorder steps. Call each tool exactly once.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Return the list exactly as returned by retrieve_all_steps. Each item has this shape:
+Return a JSON list. Each item has ONLY these four fields — drop candidates, query, and
+any other fields returned by retrieve_all_steps:
 {
   "step_id": "s1",
-  "query": "the search query used",
-  "candidates": [{"activity_name": "...", "keyword_hits": 3, "combined_score": 0.9}, ...],
   "selected_activity": "ActivityName" or null,
   "status": "MATCHED" or "UNAVAILABLE" or "CONTROL_FLOW",
   "frequency_tier": "high" or "medium" or "low"
 }
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASS-THROUGH RULE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Do not add, remove, modify, or enrich any entry in the manifest returned by retrieve_all_steps.
-Return the tool output exactly as received. Do not validate, re-score, or reorder entries.
 """
 
 retriever_agent = LlmAgent(

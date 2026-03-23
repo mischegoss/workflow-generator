@@ -10,7 +10,7 @@ from tools.annotation_tools import (
 
 MODEL = LiteLlm(
     model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
-    temperature=0.0,
+    api_key=os.getenv("GOOGLE_API_KEY"),
 )
 
 INSTRUCTION = """
@@ -111,7 +111,7 @@ RULES
 - Never guess credential values. The annotate_placeholders tool handles all credential fields.
 - Never replace platform global variable references (listed above) with PLACEHOLDERs.
 - Never add VERIFY notes yourself. The add_verify_notes tool handles all VERIFY notes.
-- Never modify activities between tool calls. Pass each tool's output to the next tool unchanged.
+- Never modify activities between tool calls. Pass each tool's output to the next unchanged.
 - Do NOT annotate credentials yourself — annotate_placeholders handles this deterministically.
 """
 

@@ -1,6 +1,12 @@
 import os
+
 from google.adk.agents import SequentialAgent, LlmAgent
 from google.adk.models.lite_llm import LiteLlm
+
+# LiteLlm routes gemini/ models to Google AI Studio using GEMINI_API_KEY specifically.
+# If only GOOGLE_API_KEY is set, copy it so LiteLlm can find it.
+if not os.environ.get("GEMINI_API_KEY") and os.environ.get("GOOGLE_API_KEY"):
+    os.environ["GEMINI_API_KEY"] = os.environ["GOOGLE_API_KEY"]
 
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 from tools.retrieval_tools import retrieve_all_steps, load_activity_list
@@ -22,26 +28,27 @@ from agents.composer_agent import INSTRUCTION as COMPOSER_INSTRUCTION
 
 def _model():
     """
-    StructureBuilderAgent — LiteLlm with Gemini 2.5 Flash.
+    StructureBuilderAgent — LiteLlm with Gemini 2.5 Pro.
     Native Gemini() class causes 400 errors on tool schema serialization
     (additional_properties=null ADK bug). Using LiteLlm until ADK fixes this.
-    temperature=0.2: lower than fast agents to reduce invention on the most
-    complex assembly task, but above 0.0 to avoid degenerate outputs.
+    Pro chosen for stronger instruction following on complex assembly tasks.
+    api_key passed explicitly to force Google AI Studio routing.
     """
     return LiteLlm(
-        model=os.getenv("MODEL", "gemini/gemini-2.5-flash"),
-        temperature=0.2,
+        model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
+        max_tokens=8192,
+        api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
 
 def _model_fast():
     """
     All other agents — LiteLlm with Gemini 2.5 Flash.
-    temperature=0.0 for maximum determinism on pipeline agents.
+    api_key passed explicitly to force Google AI Studio routing.
     """
     return LiteLlm(
         model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
-        temperature=0.0,
+        api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
 
@@ -61,6 +68,7 @@ def build_pipeline() -> SequentialAgent:
                 instruction=DECOMPOSER_INSTRUCTION,
                 tools=[assess_complexity, decompose_workflow, estimate_activity_count],
                 output_key="decomposition",
+                include_contents="none",
             ),
             LlmAgent(
                 name="PatternMatcherAgent",
@@ -68,6 +76,7 @@ def build_pipeline() -> SequentialAgent:
                 instruction=PATTERN_INSTRUCTION,
                 tools=[load_pattern_library, match_pattern, score_pattern_match],
                 output_key="pattern_match",
+                include_contents="none",
             ),
             LlmAgent(
                 name="ActivityRetrieverAgent",
@@ -75,6 +84,7 @@ def build_pipeline() -> SequentialAgent:
                 instruction=RETRIEVER_INSTRUCTION,
                 tools=[load_activity_list, retrieve_all_steps],
                 output_key="activity_manifest",
+                include_contents="none",
             ),
             LlmAgent(
                 name="StructureBuilderAgent",
@@ -86,6 +96,7 @@ def build_pipeline() -> SequentialAgent:
                     get_examples_for_control_flow,
                 ],
                 output_key="workflow_json",
+                include_contents="none",
             ),
             LlmAgent(
                 name="AnnotationAgent",
@@ -96,6 +107,7 @@ def build_pipeline() -> SequentialAgent:
                     add_verify_notes, collect_placeholder_summary,
                 ],
                 output_key="annotation_result",
+                include_contents="none",
             ),
             LlmAgent(
                 name="ValidationAgent",
@@ -107,6 +119,7 @@ def build_pipeline() -> SequentialAgent:
                     run_all_validators,
                 ],
                 output_key="validation_result",
+                include_contents="none",
             ),
             LlmAgent(
                 name="ComposerAgent",
@@ -118,6 +131,7 @@ def build_pipeline() -> SequentialAgent:
                     validate_xml_output,
                 ],
                 output_key="composer_result",
+                include_contents="none",
             ),
         ],
     )
