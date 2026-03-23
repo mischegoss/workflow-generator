@@ -4,6 +4,26 @@ from typing import Annotated
 from serializer.xml_composer import WorkflowXmlComposer
 from tools.build_tools import generate_pnumber, generate_workflow_name
 
+# ── XML cache ─────────────────────────────────────────────────────────────────
+# serialize_to_xml stores its output here so main.py can retrieve it directly
+# without asking ComposerAgent to echo multi-kilobyte XML back inside a JSON
+# string. That echo pattern reliably corrupts or truncates the model output.
+_xml_cache: dict = {}   # {"xml": str, "workflow_name": str, "pnumber": str}
+
+
+def get_cached_xml() -> dict:
+    """Returns the last XML produced by serialize_to_xml, or empty dict if none."""
+    return dict(_xml_cache)
+
+
+def clear_xml_cache() -> None:
+    """
+    Clears the XML cache. Called at the start of each pipeline run to prevent
+    a stale result from a previous (failed) run being returned as the current result.
+    """
+    global _xml_cache
+    _xml_cache = {}
+
 
 def _ensure_dict(value) -> dict:
     """
@@ -65,41 +85,36 @@ def serialize_to_xml(
     workflow_name: Annotated[str, "Human-readable workflow name"],
     pnumber: Annotated[str, "Unique Pnumber for this workflow"],
 ) -> str:
-    """Converts workflow JSON to a TotalExport XML string importable by Resolve Actions."""
+    """
+    Converts workflow JSON to a TotalExport XML string importable by Resolve Actions.
+    The XML is stored in a module-level cache so main.py can retrieve it directly
+    without requiring ComposerAgent to echo the full XML in its JSON output.
+    Returns a short confirmation token to the agent instead of the full XML.
+    """
+    global _xml_cache
     workflow_json = _ensure_dict(workflow_json)
     composer = WorkflowXmlComposer()
-    return composer.compose(
+    xml = composer.compose(
         workflow_json=workflow_json,
         workflow_name=workflow_name,
         pnumber=pnumber,
     )
-
-
-def write_output_file(
-    xml_content: Annotated[str, "TotalExport XML string"],
-    workflow_name: Annotated[str, "Used to name the output file"],
-) -> dict:
-    """Writes the XML to the output directory. Returns the file path."""
-    output_dir = os.getenv("OUTPUT_DIR", "/app/output")
-    os.makedirs(output_dir, exist_ok=True)
-    safe_name = generate_workflow_name(workflow_name)
-    output_path = os.path.join(output_dir, f"{safe_name}.xml")
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(xml_content)
-    return {"output_file": output_path, "workflow_name": workflow_name}
+    _xml_cache = {"xml": xml, "workflow_name": workflow_name, "pnumber": pnumber}
+    # Return a short confirmation token — NOT the full XML.
+    # The full XML is in _xml_cache; main.py reads it from get_cached_xml().
+    return f"XML_SERIALIZED_OK:{len(xml)}_BYTES"
 
 
 def format_chat_response(
     validation_result: Annotated[dict, "Result from ValidationAgent"],
-    composer_result: Annotated[dict, "Result from write_output_file"],
     placeholder_summary: Annotated[list, "List of PLACEHOLDERs and VERIFY notes"],
 ) -> str:
     """
     Builds the structured chat response returned to the user.
-    Includes status, output file path, and all items needing review.
+    Includes status and all items needing review.
+    File writing is handled outside the pipeline by test-pipeline.py.
     """
     validation_result = _ensure_dict(validation_result)
-    composer_result = _ensure_dict(composer_result)
 
     # ADK sometimes serializes list items individually to JSON strings.
     # _ensure_list_of_dicts handles both the outer container and inner items.
@@ -112,9 +127,6 @@ def format_chat_response(
             "The workflow could not be generated due to validation errors:\n"
             + "\n".join(f"  - {e}" for e in errors)
         )
-
-    output_file = composer_result.get("output_file", "unknown")
-    workflow_name = composer_result.get("workflow_name", "unknown")
 
     placeholders = [i for i in placeholder_summary if i.get("kind") == "placeholder"]
     verify_notes = [i for i in placeholder_summary if i.get("kind") == "verify"]
@@ -131,8 +143,6 @@ def format_chat_response(
 
     lines = [
         f"STATUS: {status}",
-        f"OUTPUT_FILE: {output_file}",
-        f"WORKFLOW_NAME: {workflow_name}",
         "",
         status_note,
     ]
@@ -157,7 +167,7 @@ def format_chat_response(
             lines.append(f"  - {note[:120]}")
 
     lines.append(
-        "\nTo import: open Resolve Actions → Workflows → Import → select the XML file above."
+        "\nTo import: open Resolve Actions → Workflows → Import → select the XML file."
     )
 
     return "\n".join(lines)

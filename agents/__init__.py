@@ -14,7 +14,7 @@ from tools.pattern_tools import load_pattern_library, match_pattern, score_patte
 from tools.build_tools import load_activity_template, resolve_control_flow, build_activity_json, fill_scaffold_params, generate_pnumber, generate_workflow_name
 from tools.annotation_tools import inject_unavailable_stubs, annotate_placeholders, add_verify_notes, collect_placeholder_summary
 from tools.validation_tools import validate_xname_uniqueness, validate_activity_schema, validate_control_flow_rules, validate_required_fields, run_all_validators
-from tools.compose_tools import serialize_to_xml, write_output_file, format_chat_response
+from tools.compose_tools import serialize_to_xml, format_chat_response
 from tools.xml_validation_tools import validate_xml_output
 
 from agents.decomposer_agent import INSTRUCTION as DECOMPOSER_INSTRUCTION
@@ -126,7 +126,7 @@ def build_pipeline() -> SequentialAgent:
                 model=_model_fast(),
                 instruction=COMPOSER_INSTRUCTION,
                 tools=[
-                    serialize_to_xml, write_output_file, format_chat_response,
+                    serialize_to_xml, format_chat_response,
                     generate_pnumber, generate_workflow_name,
                     validate_xml_output,
                 ],

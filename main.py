@@ -12,6 +12,7 @@ from google.genai.types import Content, Part
 from agents import build_pipeline
 from tools.retrieval_tools import load_activity_list
 from tools.decompose_tools import assess_complexity, estimate_activity_count
+from tools.compose_tools import get_cached_xml, clear_xml_cache
 
 load_dotenv()
 
@@ -43,11 +44,28 @@ def _extract_session_state(runner: InMemoryRunner,
 
 
 def _ensure_dict(value) -> dict:
+    """
+    Safely converts agent output to a dict.
+
+    Handles two common ADK/Gemini serialization quirks:
+    1. Agent outputs a JSON string instead of a dict (output_key passthrough).
+    2. Agent wraps its JSON output in markdown code fences (```json ... ```)
+       despite being instructed not to. Gemini Flash does this frequently.
+    """
     if isinstance(value, dict):
         return value
     if isinstance(value, str):
+        # Strip markdown code fences before attempting JSON parse.
+        text = value.strip()
+        if text.startswith("```"):
+            # Remove opening fence line (e.g. ```json or ```)
+            text = text.split("\n", 1)[-1]
+            # Remove closing fence
+            if text.endswith("```"):
+                text = text[: text.rfind("```")]
+            text = text.strip()
         try:
-            result = json.loads(value)
+            result = json.loads(text)
             if isinstance(result, dict):
                 return result
         except Exception:
@@ -89,12 +107,29 @@ def _check_needs_retry(state: dict) -> tuple:
 
 def _extract_xml(state: dict) -> str | None:
     """
-    Pulls xml_content out of composer_result.
-    Returns the XML string if status is complete, None otherwise.
+    Retrieves the XML from the module-level cache in compose_tools.
+    The XML is stored there by serialize_to_xml when ComposerAgent calls it.
+    We do NOT read xml_content from composer_result — asking the model to echo
+    a multi-kilobyte XML document inside a JSON string is what caused the
+    persistent output failure.
+
+    Falls back to checking composer_result status to confirm the run succeeded
+    before returning the cached XML.
     """
     composer = _ensure_dict(state.get("composer_result", {}))
-    if composer.get("status") == "complete":
-        return composer.get("xml_content") or None
+    status = composer.get("status")
+
+    # Only return cached XML if the composer reported success
+    if status == "complete":
+        cached = get_cached_xml()
+        return cached.get("xml") or None
+
+    # If composer_result is missing or unparseable, still try the cache —
+    # the tool ran successfully even if the JSON output was mangled.
+    cached = get_cached_xml()
+    if cached.get("xml"):
+        return cached["xml"]
+
     return None
 
 
@@ -112,6 +147,10 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     - Unique app_name per run (prevents any session key collision in ADK)
     - Unique user_id per run
     """
+    # Clear the XML cache before each run so a stale result from a previous
+    # failed attempt is never returned as this run's output.
+    clear_xml_cache()
+
     app_name = f"wf_gen_{run_id}"
     user_id = f"system_{run_id}"
 

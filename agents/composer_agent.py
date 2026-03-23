@@ -55,8 +55,10 @@ Step 3. Call serialize_to_xml with:
         - workflow_json = validation_result['workflow_json']
         - workflow_name = exact value from Step 2
         - pnumber = exact value from Step 1
+        serialize_to_xml returns a short confirmation token, not the XML itself.
+        The XML is stored internally — you do not need to handle it.
 
-Step 4. Call validate_xml_output with the string returned by serialize_to_xml in Step 3.
+Step 4. Call validate_xml_output with the confirmation token returned by serialize_to_xml.
         - If validate_xml_output returns {"valid": true}: continue to Step 5.
         - If validate_xml_output returns {"valid": false}: return XML_ERROR PATH output below.
 
@@ -79,7 +81,6 @@ OUTPUT FORMAT — VALID PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "complete",
-  "xml_content": "<the full XML string returned by serialize_to_xml>",
   "workflow_name": "<exact value returned by generate_workflow_name>",
   "chat_response": "<full formatted string from format_chat_response>"
 }
@@ -89,7 +90,6 @@ OUTPUT FORMAT — INVALID PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "error",
-  "xml_content": null,
   "workflow_name": null,
   "chat_response": "<full formatted string from format_chat_response, listing all errors>"
 }
@@ -99,7 +99,6 @@ OUTPUT FORMAT — XML ERROR PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
   "status": "xml_error",
-  "xml_content": null,
   "workflow_name": "<exact value returned by generate_workflow_name>",
   "xml_error": "<the error string from validate_xml_output>",
   "xml_error_stage": "<'outer' or 'xoml' from validate_xml_output>",
@@ -109,12 +108,10 @@ OUTPUT FORMAT — XML ERROR PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- The Pnumber in your output MUST exactly match the value returned by generate_pnumber.
+- The Pnumber passed to serialize_to_xml MUST exactly match the value returned by generate_pnumber.
 - workflow_name in your output MUST exactly match generate_workflow_name return value.
-- xml_content MUST be the exact string returned by serialize_to_xml — do not truncate or modify it.
+- Do NOT include xml_content in your output — the XML is stored internally by serialize_to_xml.
 - DateLic is always empty string — platform assigns it on first save.
-- Never return invalid XML in xml_content. If validate_xml_output returns valid=false,
-  return xml_error status with xml_content=null.
 - Do not invent, compute, or guess any value that should come from a tool call.
 """
 
