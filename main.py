@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import json
-import os
 import uuid
 
 import litellm
@@ -12,7 +11,6 @@ from google.genai.types import Content, Part
 from agents import build_pipeline
 from tools.retrieval_tools import load_activity_list
 from tools.decompose_tools import assess_complexity, estimate_activity_count
-from tools.compose_tools import get_cached_xml, clear_xml_cache
 
 load_dotenv()
 
@@ -81,19 +79,13 @@ def _check_needs_retry(state: dict) -> tuple:
 
     Retry triggers:
     - _empty_response_error: model returned empty response mid-pipeline
-    - composer_result.status == "xml_error": XML serialization failed
     - validation_result.status == "invalid": JSON structure validation failed
+      (xml_error removed — ComposerAgent is gone, XML is offline via convert_to_xml.py)
     """
     if state.get("_empty_response_error"):
         return True, "Model returned empty response mid-pipeline. Retrying with fresh session."
 
-    composer = _ensure_dict(state.get("composer_result", {}))
     validation = _ensure_dict(state.get("validation_result", {}))
-
-    if composer.get("status") == "xml_error":
-        stage = composer.get("xml_error_stage", "unknown")
-        error = composer.get("xml_error", "unknown XML error")
-        return True, f"XML serialization error (stage: {stage}): {error}"
 
     if validation.get("status") == "invalid":
         errors = validation.get("errors", [])
@@ -105,52 +97,34 @@ def _check_needs_retry(state: dict) -> tuple:
     return False, ""
 
 
-def _extract_xml(state: dict) -> str | None:
+def _extract_output(state: dict) -> dict | None:
     """
-    Retrieves the XML from the module-level cache in compose_tools.
-    The XML is stored there by serialize_to_xml when ComposerAgent calls it.
-    We do NOT read xml_content from composer_result — asking the model to echo
-    a multi-kilobyte XML document inside a JSON string is what caused the
-    persistent output failure.
-
-    Falls back to checking composer_result status to confirm the run succeeded
-    before returning the cached XML.
+    Retrieves the output result dict from pipeline session state.
+    Returns None if the output stage did not complete successfully.
     """
-    composer = _ensure_dict(state.get("composer_result", {}))
-    status = composer.get("status")
-
-    # Only return cached XML if the composer reported success
-    if status == "complete":
-        cached = get_cached_xml()
-        return cached.get("xml") or None
-
-    # If composer_result is missing or unparseable, still try the cache —
-    # the tool ran successfully even if the JSON output was mangled.
-    cached = get_cached_xml()
-    if cached.get("xml"):
-        return cached["xml"]
-
+    output = _ensure_dict(state.get("output_result", {}))
+    if output.get("status") == "failed":
+        return None
+    # output_result must have at minimum a name and output_file to be valid
+    if output.get("name") and output.get("output_file"):
+        return output
     return None
 
 
 async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     """
-    Runs the full 7-agent pipeline for a given prompt.
-    Returns (xml_string | None, session_state_dict).
+    Runs the full pipeline for a given prompt.
+    Returns (output_dict | None, session_state_dict).
 
-    xml_string is the validated XML content from ComposerAgent, or None on failure.
-    The caller is responsible for writing it to disk or sending it via webhook.
+    output_dict contains the written JSON file path and workflow metadata.
+    None on failure — caller checks session state for error details.
 
     Every call creates completely isolated objects:
-    - Fresh pipeline (new agent instances via build_pipeline())
+    - Fresh pipeline (new WorkflowPipeline instance via build_pipeline())
     - Fresh InMemoryRunner (creates its own internal session service)
     - Unique app_name per run (prevents any session key collision in ADK)
     - Unique user_id per run
     """
-    # Clear the XML cache before each run so a stale result from a previous
-    # failed attempt is never returned as this run's output.
-    clear_xml_cache()
-
     app_name = f"wf_gen_{run_id}"
     user_id = f"system_{run_id}"
 
@@ -187,21 +161,21 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
 
     print(f"  Total events: {event_count}")
     state = _extract_session_state(runner, app_name, session.id, user_id)
-    xml = _extract_xml(state)
-    return xml, state
+    output = _extract_output(state)
+    return output, state
 
 
 async def run(prompt: str) -> tuple:
     """
     Runs the pipeline for a given prompt.
-    Returns (xml_string | None, chat_response: str).
+    Returns (output_file_path | None, chat_response: str).
 
-    xml_string: the validated XML content ready to write to disk or send via webhook.
-                None if generation failed.
+    output_file_path: path to the written .json file in json_files/.
+                      None if generation failed.
     chat_response: human-readable summary of the result including placeholders/errors.
 
-    The caller decides what to do with the XML — write to disk for manual import,
-    or POST to the Actions webhook in production.
+    To convert to XML for manual import into Resolve Actions:
+        python convert_to_xml.py json_files/<workflow_name>.json
     """
     load_activity_list()
 
@@ -222,13 +196,13 @@ async def run(prompt: str) -> tuple:
     # ── Attempt 1 ─────────────────────────────────────────────────────────
     run_id = uuid.uuid4().hex[:12]
     print(f"\n[attempt 1] run_id={run_id}")
-    xml, state = await _run_pipeline(prompt, run_id)
+    output, state = await _run_pipeline(prompt, run_id)
 
     needs_retry, error_summary = _check_needs_retry(state)
 
     if not needs_retry:
-        chat = _ensure_dict(state.get("composer_result", {})).get("chat_response", "")
-        return xml, chat
+        chat = _build_chat_response(output, state)
+        return output.get("output_file") if output else None, chat
 
     # ── Attempt 2 (retry) ──────────────────────────────────────────────────
     print(f"\n[attempt 2] First attempt failed. Retrying...")
@@ -247,7 +221,7 @@ async def run(prompt: str) -> tuple:
 
     retry_run_id = uuid.uuid4().hex[:12]
     print(f"  retry run_id={retry_run_id}")
-    retry_xml, retry_state = await _run_pipeline(retry_prompt, retry_run_id)
+    retry_output, retry_state = await _run_pipeline(retry_prompt, retry_run_id)
 
     retry_needs_retry, retry_error = _check_needs_retry(retry_state)
     if retry_needs_retry:
@@ -260,15 +234,45 @@ async def run(prompt: str) -> tuple:
         )
         return None, msg
 
-    chat = _ensure_dict(retry_state.get("composer_result", {})).get("chat_response", "")
-    return retry_xml, chat
+    chat = _build_chat_response(retry_output, retry_state)
+    return retry_output.get("output_file") if retry_output else None, chat
+
+
+def _build_chat_response(output: dict | None, state: dict) -> str:
+    """
+    Builds a human-readable summary of the pipeline result.
+    Replaces the old composer_result.chat_response from ComposerAgent.
+    """
+    if not output:
+        validation = _ensure_dict(state.get("validation_result", {}))
+        errors = validation.get("errors", [])
+        return "Workflow generation failed.\n" + "\n".join(f"- {e}" for e in errors)
+
+    lines = [
+        f"Workflow generated: {output['name']}",
+        f"Pnumber: {output['pnumber']}",
+        f"File: {output['output_file']}",
+        f"",
+        f"To import: python convert_to_xml.py {output['output_file']}",
+    ]
+
+    placeholders = output.get("placeholder_summary", [])
+    if placeholders:
+        lines.append(f"\n{len(placeholders)} item(s) require manual configuration:")
+        for item in placeholders:
+            if item["kind"] == "placeholder":
+                lines.append(f"  - [{item['activity']}] {item['field']}: {item['placeholder']}")
+            elif item["kind"] == "verify":
+                lines.append(f"  - [{item['activity']}] {item['message']}")
+
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Resolve Actions Workflow Generator")
     parser.add_argument("--prompt", required=True, help="Natural language workflow description")
     args = parser.parse_args()
-    xml_result, chat_result = asyncio.run(run(args.prompt))
+    file_path, chat_result = asyncio.run(run(args.prompt))
     print(chat_result)
-    if xml_result:
-        print(f"\nXML ({len(xml_result)} bytes):\n{xml_result[:500]}...")
+    if file_path:
+        print(f"\nJSON output: {file_path}")

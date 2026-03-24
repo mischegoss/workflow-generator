@@ -25,9 +25,6 @@ SMTP_FIELD_MAP = {
     "TargetModuleID":   "PLACEHOLDER_EMAIL_MODULE_ID",
 }
 
-# Credential field keys derived deterministically from activities_controls.json
-# inputType: password or hiddenPassword across all activities.
-# These are always PLACEHOLDER_ regardless of activity type.
 CREDENTIAL_FIELD_KEYS = {
     "ACPassword", "AdminPassword", "ArchivePassword", "AuthPassword",
     "CertificatePassword", "DomainServerPassword", "EncPassword",
@@ -35,7 +32,6 @@ CREDENTIAL_FIELD_KEYS = {
     "ProxyPassword", "SRVPassword", "SrcPassword", "SwitchPassword",
     "URLPassword", "adminConfirmPassword", "api_key", "confirmDomainServerPassword",
     "openai_api_key", "password", "token",
-    # hiddenPassword type
     "ValueToDisplaya", "ValueToDisplayb", "ValueToDisplayc",
 }
 
@@ -46,21 +42,22 @@ MANUAL_CONFIG_ACTIVITIES = {
     ),
 }
 
+# Activities whose CLR namespace is NOT confirmed from a real platform export.
+# These receive a VERIFY note on every run.
+# Removed from original list: GetDate, CreateMemoryTable, PowerShellScript,
+# TSQLStatement, TSQLQuery, ReadXLS, WriteXLS, PowerShell, RunWorkflow
+# — all confirmed in namespace_registry.json.
+# Remaining: FormatDate, ReadCSV, HTTPRequest — not present in namespace_registry.json.
 UNCONFIRMED_NAMESPACE_ACTIVITIES = {
-    "GetDate", "FormatDate", "CreateMemoryTable", "PowerShellScript",
-    "TSQLStatement", "TSQLQuery", "ReadCSV", "ReadXLS", "WriteXLS",
-    "PowerShell", "HTTPRequest", "RunWorkflow",
+    "FormatDate",
+    "ReadCSV",
+    "HTTPRequest",
 }
 
-# Cached index: activityName → list of mandatory field dicts from activities_detailed.json
 _detailed_index: dict | None = None
 
 
 def _load_detailed_index() -> dict:
-    """
-    Loads activities_detailed.json and indexes by activity name.
-    Used to identify date-sensitive and user-value textbox fields for VERIFY notes.
-    """
     global _detailed_index
     if _detailed_index is not None:
         return _detailed_index
@@ -82,11 +79,6 @@ def _load_detailed_index() -> dict:
 
 
 def _ensure_dict(value) -> dict:
-    """
-    Safely converts string JSON to dict.
-    Agents sometimes pass session state as JSON strings instead of dicts
-    when output_key values are serialized between pipeline stages.
-    """
     if isinstance(value, dict):
         return value
     if isinstance(value, str):
@@ -105,17 +97,10 @@ def _is_global_variable_ref(value: str) -> bool:
 
 
 def _is_variable_reference(value: str) -> bool:
-    """Returns True if value is a %variable% reference of any kind."""
     return bool(re.match(r'^%[^%]+%$', value.strip()))
 
 
 def _looks_like_hardcoded_literal(value: str) -> bool:
-    """
-    Returns True if a string value looks like a hardcoded literal rather than
-    a variable reference or structural default.
-    Catches: dates, IP addresses, hostnames, email addresses, plain words
-    that are not variable references.
-    """
     if not value or not isinstance(value, str):
         return False
     if _is_variable_reference(value):
@@ -124,16 +109,12 @@ def _looks_like_hardcoded_literal(value: str) -> bool:
         return False
     if value.startswith("PLACEHOLDER_"):
         return False
-    # Dates: MM/DD/YYYY, YYYY-MM-DD, etc.
     if re.match(r'\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', value):
         return True
-    # IP addresses
     if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', value):
         return True
-    # Email addresses
     if re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', value):
         return True
-    # Hostnames / URLs with dots
     if re.match(r'^(https?://|www\.)', value):
         return True
     return False
@@ -143,9 +124,6 @@ def inject_unavailable_stubs(
     workflow_json: Annotated[dict, "Workflow JSON with UNAVAILABLE step markers"],
     activity_manifest: Annotated[dict, "Manifest from retriever with UNAVAILABLE entries"],
 ) -> dict:
-    """
-    Replaces UNAVAILABLE steps with DisplayValue placeholder activities.
-    """
     workflow_json = _ensure_dict(workflow_json)
     activity_manifest = _ensure_dict(activity_manifest)
 
@@ -197,17 +175,6 @@ def inject_unavailable_stubs(
 def annotate_placeholders(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
-    """
-    Replaces credential fields with PLACEHOLDER_ strings.
-
-    Two passes:
-    1. SMTP_FIELD_MAP — module-level SMTP connection fields (existing behaviour).
-    2. CREDENTIAL_FIELD_KEYS — all password/token/api_key fields derived from
-       activities_controls.json inputType=password|hiddenPassword. This is now
-       deterministic — no heuristic guessing required.
-
-    Leaves platform global variable references (%varName%) intact.
-    """
     workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
 
@@ -218,22 +185,16 @@ def annotate_placeholders(
                 continue
             if not isinstance(value, str):
                 continue
-            # Skip if already a placeholder or global variable ref
             if value.startswith("PLACEHOLDER_"):
                 continue
             if value.startswith("%") and _is_global_variable_ref(value):
                 continue
-
-            # Pass 1: SMTP module-level fields
             if key in SMTP_FIELD_MAP:
                 node[key] = SMTP_FIELD_MAP[key]
                 continue
-
-            # Pass 2: credential fields from controls index
             if key in CREDENTIAL_FIELD_KEYS:
                 node[key] = f"PLACEHOLDER_{key.upper()}"
                 continue
-
         return node
 
     raw = result.get("workflow_raw_data", {})
@@ -244,16 +205,6 @@ def annotate_placeholders(
 def add_verify_notes(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
-    """
-    Adds VERIFY notes to activities requiring post-import manual configuration.
-
-    Three categories:
-    1. Manual config activities (SNGetRecord XMLTableResult).
-    2. Activities with unconfirmed CLR namespaces.
-    3. Hardcoded literal values in fields that should be variable references —
-       detected using activities_detailed.json mandatory field metadata.
-       Also flags hardcoded data inside TableAsString (CreateMemoryTable sample rows).
-    """
     workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
     detailed_index = _load_detailed_index()
@@ -266,11 +217,9 @@ def add_verify_notes(
     def process_node(node: dict) -> dict:
         custom_type = node.get("CustomTypeName", "")
 
-        # --- Category 1: Manual config activities ---
         if custom_type in MANUAL_CONFIG_ACTIVITIES:
             _append_note(node, MANUAL_CONFIG_ACTIVITIES[custom_type])
 
-        # --- Category 2: Unconfirmed CLR namespaces ---
         if custom_type in UNCONFIRMED_NAMESPACE_ACTIVITIES:
             ns_msg = (
                 f"VERIFY: CLR namespace for {custom_type} not confirmed from platform export. "
@@ -279,7 +228,6 @@ def add_verify_notes(
             )
             _append_note(node, ns_msg)
 
-        # --- Category 3a: Hardcoded literals in mandatory textbox fields ---
         if custom_type in detailed_index:
             for field in detailed_index[custom_type]["mandatory"]:
                 field_key = field.get("fieldKey", "")
@@ -293,9 +241,6 @@ def add_verify_notes(
                             f"Replace with a %variable% reference or correct runtime value before deployment."
                         )
 
-        # --- Category 3b: Hardcoded sample data in TableAsString ---
-        # The XML schema blob is structural; the <resultSet> rows are sample data.
-        # Flag any non-empty resultSet data as requiring user replacement.
         if custom_type == "CreateMemoryTable" and "TableAsString" in node:
             table_str = node.get("TableAsString", "")
             if isinstance(table_str, str) and "<resultSet>" in table_str:
@@ -306,7 +251,6 @@ def add_verify_notes(
                     "and populate the table at runtime using AddMemoryTableRow."
                 )
 
-        # --- Always: clear DateLic ---
         if "DateLic" in node:
             node["DateLic"] = ""
 
@@ -324,10 +268,6 @@ def add_verify_notes(
 def collect_placeholder_summary(
     workflow_json: Annotated[dict, "Annotated workflow JSON"],
 ) -> list[dict]:
-    """
-    Walks the workflow JSON and collects all PLACEHOLDER_ values and VERIFY notes.
-    Returns a list of items for the chat response to the user.
-    """
     workflow_json = _ensure_dict(workflow_json)
     items = []
 

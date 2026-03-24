@@ -8,6 +8,58 @@ import time
 import uuid
 from typing import Annotated
 
+# ---------------------------------------------------------------------------
+# Data file caches
+# ---------------------------------------------------------------------------
+
+_enum_cache: dict | None = None
+_defaults_cache: dict | None = None
+
+
+def _load_enum_values() -> dict:
+    """
+    Load enum_values.json once and cache.
+    Returns dict mapping activity TypeName → { field_key: [valid_values] }.
+    Returns empty dict if file is missing.
+    """
+    global _enum_cache
+    if _enum_cache is not None:
+        return _enum_cache
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "enum_values.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            _enum_cache = json.load(f)
+    except FileNotFoundError:
+        print(f"[build_tools] Warning: enum_values.json not found at {path}")
+        _enum_cache = {}
+    return _enum_cache
+
+
+def _load_field_defaults() -> dict:
+    """
+    Load field_defaults.json once and cache.
+    Returns dict mapping activity TypeName → { field_key: default_value }.
+    Contains statistically dominant config values (>= 60% of corpus observations).
+    Returns empty dict if file is missing.
+    """
+    global _defaults_cache
+    if _defaults_cache is not None:
+        return _defaults_cache
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "field_defaults.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            _defaults_cache = json.load(f)
+    except FileNotFoundError:
+        print(f"[build_tools] Warning: field_defaults.json not found at {path}")
+        _defaults_cache = {}
+    return _defaults_cache
+
+
+# ---------------------------------------------------------------------------
+# Template loader (extended with enum + default seeding)
+# ---------------------------------------------------------------------------
 
 def load_activity_template(
     activity_name: Annotated[str, "The CustomTypeName of the activity to load"],
@@ -16,21 +68,67 @@ def load_activity_template(
     Loads the JSON template for a given activity from activity_json_syntax.json.
     Returns the first matching template dict, or empty dict if not found.
     IMPORTANT: if empty dict is returned, treat activity as UNAVAILABLE.
+
+    After loading, two enrichment passes run before the template is returned:
+
+    Pass 1 — Enum seeding (enum_values.json):
+      Replaces _value placeholder strings with the first valid enum choice for
+      that field. This gives StructureBuilder a concrete starting value to work
+      from rather than an opaque placeholder string.
+
+    Pass 2 — Field defaults (field_defaults.json):
+      For any CONFIG_FIELDS still holding a _value placeholder after Pass 1,
+      applies the corpus-dominant value (seen in >= 60% of real workflows).
+      Enum values take priority — defaults only fill fields not covered by enums.
     """
     data_dir = os.getenv("DATA_DIR", "/app/data")
     path = os.path.join(data_dir, "activity_json_syntax.json")
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     templates = data.get("settings", data) if isinstance(data, dict) else data
-    for template in templates:
+    template = None
+    for t in templates:
         if (
-            template.get("TypeName") == activity_name
-            or template.get("CustomTypeName") == activity_name
-            or template.get("name") == activity_name
+            t.get("TypeName") == activity_name
+            or t.get("CustomTypeName") == activity_name
+            or t.get("name") == activity_name
         ):
-            return copy.deepcopy(template)
-    return {}
+            template = copy.deepcopy(t)
+            break
 
+    if template is None:
+        return {}
+
+    enum_values = _load_enum_values()
+    field_defaults = _load_field_defaults()
+
+    # Pass 1: seed enum choices
+    if activity_name in enum_values:
+        for field_key, valid_values in enum_values[activity_name].items():
+            if (
+                field_key in template
+                and isinstance(template[field_key], str)
+                and template[field_key].endswith("_value")
+                and valid_values
+            ):
+                template[field_key] = valid_values[0]
+
+    # Pass 2: seed corpus-dominant config defaults
+    if activity_name in field_defaults:
+        for field_key, default_val in field_defaults[activity_name].items():
+            if (
+                field_key in template
+                and isinstance(template[field_key], str)
+                and template[field_key].endswith("_value")
+            ):
+                template[field_key] = default_val
+
+    return template
+
+
+# ---------------------------------------------------------------------------
+# Remaining tools (unchanged)
+# ---------------------------------------------------------------------------
 
 def resolve_control_flow(
     steps: Annotated[list, "Ordered list of step dicts with control_flow annotations"],
