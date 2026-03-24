@@ -438,6 +438,13 @@
     "pct_of_target": 100
   },
   {
+    "source_activity": "WhileActivity",
+    "target_activity": "GetRows",
+    "target_field": "RowNumber",
+    "workflow_count": 7,
+    "pct_of_target": 100
+  },
+  {
     "source_activity": "GetCellValue",
     "target_activity": "MatchRegularExpression",
     "target_field": "MatchText",
@@ -730,6 +737,13 @@
     "target_field": "Path",
     "workflow_count": 4,
     "pct_of_target": 100
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "ADListGroup",
+    "target_field": "GroupName",
+    "workflow_count": 4,
+    "pct_of_target": 80
   },
   {
     "source_activity": "UcFirst",
@@ -1036,6 +1050,13 @@
     "source_activity": "GetCellValue",
     "target_activity": "SetFolderPermissions",
     "target_field": "PermissionsData",
+    "workflow_count": 3,
+    "pct_of_target": 100
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "GetColumnName",
+    "target_field": "ColumnNumber",
     "workflow_count": 3,
     "pct_of_target": 100
   },

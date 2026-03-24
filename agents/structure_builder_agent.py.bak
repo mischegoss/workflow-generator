@@ -72,8 +72,7 @@ listed below. Do not assume or invent any information not present in session sta
 Session state inputs:
 - 'decomposition': step list and variable contract (from DecomposerAgent)
 - 'activity_manifest': compact list — each entry has step_id, selected_activity, status,
-  and frequency_tier. Some entries also include pre_filled_fields: a dict of
-  field_key -> value pairs confirmed by corpus analysis. Treat these as authoritative.
+  and frequency_tier only. No candidates array. (from ActivityRetrieverAgent)
 - 'pattern_match': scaffold or NO_MATCH with fallback type (from PatternMatcherAgent)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -164,13 +163,6 @@ LOOP STRUCTURE:
 - ExitWhile requires: exitWhileInsideWhile="True", isValid="True",
   TypeName="ExitWhile", whileSequenceActivity="<sequenceActivityXName>"
 
-PRE-FILLED FIELDS — treat as authoritative
-If a manifest entry contains a pre_filled_fields dict, those field values have been
-confirmed by analysis of 609 real workflows. Use them exactly as provided.
-Do NOT override, ignore, or second-guess pre_filled_fields values.
-Fields not covered by pre_filled_fields are filled using your normal assembly logic.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROW ACCESS — MOST CRITICAL RULE:
 - GetCellValue RowNumber MUST reference the ExitWhile xName, NOT the WhileActivity xName.
 - CORRECT:  ExitWhile xName="exitWhile1" → GetCellValue RowNumber="%exitWhile1%"
