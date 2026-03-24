@@ -1,21 +1,37 @@
 [
   {
-    "source_activity": "ExitWhile",
+    "source_activity": "WhileActivity",
     "target_activity": "GetCellValue",
     "target_field": "RowNumber",
-    "workflow_count": -1,
+    "workflow_count": 188,
     "pct_of_target": 100,
     "authoritative": true,
-    "note": "* Platform rule: ExitWhile.Counter drives loop row index"
+    "note": "* Corpus rule: WhileActivity xName drives loop row index (188 vs 83 for ExitWhile)"
   },
   {
-    "source_activity": "ExitWhile",
+    "source_activity": "WhileActivity",
     "target_activity": "SetCellValue",
     "target_field": "RowNumber",
-    "workflow_count": -1,
+    "workflow_count": 28,
     "pct_of_target": 100,
     "authoritative": true,
-    "note": "* Platform rule: ExitWhile.Counter drives loop row index"
+    "note": "* Corpus rule: WhileActivity xName drives loop row index"
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "GetRows",
+    "target_field": "RowNumber",
+    "workflow_count": 7,
+    "pct_of_target": 100,
+    "authoritative": true,
+    "note": "* Corpus rule: WhileActivity xName drives loop row index"
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "GetCellValue",
+    "target_field": "RowNumber",
+    "workflow_count": 184,
+    "pct_of_target": 69
   },
   {
     "source_activity": "ResultSetFilter",
@@ -100,6 +116,13 @@
     "target_field": "XMLTableResult",
     "workflow_count": 30,
     "pct_of_target": 86
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "SetCellValue",
+    "target_field": "RowNumber",
+    "workflow_count": 28,
+    "pct_of_target": 41
   },
   {
     "source_activity": "GetDate",
@@ -434,6 +457,13 @@
     "source_activity": "GetCellValue",
     "target_activity": "ADDisableAccount",
     "target_field": "ADUserName",
+    "workflow_count": 7,
+    "pct_of_target": 100
+  },
+  {
+    "source_activity": "WhileActivity",
+    "target_activity": "GetRows",
+    "target_field": "RowNumber",
     "workflow_count": 7,
     "pct_of_target": 100
   },

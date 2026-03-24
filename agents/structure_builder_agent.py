@@ -143,7 +143,7 @@ PRE-OUTPUT CHECKLIST — verify all 10 items before returning
 5. No WhileActivity has a Counter attribute — Counter belongs only on ExitWhile.
 6. Every ExitWhile has: Counter="%<getRowsCountXName>%", exitWhileInsideWhile="True",
    isValid="True", TypeName="ExitWhile", whileSequenceActivity="<sequenceActivityXName>".
-7. Every GetCellValue RowNumber references an ExitWhile xName, NOT a WhileActivity xName.
+7. Every GetCellValue RowNumber references the WhileActivity xName, NOT the ExitWhile xName.
 8. Every %varName% reference exists in decomposition.variable_contract.variables.
    If not in the contract, remove it or replace with a PLACEHOLDER_.
 9. Every SequenceActivity inside a WhileActivity has full attributes:
@@ -172,9 +172,11 @@ Fields not covered by pre_filled_fields are filled using your normal assembly lo
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROW ACCESS — MOST CRITICAL RULE:
-- GetCellValue RowNumber MUST reference the ExitWhile xName, NOT the WhileActivity xName.
-- CORRECT:  ExitWhile xName="exitWhile1" → GetCellValue RowNumber="%exitWhile1%"
-- WRONG:    WhileActivity xName="loopCerts1" → GetCellValue RowNumber="%loopCerts1%"
+- GetCellValue RowNumber MUST reference the WhileActivity xName.
+- Confirmed from corpus analysis of 609 real workflows: WhileActivity used 188 times,
+  ExitWhile used 83 times. WhileActivity xName is the correct and dominant pattern.
+- CORRECT:  WhileActivity xName="loopServers" → GetCellValue RowNumber="%loopServers%"
+- WRONG:    ExitWhile xName="exitWhile1"      → GetCellValue RowNumber="%exitWhile1%"
 
 SEQUENCE ACTIVITY:
 - SequenceActivity inside WhileActivity needs full attributes:
@@ -258,7 +260,7 @@ CERT WORKFLOW PATTERN — for date-check + email workflows:
 CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
   SequenceActivity (full attributes) →
     ExitWhile (Counter=%getRowsCountXName%, exitWhileInsideWhile="True")
-    GetCellValue (RowNumber=%exitWhileXName%)  ← ExitWhile xName, ColumnNumber=<column name from prompt>
+    GetCellValue (RowNumber=%whileActivityXName%)  ← WhileActivity xName, ColumnNumber=<column name from prompt>
     GetCellValue
     DateDifference
     IfElseActivity →

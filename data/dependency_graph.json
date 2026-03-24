@@ -1,0 +1,1394 @@
+{
+  "ADAddtoGroup": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 8
+        },
+        "total_wired": 8,
+        "notes": "ADAddtoGroup.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADDisableAccount": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 8
+        },
+        "total_wired": 8,
+        "notes": "ADDisableAccount.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADGetProperty": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 7
+        },
+        "total_wired": 7,
+        "notes": "ADGetProperty.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADLDAPQuery": {
+    "required_inputs": [
+      {
+        "field": "Query",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "ADLDAPQuery.Query is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADRemoveFromGroup": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 4
+        },
+        "total_wired": 4,
+        "notes": "ADRemoveFromGroup.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADSetProperty": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 7
+        },
+        "total_wired": 7,
+        "notes": "ADSetProperty.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADUnlockAccount": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "ADUnlockAccount.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ADUserExists": {
+    "required_inputs": [
+      {
+        "field": "ADUserName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 5
+        },
+        "total_wired": 7,
+        "notes": "ADUserExists.ADUserName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "AddMemoryTableRow": {
+    "required_inputs": [
+      {
+        "field": "ResultSet",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable",
+          "AddMemoryTableRow"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 35,
+          "AddMemoryTableRow": 14
+        },
+        "total_wired": 56,
+        "notes": "AddMemoryTableRow.ResultSet requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      },
+      {
+        "field": "ResultSetName",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 35
+        },
+        "total_wired": 40,
+        "notes": "AddMemoryTableRow.ResultSetName requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "Contains": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "ResultSetFilter",
+          "IsEmpty",
+          "PowerShellScript",
+          "JsonToTable",
+          "VMPowerCLI"
+        ],
+        "provider_counts": {
+          "GetCellValue": 22,
+          "ResultSetFilter": 6,
+          "IsEmpty": 6,
+          "PowerShellScript": 5,
+          "JsonToTable": 4,
+          "VMPowerCLI": 3
+        },
+        "total_wired": 50,
+        "notes": "Contains.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "TheValue2",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "ConvertHtmlToPlainText"
+        ],
+        "provider_counts": {
+          "GetCellValue": 11,
+          "ConvertHtmlToPlainText": 4
+        },
+        "total_wired": 14,
+        "notes": "Contains.TheValue2 is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ConvertTextToTable": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "SingleSSHCommand"
+        ],
+        "provider_counts": {
+          "SingleSSHCommand": 3
+        },
+        "total_wired": 7,
+        "notes": "ConvertTextToTable.TheValue is most commonly wired from SingleSSHCommand. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ConvertToHTMLTable": {
+    "required_inputs": [
+      {
+        "field": "Value",
+        "dependency_type": "table",
+        "provided_by": [
+          "AddMemoryTableRow",
+          "ResultSetFilter",
+          "CreateMemoryTable",
+          "TSQLQuery",
+          "SendCiscoCommand"
+        ],
+        "provider_counts": {
+          "AddMemoryTableRow": 9,
+          "ResultSetFilter": 5,
+          "CreateMemoryTable": 5,
+          "TSQLQuery": 3,
+          "SendCiscoCommand": 3
+        },
+        "total_wired": 63,
+        "notes": "ConvertToHTMLTable.Value requires a table variable produced by AddMemoryTableRow (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "ConvertToPlainText": {
+    "required_inputs": [
+      {
+        "field": "Value",
+        "dependency_type": "string",
+        "provided_by": [
+          "ReadFile",
+          "MemoryTableGetUniqueRows",
+          "ResultSetFilter",
+          "XMLEvaluateXpathExpression"
+        ],
+        "provider_counts": {
+          "ReadFile": 8,
+          "MemoryTableGetUniqueRows": 4,
+          "ResultSetFilter": 3,
+          "XMLEvaluateXpathExpression": 3
+        },
+        "total_wired": 29,
+        "notes": "ConvertToPlainText.Value is most commonly wired from ReadFile. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "DeleteFile": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 6
+        },
+        "total_wired": 6,
+        "notes": "DeleteFile.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "DeleteFolder": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 4
+        },
+        "total_wired": 4,
+        "notes": "DeleteFolder.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "DeleteMemoryTableColumns": {
+    "required_inputs": [
+      {
+        "field": "ResultSet",
+        "dependency_type": "table",
+        "provided_by": [
+          "ResultSetFilter"
+        ],
+        "provider_counts": {
+          "ResultSetFilter": 4
+        },
+        "total_wired": 15,
+        "notes": "DeleteMemoryTableColumns.ResultSet requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      },
+      {
+        "field": "ResultSetName",
+        "dependency_type": "table",
+        "provided_by": [
+          "ResultSetFilter"
+        ],
+        "provider_counts": {
+          "ResultSetFilter": 4
+        },
+        "total_wired": 13,
+        "notes": "DeleteMemoryTableColumns.ResultSetName requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "DeleteMemoryTableRows": {
+    "required_inputs": [
+      {
+        "field": "ResultSet",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 64
+        },
+        "total_wired": 75,
+        "notes": "DeleteMemoryTableRows.ResultSet requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      },
+      {
+        "field": "ResultSetName",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 64
+        },
+        "total_wired": 73,
+        "notes": "DeleteMemoryTableRows.ResultSetName requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "DiskSpace": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 5
+        },
+        "total_wired": 5,
+        "notes": "DiskSpace.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ExcelWrite": {
+    "required_inputs": [
+      {
+        "field": "NewValue",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 11
+        },
+        "total_wired": 13,
+        "notes": "ExcelWrite.NewValue requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "ExitWhile": {
+    "required_inputs": [
+      {
+        "field": "Counter",
+        "dependency_type": "loop_counter",
+        "provided_by": [
+          "GetRowsCount",
+          "GetColumnsCount"
+        ],
+        "provider_counts": {
+          "GetRowsCount": 281,
+          "GetColumnsCount": 4
+        },
+        "total_wired": 284,
+        "notes": "ExitWhile.Counter must reference the WhileActivity xName to get the current row index. ExitWhile requires an enclosing WhileActivity."
+      }
+    ]
+  },
+  "FolderCreate": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 6
+        },
+        "total_wired": 6,
+        "notes": "FolderCreate.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "FolderList": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 10
+        },
+        "total_wired": 10,
+        "notes": "FolderList.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "GetCellValue": {
+    "required_inputs": [
+      {
+        "field": "ResultSet",
+        "dependency_type": "table",
+        "provided_by": [
+          "ResultSetFilter",
+          "JsonToTable",
+          "SNGetRecord",
+          "TSQLQuery"
+        ],
+        "provider_counts": {
+          "ResultSetFilter": 12,
+          "JsonToTable": 6,
+          "SNGetRecord": 3,
+          "TSQLQuery": 3
+        },
+        "total_wired": 363,
+        "notes": "GetCellValue.ResultSet requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      },
+      {
+        "field": "RowNumber",
+        "dependency_type": "loop_counter",
+        "provided_by": [
+          "WhileActivity",
+          "ExitWhile",
+          "GetRowsCount",
+          "GetCellValue",
+          "FunctionCalculator"
+        ],
+        "provider_counts": {
+          "WhileActivity": 188,
+          "ExitWhile": 83,
+          "GetRowsCount": 4,
+          "GetCellValue": 3,
+          "FunctionCalculator": 3
+        },
+        "total_wired": 272,
+        "notes": "GetCellValue.RowNumber must reference the WhileActivity xName to get the current row index. GetCellValue requires an enclosing WhileActivity."
+      },
+      {
+        "field": "TableName",
+        "dependency_type": "table",
+        "provided_by": [
+          "ReadXLS"
+        ],
+        "provider_counts": {
+          "ReadXLS": 3
+        },
+        "total_wired": 3,
+        "notes": "GetCellValue.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "GetInstalledSoftware": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 10
+        },
+        "total_wired": 10,
+        "notes": "GetInstalledSoftware.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "GetOperatingSystem": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "GetOperatingSystem.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "GetRows": {
+    "required_inputs": [
+      {
+        "field": "RowNumber",
+        "dependency_type": "loop_counter",
+        "provided_by": [
+          "WhileActivity"
+        ],
+        "provider_counts": {
+          "WhileActivity": 7
+        },
+        "total_wired": 7,
+        "notes": "GetRows.RowNumber must reference the WhileActivity xName to get the current row index. GetRows requires an enclosing WhileActivity."
+      }
+    ]
+  },
+  "GetRowsCount": {
+    "required_inputs": [
+      {
+        "field": "ResultSet",
+        "dependency_type": "table",
+        "provided_by": [
+          "ResultSetFilter",
+          "CreateMemoryTable",
+          "TSQLQuery",
+          "Split",
+          "ReadXLS",
+          "AddMemoryTableRow",
+          "JsonToTable",
+          "MemoryTableGetUniqueRows",
+          "ADListGroup",
+          "JSONtoTableAdvanced",
+          "ADLDAPQuery",
+          "FolderList",
+          "CherwellGetRecord"
+        ],
+        "provider_counts": {
+          "ResultSetFilter": 45,
+          "CreateMemoryTable": 31,
+          "TSQLQuery": 26,
+          "Split": 13,
+          "ReadXLS": 8,
+          "AddMemoryTableRow": 7,
+          "JsonToTable": 7,
+          "MemoryTableGetUniqueRows": 6,
+          "ADListGroup": 5,
+          "JSONtoTableAdvanced": 5,
+          "ADLDAPQuery": 3,
+          "FolderList": 3,
+          "CherwellGetRecord": 3
+        },
+        "total_wired": 350,
+        "notes": "GetRowsCount.ResultSet requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      },
+      {
+        "field": "TableName",
+        "dependency_type": "table",
+        "provided_by": [
+          "ReadXLS"
+        ],
+        "provider_counts": {
+          "ReadXLS": 3
+        },
+        "total_wired": 3,
+        "notes": "GetRowsCount.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "GetWindowEventLogs": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "GetWindowEventLogs.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "HTTPRequest": {
+    "required_inputs": [
+      {
+        "field": "HeaderData",
+        "dependency_type": "string",
+        "provided_by": [
+          "XMLEvaluateXpathExpression",
+          "GetCellValue",
+          "AzureRetrieveAccessToken"
+        ],
+        "provider_counts": {
+          "XMLEvaluateXpathExpression": 8,
+          "GetCellValue": 3,
+          "AzureRetrieveAccessToken": 3
+        },
+        "total_wired": 20,
+        "notes": "HTTPRequest.HeaderData is most commonly wired from XMLEvaluateXpathExpression. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "PostData",
+        "dependency_type": "string",
+        "provided_by": [
+          "Trim"
+        ],
+        "provider_counts": {
+          "Trim": 4
+        },
+        "total_wired": 9,
+        "notes": "HTTPRequest.PostData is most commonly wired from Trim. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "Url",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "MatchRegularExpression"
+        ],
+        "provider_counts": {
+          "GetCellValue": 11,
+          "MatchRegularExpression": 3
+        },
+        "total_wired": 15,
+        "notes": "HTTPRequest.Url is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "IsEmpty": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 7
+        },
+        "total_wired": 12,
+        "notes": "IsEmpty.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "IsNumeric": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetIncidentTicketID"
+        ],
+        "provider_counts": {
+          "GetIncidentTicketID": 3
+        },
+        "total_wired": 3,
+        "notes": "IsNumeric.TheValue is most commonly wired from GetIncidentTicketID. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "Length": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 10
+        },
+        "total_wired": 13,
+        "notes": "Length.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "MemorySet": {
+    "required_inputs": [
+      {
+        "field": "VariableValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetDate",
+          "ReplaceString",
+          "ReadXLS",
+          "FunctionCalculator",
+          "WhileActivity",
+          "CleanTable",
+          "PowerShell",
+          "GetCellValueAdvanced",
+          "ConvertTableToJSON",
+          "CreateMemoryTable",
+          "ResultSetFilter",
+          "TSQLQuery",
+          "ConvertToPlainText",
+          "HTTPRequest",
+          "Split",
+          "ADRemoveFromGroup",
+          "TSQLStatement",
+          "ADAddtoGroup",
+          "SNCreateRecord",
+          "GetUNIXTimestamp",
+          "SingleSSHCommand",
+          "ConvertPasswordToPlaintext",
+          "DateDifference",
+          "ConvertToHTMLTable",
+          "Executor",
+          "Counter",
+          "FormatDate"
+        ],
+        "provider_counts": {
+          "GetCellValue": 104,
+          "GetDate": 35,
+          "ReplaceString": 23,
+          "ReadXLS": 21,
+          "FunctionCalculator": 17,
+          "WhileActivity": 14,
+          "CleanTable": 13,
+          "PowerShell": 8,
+          "GetCellValueAdvanced": 8,
+          "ConvertTableToJSON": 8,
+          "CreateMemoryTable": 8,
+          "ResultSetFilter": 7,
+          "TSQLQuery": 6,
+          "ConvertToPlainText": 5,
+          "HTTPRequest": 5,
+          "Split": 5,
+          "ADRemoveFromGroup": 5,
+          "TSQLStatement": 5,
+          "ADAddtoGroup": 5,
+          "SNCreateRecord": 3,
+          "GetUNIXTimestamp": 3,
+          "SingleSSHCommand": 3,
+          "ConvertPasswordToPlaintext": 3,
+          "DateDifference": 3,
+          "ConvertToHTMLTable": 3,
+          "Executor": 3,
+          "Counter": 3,
+          "FormatDate": 3
+        },
+        "total_wired": 206,
+        "notes": "MemorySet.VariableValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "NewEvent": {
+    "required_inputs": [
+      {
+        "field": "Body",
+        "dependency_type": "string",
+        "provided_by": [
+          "ConvertTableToJSON",
+          "TableToEventBody",
+          "GetCellValue",
+          "HTTPRequest"
+        ],
+        "provider_counts": {
+          "ConvertTableToJSON": 17,
+          "TableToEventBody": 11,
+          "GetCellValue": 4,
+          "HTTPRequest": 3
+        },
+        "total_wired": 35,
+        "notes": "NewEvent.Body is most commonly wired from ConvertTableToJSON. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "Subject",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetDate",
+          "GetCellValue",
+          "WhileActivity",
+          "XMLEvaluateXpathExpression"
+        ],
+        "provider_counts": {
+          "GetDate": 13,
+          "GetCellValue": 11,
+          "WhileActivity": 4,
+          "XMLEvaluateXpathExpression": 3
+        },
+        "total_wired": 22,
+        "notes": "NewEvent.Subject is most commonly wired from GetDate. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "Ping": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetCellValueAdvanced"
+        ],
+        "provider_counts": {
+          "GetCellValue": 8,
+          "GetCellValueAdvanced": 3
+        },
+        "total_wired": 12,
+        "notes": "Ping.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "PowerShell": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 9
+        },
+        "total_wired": 9,
+        "notes": "PowerShell.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "ScriptCode",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 14
+        },
+        "total_wired": 16,
+        "notes": "PowerShell.ScriptCode is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "PowerShellScript": {
+    "required_inputs": [
+      {
+        "field": "ScriptCode",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 7,
+        "notes": "PowerShellScript.ScriptCode is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "RegistryQuery": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 4
+        },
+        "total_wired": 4,
+        "notes": "RegistryQuery.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ResultSetFilter": {
+    "required_inputs": [
+      {
+        "field": "FilterStatement",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "Trim",
+          "ReplaceString"
+        ],
+        "provider_counts": {
+          "GetCellValue": 46,
+          "Trim": 3,
+          "ReplaceString": 3
+        },
+        "total_wired": 56,
+        "notes": "ResultSetFilter.FilterStatement is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ReturnValue": {
+    "required_inputs": [
+      {
+        "field": "Value",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetRowsCount",
+          "WhileActivity",
+          "Contains",
+          "VMPowerState",
+          "VMExists",
+          "WorkflowCounter",
+          "GetCellValueAdvanced",
+          "FunctionCalculator",
+          "Counter",
+          "SingleSSHCommand",
+          "PowerShell",
+          "Length",
+          "GetDate",
+          "Round",
+          "MatchRegularExpression",
+          "VMPowerOff",
+          "PowerShellScript",
+          "ResultSetFilter"
+        ],
+        "provider_counts": {
+          "GetCellValue": 61,
+          "GetRowsCount": 22,
+          "WhileActivity": 12,
+          "Contains": 12,
+          "VMPowerState": 11,
+          "VMExists": 10,
+          "WorkflowCounter": 8,
+          "GetCellValueAdvanced": 8,
+          "FunctionCalculator": 7,
+          "Counter": 7,
+          "SingleSSHCommand": 5,
+          "PowerShell": 4,
+          "Length": 4,
+          "GetDate": 4,
+          "Round": 3,
+          "MatchRegularExpression": 3,
+          "VMPowerOff": 3,
+          "PowerShellScript": 3,
+          "ResultSetFilter": 3
+        },
+        "total_wired": 137,
+        "notes": "ReturnValue.Value is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "Round": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "FunctionCalculator"
+        ],
+        "provider_counts": {
+          "FunctionCalculator": 3
+        },
+        "total_wired": 3,
+        "notes": "Round.TheValue is most commonly wired from FunctionCalculator. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "SendEmail": {
+    "required_inputs": [
+      {
+        "field": "Attachments",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetDate"
+        ],
+        "provider_counts": {
+          "GetDate": 10
+        },
+        "total_wired": 13,
+        "notes": "SendEmail.Attachments is most commonly wired from GetDate. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "Body",
+        "dependency_type": "string",
+        "provided_by": [
+          "ConvertToHTMLTable",
+          "GetCellValue",
+          "GetRowsCount",
+          "PowerShellScript"
+        ],
+        "provider_counts": {
+          "ConvertToHTMLTable": 54,
+          "GetCellValue": 14,
+          "GetRowsCount": 6,
+          "PowerShellScript": 4
+        },
+        "total_wired": 84,
+        "notes": "SendEmail.Body is most commonly wired from ConvertToHTMLTable. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "Subject",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetDate"
+        ],
+        "provider_counts": {
+          "GetCellValue": 24,
+          "GetDate": 3
+        },
+        "total_wired": 35,
+        "notes": "SendEmail.Subject is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "To",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "ADGetProperty"
+        ],
+        "provider_counts": {
+          "GetCellValue": 6,
+          "ADGetProperty": 3
+        },
+        "total_wired": 9,
+        "notes": "SendEmail.To is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ServerRestart": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 4
+        },
+        "total_wired": 4,
+        "notes": "ServerRestart.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "ServiceStatus": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 4
+        },
+        "total_wired": 4,
+        "notes": "ServiceStatus.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "ServiceName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "ServiceStatus.ServiceName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "SetCellValue": {
+    "required_inputs": [
+      {
+        "field": "NewValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "WhileActivity",
+          "ReplaceString",
+          "DateDifference",
+          "GetRowsCount",
+          "FunctionCalculator",
+          "GetDate"
+        ],
+        "provider_counts": {
+          "GetCellValue": 57,
+          "WhileActivity": 6,
+          "ReplaceString": 5,
+          "DateDifference": 5,
+          "GetRowsCount": 4,
+          "FunctionCalculator": 3,
+          "GetDate": 3
+        },
+        "total_wired": 73,
+        "notes": "SetCellValue.NewValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "RowNumber",
+        "dependency_type": "loop_counter",
+        "provided_by": [
+          "WhileActivity",
+          "Counter",
+          "GetRowsCount",
+          "ExitWhile",
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "WhileActivity": 28,
+          "Counter": 17,
+          "GetRowsCount": 15,
+          "ExitWhile": 9,
+          "GetCellValue": 3
+        },
+        "total_wired": 69,
+        "notes": "SetCellValue.RowNumber must reference the WhileActivity xName to get the current row index. SetCellValue requires an enclosing WhileActivity."
+      }
+    ]
+  },
+  "SingleSSHCommand": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 5
+        },
+        "total_wired": 5,
+        "notes": "SingleSSHCommand.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "SortTable": {
+    "required_inputs": [
+      {
+        "field": "ResultSetName",
+        "dependency_type": "table",
+        "provided_by": [
+          "ResultSetFilter"
+        ],
+        "provider_counts": {
+          "ResultSetFilter": 8
+        },
+        "total_wired": 18,
+        "notes": "SortTable.ResultSetName requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "Split": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "ConvertToDBStatement",
+          "ResultSetFilter",
+          "ReplaceString",
+          "WhileActivity",
+          "Split",
+          "PowerShell"
+        ],
+        "provider_counts": {
+          "GetCellValue": 26,
+          "ConvertToDBStatement": 7,
+          "ResultSetFilter": 7,
+          "ReplaceString": 6,
+          "WhileActivity": 5,
+          "Split": 3,
+          "PowerShell": 3
+        },
+        "total_wired": 50,
+        "notes": "Split.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "StartXMLSession": {
+    "required_inputs": [
+      {
+        "field": "XMLString",
+        "dependency_type": "string",
+        "provided_by": [
+          "HTTPRequest",
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "HTTPRequest": 9,
+          "GetCellValue": 8
+        },
+        "total_wired": 20,
+        "notes": "StartXMLSession.XMLString is most commonly wired from HTTPRequest. Ensure the providing activity precedes this one in the workflow."
+      },
+      {
+        "field": "xml",
+        "dependency_type": "string",
+        "provided_by": [
+          "HTTPRequest",
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "HTTPRequest": 9,
+          "GetCellValue": 8
+        },
+        "total_wired": 20,
+        "notes": "StartXMLSession.xml is most commonly wired from HTTPRequest. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "SubString": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 4,
+        "notes": "SubString.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "TSQLQuery": {
+    "required_inputs": [
+      {
+        "field": "Query",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetDate"
+        ],
+        "provider_counts": {
+          "GetCellValue": 24,
+          "GetDate": 5
+        },
+        "total_wired": 36,
+        "notes": "TSQLQuery.Query is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "TSQLStatement": {
+    "required_inputs": [
+      {
+        "field": "Query",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "GetDate",
+          "ReplaceString",
+          "PowerShellScript"
+        ],
+        "provider_counts": {
+          "GetCellValue": 33,
+          "GetDate": 28,
+          "ReplaceString": 6,
+          "PowerShellScript": 3
+        },
+        "total_wired": 54,
+        "notes": "TSQLStatement.Query is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "Trim": {
+    "required_inputs": [
+      {
+        "field": "TheValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue",
+          "ReplaceStringAdvanced"
+        ],
+        "provider_counts": {
+          "GetCellValue": 5,
+          "ReplaceStringAdvanced": 5
+        },
+        "total_wired": 12,
+        "notes": "Trim.TheValue is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "VMList": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "VMList.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "VMPowerCLI": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 5
+        },
+        "total_wired": 5,
+        "notes": "VMPowerCLI.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "WriteCSV": {
+    "required_inputs": [
+      {
+        "field": "NewValue",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 3
+        },
+        "total_wired": 6,
+        "notes": "WriteCSV.NewValue requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "WriteFile": {
+    "required_inputs": [
+      {
+        "field": "NewValue",
+        "dependency_type": "string",
+        "provided_by": [
+          "ConvertToPlainText",
+          "GetCellValue",
+          "GetDate"
+        ],
+        "provider_counts": {
+          "ConvertToPlainText": 8,
+          "GetCellValue": 7,
+          "GetDate": 3
+        },
+        "total_wired": 24,
+        "notes": "WriteFile.NewValue is most commonly wired from ConvertToPlainText. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  },
+  "WriteXLS": {
+    "required_inputs": [
+      {
+        "field": "NewValue",
+        "dependency_type": "table",
+        "provided_by": [
+          "CreateMemoryTable",
+          "AddMemoryTableRow"
+        ],
+        "provider_counts": {
+          "CreateMemoryTable": 7,
+          "AddMemoryTableRow": 6
+        },
+        "total_wired": 20,
+        "notes": "WriteXLS.NewValue requires a table variable produced by CreateMemoryTable (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+      }
+    ]
+  },
+  "ZipCompress": {
+    "required_inputs": [
+      {
+        "field": "HostName",
+        "dependency_type": "string",
+        "provided_by": [
+          "GetCellValue"
+        ],
+        "provider_counts": {
+          "GetCellValue": 3
+        },
+        "total_wired": 3,
+        "notes": "ZipCompress.HostName is most commonly wired from GetCellValue. Ensure the providing activity precedes this one in the workflow."
+      }
+    ]
+  }
+}

@@ -132,10 +132,11 @@ VARIABLE NAMING CONVENTION — critical for downstream alignment:
 LOOP ROW ACCESS RULES — CRITICAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 When describing loop row access in the variable contract, note that GetCellValue RowNumber
-references the ExitWhile xName, NOT the WhileActivity xName.
-- CORRECT: ExitWhile xName="exitWhile1" → GetCellValue RowNumber="%exitWhile1%"
-- WRONG:   WhileActivity xName="loopCerts1" → GetCellValue RowNumber="%loopCerts1%"
-This is confirmed across all 625 real platform workflows.
+references the WhileActivity xName, NOT the ExitWhile xName.
+- CORRECT: WhileActivity xName="loopServers" → GetCellValue RowNumber="%loopServers%"
+- WRONG:   ExitWhile xName="exitWhile1"      → GetCellValue RowNumber="%exitWhile1%"
+Confirmed from corpus analysis of 609 real workflows (WhileActivity: 188 occurrences,
+ExitWhile: 83 occurrences as RowNumber source).
 """
 
 decomposer_agent = LlmAgent(

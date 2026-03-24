@@ -1,0 +1,173 @@
+{
+  "name": "Workflow_1774333952_4743",
+  "pnumber": "83210",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "name": "GetRowsCount",
+      "IsValid": "True",
+      "ResultSet": "%serverTable%",
+      "Description": "Get the total number of rows in the 'serverTable'.",
+      "TypeName": "GetRowsCount",
+      "description": "Get the total number of rows in the 'serverTable'.",
+      "notes": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated (e.g. via a global variable, prior workflow, or trigger) before running this workflow."
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "name": "WhileActivity",
+      "IsValid": "True",
+      "Condition": "{x:Null}",
+      "Description": "Begin a While loop that continues as long as the counter is less than the total row count of the 'serverTable'.",
+      "description": "Begin a While loop that continues as long as the counter is less than the total row count of the 'serverTable'.",
+      "sequenceActivity1": {
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "name": "SequenceActivity",
+        "IsValid": "True",
+        "Description": "Sequence of activities to perform for each server.",
+        "description": "Sequence of activities to perform for each server.",
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "name": "ExitWhile",
+          "IsValid": "True",
+          "Description": "End the While loop.",
+          "TypeName": "ExitWhile",
+          "Counter": "%getRowsCount1%",
+          "description": "End the While loop.",
+          "exitWhileInsideWhile": "True",
+          "whileSequenceActivity": "sequenceActivity1"
+        },
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "name": "GetCellValue",
+          "IsValid": "True",
+          "ColumnNumber": "server",
+          "ResultSet": "%serverTable%",
+          "RowNumber": "%whileActivity1%",
+          "ResultSetName": "serverTable",
+          "Description": "Get the server hostname or IP address from the 'server' column.",
+          "TypeName": "GetCellValue",
+          "description": "Get the server hostname or IP address from the 'server' column.",
+          "notes": "VERIFY: 'ColumnNumber' is set to the literal value 'server'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'ResultSetName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime."
+        },
+        "ping1": {
+          "xName": "ping1",
+          "CustomTypeName": "Ping",
+          "name": "Ping",
+          "IsValid": "True",
+          "HostName": "%getCellValue1%",
+          "Description": "Ping the retrieved server hostname or IP address.",
+          "TypeName": "Ping",
+          "description": "Ping the retrieved server hostname or IP address."
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "name": "IfElseActivity",
+          "IsValid": "True",
+          "Description": "Check the result of the ping operation.",
+          "description": "Check the result of the ping operation.",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "name": "IfElseBranchActivity",
+            "IsValid": "True",
+            "Description": "Branch for successful ping.",
+            "description": "Branch for successful ping.",
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "name": "ReturnValue",
+              "IsValid": "True",
+              "Value": "Success",
+              "UseBranchWhenTimeout": "False",
+              "UseStoredValue": "True",
+              "ConditionType": "Equals",
+              "Description": "Condition for successful ping.",
+              "Type": "StoredValue",
+              "TypeName": "ReturnValue",
+              "description": "Condition for successful ping."
+            },
+            "displayValue1": {
+              "xName": "displayValue1",
+              "CustomTypeName": "DisplayValue",
+              "name": "DisplayValue",
+              "IsValid": "True",
+              "ValueToDisplay": "Ping succeeded for server: %getCellValue1%",
+              "Description": "Display a success message in the logs.",
+              "TypeName": "DisplayValue",
+              "description": "Display a success message in the logs."
+            }
+          },
+          "ifElseBranchActivity2": {
+            "xName": "ifElseBranchActivity2",
+            "CustomTypeName": "IfElseBranchActivity",
+            "name": "IfElseBranchActivity",
+            "IsValid": "True",
+            "Description": "Branch for failed ping.",
+            "description": "Branch for failed ping.",
+            "returnValue2": {
+              "xName": "returnValue2",
+              "CustomTypeName": "ReturnValue",
+              "name": "ReturnValue",
+              "IsValid": "False",
+              "Value": "",
+              "UseBranchWhenTimeout": "True",
+              "UseStoredValue": "False",
+              "ConditionType": "",
+              "Description": "Default branch for failed ping.",
+              "Type": "StoredValue",
+              "TypeName": "ReturnValue",
+              "description": "Default branch for failed ping."
+            },
+            "displayValue2": {
+              "xName": "displayValue2",
+              "CustomTypeName": "DisplayValue",
+              "name": "DisplayValue",
+              "IsValid": "True",
+              "ValueToDisplay": "Ping failed for server: %getCellValue1%. Result: %ping1%",
+              "Description": "Display a failure message in the logs.",
+              "TypeName": "DisplayValue",
+              "description": "Display a failure message in the logs."
+            }
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated (e.g. via a global variable, prior workflow, or trigger) before running this workflow.",
+      "kind": "verify"
+    },
+    {
+      "activity": "getCellValue1",
+      "type": "GetCellValue",
+      "field": "notes",
+      "message": "VERIFY: 'ColumnNumber' is set to the literal value 'server'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    },
+    {
+      "activity": "getCellValue1",
+      "type": "GetCellValue",
+      "field": "notes",
+      "message": "VERIFY: 'ResultSetName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated (e.g. via a global variable, prior workflow, or trigger) before running this workflow.",
+    "VERIFY: 'ColumnNumber' is set to the literal value 'server'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'ResultSetName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime."
+  ],
+  "errors": []
+}

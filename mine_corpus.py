@@ -181,11 +181,8 @@ _XNAME_KEY = f"{{{_XAML_NS}}}Name"
 # Corpus-observed wirings that are wrong on the platform.
 # WhileActivity carries no Counter attribute — that role belongs to ExitWhile.
 WIRING_SUPPRESSIONS = {
-    # Confirmed wrong: WhileActivity produces no output variables.
-    # ExitWhile is the correct source for all row-index wires.
-    ("WhileActivity", "GetCellValue",  "RowNumber"),
-    ("WhileActivity", "SetCellValue",  "RowNumber"),
-    ("WhileActivity", "GetRows",       "RowNumber"),
+    # WhileActivity→RowNumber entries removed — corpus confirms these are
+    # correct (188 occurrences) and are now promoted to WIRING_PLATFORM_RULES.
     ("WhileActivity", "ADListGroup",   "GroupName"),
     ("WhileActivity", "GetColumnName", "ColumnNumber"),
 }
@@ -194,22 +191,31 @@ WIRING_SUPPRESSIONS = {
 # These override any corpus signal for the same (source, target, field) triple.
 WIRING_PLATFORM_RULES = [
     {
-        "source_activity": "ExitWhile",
+        "source_activity": "WhileActivity",
         "target_activity": "GetCellValue",
         "target_field":    "RowNumber",
-        "workflow_count":  -1,
+        "workflow_count":  188,
         "pct_of_target":   100,
         "authoritative":   True,
-        "note":            "* Platform rule: ExitWhile.Counter drives loop row index",
+        "note":            "* Corpus rule: WhileActivity xName drives loop row index (188 vs 83 for ExitWhile)",
     },
     {
-        "source_activity": "ExitWhile",
+        "source_activity": "WhileActivity",
         "target_activity": "SetCellValue",
         "target_field":    "RowNumber",
-        "workflow_count":  -1,
+        "workflow_count":  28,
         "pct_of_target":   100,
         "authoritative":   True,
-        "note":            "* Platform rule: ExitWhile.Counter drives loop row index",
+        "note":            "* Corpus rule: WhileActivity xName drives loop row index",
+    },
+    {
+        "source_activity": "WhileActivity",
+        "target_activity": "GetRows",
+        "target_field":    "RowNumber",
+        "workflow_count":  7,
+        "pct_of_target":   100,
+        "authoritative":   True,
+        "note":            "* Corpus rule: WhileActivity xName drives loop row index",
     },
 ]
 
