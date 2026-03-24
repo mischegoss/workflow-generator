@@ -50,5 +50,8 @@
   },
   "WriteFile": {
     "IsAppend": "True"
+  },
+  "Ping": {
+    "HostId": "-2"
   }
 }

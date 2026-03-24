@@ -1,6 +1,8 @@
 import argparse
 import asyncio
 import json
+import pathlib
+import time
 import uuid
 
 import litellm
@@ -14,51 +16,37 @@ from tools.decompose_tools import assess_complexity, estimate_activity_count
 
 load_dotenv()
 
-# Disable LiteLlm response caching entirely.
-# LiteLlm can cache completions for identical/near-identical prompts and return
-# stale responses without hitting the API.
 litellm.cache = None
 
-MVP_CEILING = 25
+MVP_CEILING  = 25
+OUTPUT_DIR   = pathlib.Path("json_files")
 
 
-def _extract_session_state(runner: InMemoryRunner,
-                            app_name: str,
-                            session_id: str,
-                            user_id: str) -> dict:
-    """
-    Reads the current session state from the runner's session service.
-    Returns a dict of all output_key values stored by agents.
-    """
+async def _extract_session_state(runner: InMemoryRunner,
+                                  app_name: str,
+                                  session_id: str,
+                                  user_id: str) -> dict:
+    """Read session state via the public session service API."""
     try:
-        sessions = runner.session_service._sessions
-        key = (app_name, user_id, session_id)
-        session = sessions.get(key)
+        session = await runner.session_service.get_session(
+            app_name=app_name,
+            user_id=user_id,
+            session_id=session_id,
+        )
         if session:
             return dict(session.state)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"  [warning] Could not retrieve session state: {e}")
     return {}
 
 
 def _ensure_dict(value) -> dict:
-    """
-    Safely converts agent output to a dict.
-
-    Handles two common ADK/Gemini serialization quirks:
-    1. Agent outputs a JSON string instead of a dict (output_key passthrough).
-    2. Agent wraps its JSON output in markdown code fences (```json ... ```)
-       despite being instructed not to. Gemini Flash does this frequently.
-    """
     if isinstance(value, dict):
         return value
     if isinstance(value, str):
-        # Strip markdown code fences before attempting JSON parse.
         text = value.strip()
         if text.startswith("```"):
-            # Remove opening fence line (e.g. ```json or ```)
             text = text.split("\n", 1)[-1]
-            # Remove closing fence
             if text.endswith("```"):
                 text = text[: text.rfind("```")]
             text = text.strip()
@@ -71,22 +59,31 @@ def _ensure_dict(value) -> dict:
     return {}
 
 
+def _find_output_file(run_start: float) -> pathlib.Path | None:
+    """
+    Scan json_files/ for any .json file written after run_start.
+
+    Python-stage state mutations (including output_result) don't survive
+    ADK's get_session() call — only LlmAgent output_key values are persisted.
+    The pipeline writes the file to disk successfully; we find it by mtime.
+    """
+    if not OUTPUT_DIR.exists():
+        return None
+    candidates = [
+        f for f in OUTPUT_DIR.glob("*.json")
+        if f.stat().st_mtime >= run_start
+    ]
+    if not candidates:
+        return None
+    # Most recently written file wins (handles parallel runs gracefully)
+    return max(candidates, key=lambda f: f.stat().st_mtime)
+
+
 def _check_needs_retry(state: dict) -> tuple:
-    """
-    Inspects session state after a pipeline run to determine if a retry is needed.
-
-    Returns (needs_retry: bool, error_summary: str).
-
-    Retry triggers:
-    - _empty_response_error: model returned empty response mid-pipeline
-    - validation_result.status == "invalid": JSON structure validation failed
-      (xml_error removed — ComposerAgent is gone, XML is offline via convert_to_xml.py)
-    """
     if state.get("_empty_response_error"):
         return True, "Model returned empty response mid-pipeline. Retrying with fresh session."
 
     validation = _ensure_dict(state.get("validation_result", {}))
-
     if validation.get("status") == "invalid":
         errors = validation.get("errors", [])
         if errors:
@@ -97,47 +94,26 @@ def _check_needs_retry(state: dict) -> tuple:
     return False, ""
 
 
-def _extract_output(state: dict) -> dict | None:
-    """
-    Retrieves the output result dict from pipeline session state.
-    Returns None if the output stage did not complete successfully.
-    """
-    output = _ensure_dict(state.get("output_result", {}))
-    if output.get("status") == "failed":
-        return None
-    # output_result must have at minimum a name and output_file to be valid
-    if output.get("name") and output.get("output_file"):
-        return output
-    return None
-
-
 async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     """
-    Runs the full pipeline for a given prompt.
-    Returns (output_dict | None, session_state_dict).
-
-    output_dict contains the written JSON file path and workflow metadata.
-    None on failure — caller checks session state for error details.
-
-    Every call creates completely isolated objects:
-    - Fresh pipeline (new WorkflowPipeline instance via build_pipeline())
-    - Fresh InMemoryRunner (creates its own internal session service)
-    - Unique app_name per run (prevents any session key collision in ADK)
-    - Unique user_id per run
+    Returns (output_file: pathlib.Path | None, session_state: dict).
+    Output file is found by scanning json_files/ for files written during this run.
     """
-    app_name = f"wf_gen_{run_id}"
-    user_id = f"system_{run_id}"
+    app_name    = f"wf_gen_{run_id}"
+    user_id     = f"system_{run_id}"
+    run_start   = time.time()
 
     pipeline = build_pipeline()
-    runner = InMemoryRunner(agent=pipeline, app_name=app_name)
+    runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
     session = await runner.session_service.create_session(
         app_name=app_name,
         user_id=user_id,
     )
+    session.state["prompt"] = prompt
 
     user_message = Content(role="user", parts=[Part(text=prompt)])
-    event_count = 0
+    event_count  = 0
 
     try:
         async for event in runner.run_async(
@@ -155,33 +131,31 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     except ValueError as e:
         if "No message in response" in str(e):
             print(f"  [pipeline] Empty response from model — will retry")
-            state = _extract_session_state(runner, app_name, session.id, user_id)
+            state = await _extract_session_state(runner, app_name, session.id, user_id)
             return None, {**state, "_empty_response_error": True}
         raise
 
     print(f"  Total events: {event_count}")
-    state = _extract_session_state(runner, app_name, session.id, user_id)
-    output = _extract_output(state)
-    return output, state
+    state       = await _extract_session_state(runner, app_name, session.id, user_id)
+    output_file = _find_output_file(run_start)
+
+    print(f"  Session keys: {[k for k in state if not k.startswith('_')]}")
+    if output_file:
+        print(f"  Output file:  {output_file}")
+    else:
+        print("  Output file:  NOT FOUND — checking for validation errors in state")
+
+    return output_file, state
 
 
 async def run(prompt: str) -> tuple:
     """
-    Runs the pipeline for a given prompt.
-    Returns (output_file_path | None, chat_response: str).
-
-    output_file_path: path to the written .json file in json_files/.
-                      None if generation failed.
-    chat_response: human-readable summary of the result including placeholders/errors.
-
-    To convert to XML for manual import into Resolve Actions:
-        python convert_to_xml.py json_files/<workflow_name>.json
+    Returns (output_file_path: str | None, chat_response: str).
     """
     load_activity_list()
 
-    # Pre-flight ceiling check (fast, no API calls)
     complexity = assess_complexity(prompt)
-    estimate = estimate_activity_count(prompt, complexity)
+    estimate   = estimate_activity_count(prompt, complexity)
 
     if estimate["estimated_total"] > MVP_CEILING:
         msg = (
@@ -196,74 +170,77 @@ async def run(prompt: str) -> tuple:
     # ── Attempt 1 ─────────────────────────────────────────────────────────
     run_id = uuid.uuid4().hex[:12]
     print(f"\n[attempt 1] run_id={run_id}")
-    output, state = await _run_pipeline(prompt, run_id)
+    output_file, state = await _run_pipeline(prompt, run_id)
+
+    if output_file:
+        return str(output_file), _build_chat_response(output_file, state)
 
     needs_retry, error_summary = _check_needs_retry(state)
 
     if not needs_retry:
-        chat = _build_chat_response(output, state)
-        return output.get("output_file") if output else None, chat
+        # No output file and no retry signal — unexpected failure
+        return None, "Workflow generation failed — no output produced and no error captured."
 
-    # ── Attempt 2 (retry) ──────────────────────────────────────────────────
+    # ── Attempt 2 (retry) ─────────────────────────────────────────────────
     print(f"\n[attempt 2] First attempt failed. Retrying...")
     print(f"  Reason: {error_summary[:200]}")
 
-    if state.get("_empty_response_error"):
-        retry_prompt = prompt
-    else:
-        retry_prompt = (
-            f"{prompt}\n\n"
-            f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "
-            f"that prevented it from being imported. Fix ALL of the following errors in "
-            f"your workflow output. Do not reproduce any of these errors:\n\n"
-            f"{error_summary}"
-        )
+    retry_prompt = prompt if state.get("_empty_response_error") else (
+        f"{prompt}\n\n"
+        f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "
+        f"that prevented it from being imported. Fix ALL of the following errors in "
+        f"your workflow output. Do not reproduce any of these errors:\n\n"
+        f"{error_summary}"
+    )
 
     retry_run_id = uuid.uuid4().hex[:12]
     print(f"  retry run_id={retry_run_id}")
-    retry_output, retry_state = await _run_pipeline(retry_prompt, retry_run_id)
+    retry_output_file, retry_state = await _run_pipeline(retry_prompt, retry_run_id)
+
+    if retry_output_file:
+        return str(retry_output_file), _build_chat_response(retry_output_file, retry_state)
 
     retry_needs_retry, retry_error = _check_needs_retry(retry_state)
-    if retry_needs_retry:
-        print(f"\n[attempt 2] Retry also failed: {retry_error[:200]}")
+    if retry_needs_retry or True:  # surface the error regardless
         msg = (
             f"Workflow generation failed after 2 attempts.\n\n"
-            f"Attempt 1 error: {error_summary}\n\n"
-            f"Attempt 2 error: {retry_error}\n\n"
+            f"Attempt 1: {error_summary}\n\n"
+            f"Attempt 2: {retry_error if retry_needs_retry else 'No output produced.'}\n\n"
             f"Try breaking the workflow into smaller pieces or simplifying the prompt."
         )
         return None, msg
 
-    chat = _build_chat_response(retry_output, retry_state)
-    return retry_output.get("output_file") if retry_output else None, chat
+    return None, "Workflow generation failed after 2 attempts."
 
 
-def _build_chat_response(output: dict | None, state: dict) -> str:
-    """
-    Builds a human-readable summary of the pipeline result.
-    Replaces the old composer_result.chat_response from ComposerAgent.
-    """
-    if not output:
-        validation = _ensure_dict(state.get("validation_result", {}))
-        errors = validation.get("errors", [])
-        return "Workflow generation failed.\n" + "\n".join(f"- {e}" for e in errors)
+def _build_chat_response(output_file: pathlib.Path, state: dict) -> str:
+    """Build human-readable summary from the written JSON file."""
+    try:
+        with open(output_file, encoding="utf-8") as f:
+            output = json.load(f)
+    except Exception:
+        return f"Workflow written to {output_file} — could not read summary."
 
     lines = [
-        f"Workflow generated: {output['name']}",
-        f"Pnumber: {output['pnumber']}",
-        f"File: {output['output_file']}",
-        f"",
-        f"To import: python convert_to_xml.py {output['output_file']}",
+        f"Workflow generated: {output.get('name', '?')}",
+        f"Pnumber:            {output.get('pnumber', '?')}",
+        f"File:               {output_file}",
+        "",
+        f"To import: python convert_to_xml.py {output_file}",
     ]
 
     placeholders = output.get("placeholder_summary", [])
     if placeholders:
-        lines.append(f"\n{len(placeholders)} item(s) require manual configuration:")
-        for item in placeholders:
-            if item["kind"] == "placeholder":
-                lines.append(f"  - [{item['activity']}] {item['field']}: {item['placeholder']}")
-            elif item["kind"] == "verify":
-                lines.append(f"  - [{item['activity']}] {item['message']}")
+        placeholder_items = [i for i in placeholders if i.get("kind") == "placeholder"]
+        verify_items      = [i for i in placeholders if i.get("kind") == "verify"]
+        if placeholder_items:
+            lines.append(f"\n{len(placeholder_items)} field(s) need values before import:")
+            for item in placeholder_items:
+                lines.append(f"  [{item['activity']}] {item['field']}: {item['placeholder']}")
+        if verify_items:
+            lines.append(f"\n{len(verify_items)} item(s) require manual review:")
+            for item in verify_items:
+                lines.append(f"  [{item['activity']}] {item['message']}")
 
     return "\n".join(lines)
 

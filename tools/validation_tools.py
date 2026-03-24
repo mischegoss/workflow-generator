@@ -27,6 +27,7 @@ EXCLUDED_REQUIRED_FIELDS = {
     "FieldsList",
     "TargetModuleName",
     "TemplateName",
+    "ColumnType"
 }
 
 # Formula pattern: =ConditionType(&&&,Value) — no quotes on either operand

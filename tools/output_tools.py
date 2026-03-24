@@ -6,9 +6,10 @@ Replaces ComposerAgent. Deterministic Python output stage.
 Live path:  format_json_output() → write_output_file()
 Manual path: workflow JSON → convert_to_xml.py (separate CLI script)
 
-Webhook/import integration with Resolve Actions is deferred.
-The pipeline writes a .json file to OUTPUT_DIR. From there,
-run convert_to_xml.py to produce the TotalExport XML for manual upload.
+Fix 9 note: verify_notes in the validation_result dict is now correctly
+populated by run_validation() in pipeline_stages.py (derived from
+placeholder_summary items with kind == "verify"). This file reads it
+directly — no change needed here beyond confirming the field is used.
 
 Output directory: json_files/ (relative to project root, created if missing)
 """
@@ -42,8 +43,11 @@ def format_json_output(
     Adds metadata to a validated workflow JSON and returns the output dict.
     Raises PipelineValidationError if validation_result.status != 'valid'.
 
-    Input:  validation_result dict from run_validation()
-    Output: complete output dict ready for write_output_file()
+    Fix 7 (via build_tools): generate_workflow_name now uses base_name,
+    so the output file is named meaningfully rather than WF_{timestamp}_{suffix}.
+
+    Fix 9: pipeline_notes is populated from validation_result["verify_notes"],
+    which is now correctly derived in run_validation() from the placeholder_summary.
     """
     if validation_result.get("status") != "valid":
         raise PipelineValidationError(validation_result.get("errors", []))
@@ -51,14 +55,14 @@ def format_json_output(
     workflow_json = validation_result["workflow_json"]
 
     return {
-        "name": generate_workflow_name(base_name),
-        "pnumber": generate_pnumber(),
-        "workflow_type": "Regular",
-        "created_by": "adk-pipeline-v2",
-        "workflow_raw_data": workflow_json.get("workflow_raw_data", workflow_json),
+        "name":               generate_workflow_name(base_name),
+        "pnumber":            generate_pnumber(),
+        "workflow_type":      "Regular",
+        "created_by":         "adk-pipeline-v2",
+        "workflow_raw_data":  workflow_json.get("workflow_raw_data", workflow_json),
         "placeholder_summary": validation_result.get("placeholder_summary", []),
-        "pipeline_notes": validation_result.get("verify_notes", []),
-        "errors": [],
+        "pipeline_notes":     validation_result.get("verify_notes", []),  # Fix 9
+        "errors":             [],
     }
 
 
@@ -83,9 +87,8 @@ def run_output(validation_result: dict, base_name: str = "Workflow") -> dict:
     Returns output dict extended with:
       'output_file': str path to written .json file
     """
-    output_dir = "json_files"
-    output = format_json_output(validation_result, base_name)
-    file_path = write_output_file(output, output_dir)
+    output    = format_json_output(validation_result, base_name)
+    file_path = write_output_file(output, "json_files")
 
     return {
         **output,

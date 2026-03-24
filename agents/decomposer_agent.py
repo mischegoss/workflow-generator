@@ -100,11 +100,33 @@ Each step maps to roughly one platform activity. Keep steps atomic and single-pu
 VARIABLE CONTRACT RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Extract and name ALL variables created or referenced during execution.
-- Use short camelCase names. No spaces or special characters.
 - Do NOT use %syntax% in the contract — StructureBuilder adds that later.
 - This contract is the single source of truth for variable names.
 - All downstream agents use ONLY these names — never invent new ones.
 - loop_type MUST be exactly "While" or "none" — no other values.
+
+VARIABLE NAMING CONVENTION — critical for downstream alignment:
+  Variable names MUST be the camelCase activity type name followed by a number.
+  This ensures StructureBuilder's xNames align with the contract exactly.
+
+  Name variables after the activity that PRODUCES the value:
+    GetRowsCount result   → getRowsCount1
+    GetCellValue result   → getCellValue1  (use getCellValue2 for a second instance)
+    GetDate result        → getDate1
+    Ping result           → ping1
+    DateDifference result → dateDifference1
+    MemorySet variable    → use the VariableName field value the step sets
+    CreateMemoryTable     → use the TableName the step creates (e.g. "serverTable")
+
+  For pre-existing external inputs (tables from global vars, prior workflows, triggers):
+    Use a short descriptive name that matches what the user described
+    (e.g. "serverTable" for "a table of servers", "certData" for "certificate data").
+    Mark source as "external — must exist before workflow runs".
+
+  NEVER use semantic descriptions as variable names (e.g. never "currentServer",
+  "pingResult", "rowCount" — use "getCellValue1", "ping1", "getRowsCount1" instead).
+  The LLM assembler assigns xNames from the activity type; your variable names
+  must match those xNames so %references% resolve correctly.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LOOP ROW ACCESS RULES — CRITICAL

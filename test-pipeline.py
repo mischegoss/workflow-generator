@@ -1,7 +1,8 @@
 import os
 import asyncio
-import time
-import random
+import json
+import pathlib
+import sys
 
 os.environ["DATA_DIR"] = "./data"
 
@@ -15,11 +16,8 @@ print("=" * 60)
 api_key = os.getenv("GOOGLE_API_KEY", "")
 if not api_key:
     print("ERROR: GOOGLE_API_KEY not set in .env")
-    exit(1)
+    sys.exit(1)
 
-# Unique name for this import — guaranteed fresh every run
-import_name = f"WF_{int(time.time())}_{random.randint(1000, 9999)}"
-print(f"\nImport file name this run: {import_name}")
 print("Running pipeline — 60-120 seconds...\n")
 
 from main import run
@@ -32,7 +30,8 @@ prompt = (
     "name and the ping result."
 )
 
-xml_content, chat_response = asyncio.run(run(prompt))
+# Pipeline now returns (json_file_path | None, chat_response)
+json_path, chat_response = asyncio.run(run(prompt))
 
 print("=" * 60)
 print("PIPELINE OUTPUT:")
@@ -40,35 +39,45 @@ print("=" * 60)
 print(chat_response)
 print()
 
-if xml_content:
-    # Stamp the guaranteed-unique import name and pnumber directly into the XML.
-    # ComposerAgent already generated a name/pnumber — we override them here
-    # so every test run produces a distinctly named importable file.
-    import re
-    import_pnumber = str(random.randint(50000, 99999))
-
-    xml_content = re.sub(
-        r'(<WorkflowInfo[^>]*\s)Pnumber="[^"]*"',
-        lambda m: m.group(1) + f'Pnumber="{import_pnumber}"',
-        xml_content,
-        count=1,
-    )
-    xml_content = re.sub(
-        r'(<WorkflowInfo[^>]*\s)Name="[^"]*"',
-        lambda m: m.group(1) + f'Name="{import_name}"',
-        xml_content,
-        count=1,
-    )
-
-    # Write directly to project root — no output/pipeline directory involved
-    root_path = f"./{import_name}.xml"
-    with open(root_path, "w", encoding="utf-8") as f:
-        f.write(xml_content)
-
-    print(f"IMPORT THIS FILE: {root_path}")
-    print(f"File size: {len(xml_content)} bytes")
-    print()
-    print(xml_content[:2000])
-else:
-    print("ERROR: Pipeline did not produce XML output.")
+if not json_path:
+    print("ERROR: Pipeline did not produce a JSON file.")
     print("Check pipeline output above for errors.")
+    sys.exit(1)
+
+json_path = pathlib.Path(json_path)
+if not json_path.exists():
+    print(f"ERROR: JSON file not found at {json_path}")
+    sys.exit(1)
+
+print(f"JSON written: {json_path}  ({json_path.stat().st_size} bytes)")
+
+# ── Convert to XML using convert_to_xml.py ─────────────────────────────────
+# convert_to_xml.py validates both the outer TotalExport wrapper and the
+# inner Xoml string before writing. If either fails it exits with code 3.
+print("\nConverting to XML...")
+
+import subprocess
+result = subprocess.run(
+    [sys.executable, "convert_to_xml.py", str(json_path)],
+    capture_output=True,
+    text=True,
+)
+print(result.stdout.strip())
+if result.returncode != 0:
+    print("ERROR: XML conversion failed.")
+    if result.stderr:
+        print(result.stderr.strip())
+    sys.exit(result.returncode)
+
+# convert_to_xml.py writes the .xml next to the .json by default
+xml_path = json_path.with_suffix(".xml")
+if not xml_path.exists():
+    print(f"ERROR: Expected XML file not found at {xml_path}")
+    sys.exit(1)
+
+xml_content = xml_path.read_text(encoding="utf-8")
+
+print(f"\nIMPORT THIS FILE: {xml_path}")
+print(f"File size: {len(xml_content)} bytes")
+print()
+print(xml_content[:2000])

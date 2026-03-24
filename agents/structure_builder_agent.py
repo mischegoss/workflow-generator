@@ -27,7 +27,7 @@ _KEEP_FIELDS = {
     "Formula", "ConditionType", "Type", "Value", "UseBranchWhenTimeout",
     "To", "Subject", "Body", "MessageType", "DestinationType", "DestinationNumber",
     "TemplateNumber", "IsNowSelected", "FirstDateFormat", "SecondDateFormat",
-    "Condition",
+    "Condition", "UseStoredValue",
 }
 
 
@@ -164,7 +164,7 @@ LOOP STRUCTURE:
 - ExitWhile requires: exitWhileInsideWhile="True", isValid="True",
   TypeName="ExitWhile", whileSequenceActivity="<sequenceActivityXName>"
 
-PRE-FILLED FIELDS — treat as authoritative
+PRE-FILLED FIELDS — treat as authoritative:
 If a manifest entry contains a pre_filled_fields dict, those field values have been
 confirmed by analysis of 609 real workflows. Use them exactly as provided.
 Do NOT override, ignore, or second-guess pre_filled_fields values.
@@ -186,22 +186,69 @@ XNAME RULES:
 - Both uppercase Description AND lowercase description required on every activity.
 - WhileActivity carries NO Counter attribute — Counter belongs ONLY on ExitWhile.
 
-IFELSE STRUCTURE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GETCELLVALUE COLUMN RULES — fix for Issue 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- ColumnType is always "Name" — the serializer sets this automatically. Do NOT set it.
+- ColumnNumber MUST be the EXACT column name from the prompt or variable contract —
+  never a number index. Read the column name from the user's prompt description.
+- CORRECT: prompt says "a column called 'server'" → ColumnNumber="server"
+- CORRECT: prompt says "the hostname column" → ColumnNumber="hostname"
+- WRONG:   ColumnNumber="1" — a numeric index will silently return empty with ColumnType=Name.
+- If the prompt does not name the column, use the most specific name from the description
+  (e.g. "host" for a hostnames column, "name" for a names column).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IFELSE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - IfElseActivity contains IfElseBranchActivity children.
 - Each IfElseBranchActivity: ReturnValue first, then branch activities (if any).
 - Valid ConditionType values: "" | "Equals" | "Contains" | "Not Contains" | "Not Equals" |
   "Formula" | ">" | "<" | ">=" | "<="
-- Default branch: Type="StoredValue", ConditionType="", Formula=null,
-  Value="", IsValid="False", UseBranchWhenTimeout="True"
+- Default branch: Type="StoredValue", ConditionType="", Value="", IsValid="False",
+  UseBranchWhenTimeout="True"
+
+RETURNVALUE FIELD RULES — fix for Issue 4:
+- Type must ALWAYS be "StoredValue". This is the only confirmed-working value across
+  625 real workflows. "UserDefinedValue" does NOT work for runtime comparisons.
+- UseStoredValue:
+    Condition branch (non-default): UseStoredValue="True"
+    Default branch:                 omit or set to "False"
+- UseBranchWhenTimeout:
+    Condition branch: UseBranchWhenTimeout="False"
+    Default branch:   UseBranchWhenTimeout="True"
+- Formula: Do NOT set. Leave it out entirely — the serializer computes it.
 
 EMPTY BRANCH RULE:
 - Empty branch = ONLY ReturnValue. No Continue, DisplayValue, or filler.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACTIVITY OUTPUT VALUES — fix for Issue 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When an IfElseActivity branches on the result of a preceding activity, use these
+confirmed success values for the condition branch ReturnValue.Value field.
+These are the exact strings the platform returns — using any other value means
+the condition branch will never fire.
+
+  Ping              → Value="Success",  ConditionType="Equals"
+  ServiceStatus     → Value="Running",  ConditionType="Equals"
+  ServiceStart      → Value="Success",  ConditionType="Equals"
+  ServiceStop       → Value="Success",  ConditionType="Equals"
+  FileExist         → Value="True",     ConditionType="Equals"
+  URLCheck          → Value="Success",  ConditionType="Equals"
+  ADIsAccountLocked → Value="True",     ConditionType="Equals"
+  ADIsAccountDisabled → Value="True",   ConditionType="Equals"
+  Contains          → Value="True",     ConditionType="Equals"
+  IsEmpty           → Value="True",     ConditionType="Equals"
+
+For activities not in this list, read the description of the condition in the prompt
+and use "Equals" with the most specific literal value mentioned.
+If the prompt says "if the result contains X", use ConditionType="Contains", Value="X".
+If the prompt says "if it fails", use the default branch — do not invent a failure value.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 WORKFLOW TERMINATION:
 - Do NOT add any end, terminate, or exit activity at the end of the workflow.
-
-FORMULA FIELD:
-- Do NOT set Formula on ReturnValue. Leave it out — the serializer computes it.
 
 VARIABLE REFERENCES:
 - Use ONLY names from decomposition.variable_contract.variables.
@@ -211,11 +258,11 @@ CERT WORKFLOW PATTERN — for date-check + email workflows:
 CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
   SequenceActivity (full attributes) →
     ExitWhile (Counter=%getRowsCountXName%, exitWhileInsideWhile="True")
-    GetCellValue (RowNumber=%exitWhileXName%)  ← ExitWhile xName
+    GetCellValue (RowNumber=%exitWhileXName%)  ← ExitWhile xName, ColumnNumber=<column name from prompt>
     GetCellValue
     DateDifference
     IfElseActivity →
-      IfElseBranchActivity (condition) → ReturnValue + action activity
+      IfElseBranchActivity (condition) → ReturnValue (Type="StoredValue") + action activity
       IfElseBranchActivity (default)   → ReturnValue only, nothing else
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -21,7 +21,6 @@ Exit codes:
 """
 
 import argparse
-import html
 import json
 import pathlib
 import sys
@@ -41,9 +40,15 @@ def _validate_outer(xml_string: str) -> ET.Element:
 
 def _validate_xoml(root: ET.Element) -> None:
     """
-    Locate the Xoml attribute on WorkflowInfo, unescape, and parse.
-    Raises ET.ParseError on failure.
-    Prints a warning (non-fatal) if no WorkflowInfo element is found.
+    Locate the Xoml attribute on WorkflowInfo and parse it as XML.
+
+    ET.fromstring on the outer XML already decodes the Xoml attribute value
+    (converting &amp; → &, &quot; → ", etc.). Calling html.unescape on top
+    of that causes double-unescaping: &amp; in the Xoml → & which is a bare
+    ampersand and invalid XML (triggers "invalid token" on Formula attributes
+    containing =Equals(&&&,Value)).
+
+    Do NOT call html.unescape here.
     """
     workflow_info = root.find(".//WorkflowInfo")
     if workflow_info is None:
@@ -53,7 +58,7 @@ def _validate_xoml(root: ET.Element) -> None:
     if not xoml:
         print("  [warn] Xoml attribute is empty — skipping Xoml validation")
         return
-    ET.fromstring(html.unescape(xoml))
+    ET.fromstring(xoml)
 
 
 # ---------------------------------------------------------------------------
