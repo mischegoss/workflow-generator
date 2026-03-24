@@ -1,0 +1,1390 @@
+{
+  "ADAddtoGroup": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 10,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 10,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADDeleteAccount": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 5,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "User",
+          "count": 3,
+          "pct": 60
+        }
+      ]
+    }
+  },
+  "ADDisableAccount": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 9,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 9,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADGetProperty": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 12,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 12,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADIsAccountDisabled": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 3,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 3,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADLDAPQuery": {
+    "Scope": {
+      "input_type": "dropdown",
+      "total_observations": 16,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Subtree",
+          "count": 16,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADMoveAccount": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 3,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 3,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADRemoveFromGroup": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 5,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 5,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ADSearchAccount": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 7,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "User",
+          "count": 6,
+          "pct": 86
+        }
+      ]
+    }
+  },
+  "ADSetProperty": {
+    "AccountType": {
+      "input_type": "radiobutton",
+      "total_observations": 15,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "User",
+          "count": 15,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "AddDate": {
+    "IntervalType": {
+      "input_type": "dropdown",
+      "total_observations": 6,
+      "values_excluded_noise": 2,
+      "values": [
+        {
+          "value": "Seconds",
+          "count": 3,
+          "pct": 50
+        }
+      ]
+    }
+  },
+  "AddMemoryTableColumn": {
+    "Selection": {
+      "input_type": "radiobutton",
+      "total_observations": 27,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "2",
+          "count": 19,
+          "pct": 70
+        },
+        {
+          "value": "1",
+          "count": 5,
+          "pct": 19
+        },
+        {
+          "value": "3",
+          "count": 3,
+          "pct": 11
+        }
+      ]
+    }
+  },
+  "AddMemoryTableRow": {
+    "Selection": {
+      "input_type": "radiobutton-extended",
+      "total_observations": 79,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "2",
+          "count": 76,
+          "pct": 96
+        },
+        {
+          "value": "1",
+          "count": 3,
+          "pct": 4
+        }
+      ]
+    }
+  },
+  "AdvancedCommunicate": {
+    "SingleType": {
+      "input_type": "radiobutton",
+      "total_observations": 5,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Custom",
+          "count": 4,
+          "pct": 80
+        }
+      ]
+    }
+  },
+  "CPU": {
+    "SelectedDeviceStatus": {
+      "input_type": "dropdown",
+      "total_observations": 10,
+      "values_excluded_noise": 3,
+      "values": [
+        {
+          "value": "Usage",
+          "count": 6,
+          "pct": 60
+        }
+      ]
+    }
+  },
+  "CherwellCreateRecord": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 6,
+      "values_excluded_noise": 2,
+      "values": [
+        {
+          "value": "Cherwell_Prod",
+          "count": 4,
+          "pct": 67
+        }
+      ]
+    }
+  },
+  "CherwellGetRecord": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 9,
+      "values_excluded_noise": 2,
+      "values": [
+        {
+          "value": "Cherwell Test",
+          "count": 6,
+          "pct": 67
+        }
+      ]
+    },
+    "outputFormat_UI": {
+      "input_type": "dropdown",
+      "total_observations": 9,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Display name and values",
+          "count": 9,
+          "pct": 100
+        }
+      ]
+    },
+    "outputType_UI": {
+      "input_type": "dropdown",
+      "total_observations": 9,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "ResultSet",
+          "count": 9,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "CloseIncident": {
+    "Type": {
+      "input_type": "radiobutton",
+      "total_observations": 4,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 4,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ConvertTextToTable": {
+    "ColumnsDelimiterSelection": {
+      "input_type": "dropdown",
+      "total_observations": 27,
+      "values_excluded_noise": 3,
+      "values": [
+        {
+          "value": ";",
+          "count": 12,
+          "pct": 44
+        },
+        {
+          "value": "Space",
+          "count": 11,
+          "pct": 41
+        }
+      ]
+    },
+    "ColumnsSelection": {
+      "input_type": "radiobutton",
+      "total_observations": 27,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 15,
+          "pct": 56
+        },
+        {
+          "value": "1",
+          "count": 12,
+          "pct": 44
+        }
+      ]
+    },
+    "RowsDelimiterSelection": {
+      "input_type": "dropdown",
+      "total_observations": 27,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Enter",
+          "count": 23,
+          "pct": 85
+        },
+        {
+          "value": "Line Feed",
+          "count": 4,
+          "pct": 15
+        }
+      ]
+    },
+    "RowsSelection": {
+      "input_type": "radiobutton",
+      "total_observations": 27,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "1",
+          "count": 26,
+          "pct": 96
+        }
+      ]
+    }
+  },
+  "ConvertToDBStatement": {
+    "DbType": {
+      "input_type": "dropdown",
+      "total_observations": 9,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "TSQL",
+          "count": 9,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "DiskSpace": {
+    "SelectedDeviceStatus": {
+      "input_type": "dropdown",
+      "total_observations": 12,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Available %",
+          "count": 6,
+          "pct": 50
+        },
+        {
+          "value": "Available",
+          "count": 5,
+          "pct": 42
+        }
+      ]
+    }
+  },
+  "ExtractLineFromText": {
+    "IsLineNumber": {
+      "input_type": "radiobutton",
+      "total_observations": 7,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "False",
+          "count": 6,
+          "pct": 86
+        }
+      ]
+    }
+  },
+  "FTPGetFile": {
+    "TransferMode_UI": {
+      "input_type": "dropdown",
+      "total_observations": 3,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Default",
+          "count": 3,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "FolderList": {
+    "ConditionUI": {
+      "input_type": "dropdown",
+      "total_observations": 25,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Older Than",
+          "count": 24,
+          "pct": 96
+        }
+      ]
+    },
+    "FilterUI": {
+      "input_type": "dropdown",
+      "total_observations": 25,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Created",
+          "count": 24,
+          "pct": 96
+        }
+      ]
+    }
+  },
+  "GetCellValue": {
+    "ColumnType": {
+      "input_type": "radiobutton",
+      "total_observations": 1430,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Name",
+          "count": 1196,
+          "pct": 84
+        },
+        {
+          "value": "Number",
+          "count": 234,
+          "pct": 16
+        }
+      ]
+    }
+  },
+  "GetDate": {
+    "FuturePast": {
+      "input_type": "radiobutton",
+      "total_observations": 178,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 157,
+          "pct": 88
+        },
+        {
+          "value": "1",
+          "count": 21,
+          "pct": 12
+        }
+      ]
+    },
+    "TimeInterval": {
+      "input_type": "dropdown",
+      "total_observations": 178,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Seconds",
+          "count": 74,
+          "pct": 42
+        },
+        {
+          "value": "Days",
+          "count": 61,
+          "pct": 34
+        },
+        {
+          "value": "Minutes",
+          "count": 25,
+          "pct": 14
+        },
+        {
+          "value": "Hours",
+          "count": 13,
+          "pct": 7
+        },
+        {
+          "value": "Months",
+          "count": 4,
+          "pct": 2
+        }
+      ]
+    }
+  },
+  "GetIncidentTicketID": {
+    "Type": {
+      "input_type": "radiobutton",
+      "total_observations": 4,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 4,
+          "pct": 100
+        }
+      ]
+    },
+    "isCurrent": {
+      "input_type": "radiobutton",
+      "total_observations": 4,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "True",
+          "count": 4,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "GetRows": {
+    "isRowNumber": {
+      "input_type": "radiobutton-extended",
+      "total_observations": 27,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "1",
+          "count": 14,
+          "pct": 52
+        },
+        {
+          "value": "0",
+          "count": 13,
+          "pct": 48
+        }
+      ]
+    }
+  },
+  "GetWindowEventLogs": {
+    "EventType": {
+      "input_type": "dropdown",
+      "total_observations": 11,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Security",
+          "count": 6,
+          "pct": 55
+        },
+        {
+          "value": "Application",
+          "count": 3,
+          "pct": 27
+        }
+      ]
+    }
+  },
+  "HTTPRequest": {
+    "RequestType": {
+      "input_type": "dropdown",
+      "total_observations": 149,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Post",
+          "count": 65,
+          "pct": 44
+        },
+        {
+          "value": "Get",
+          "count": 61,
+          "pct": 41
+        },
+        {
+          "value": "Put",
+          "count": 22,
+          "pct": 15
+        }
+      ]
+    },
+    "Sectype": {
+      "input_type": "dropdown",
+      "total_observations": 149,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "TLS12",
+          "count": 149,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "JiraCreateIssue": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 11,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Jira",
+          "count": 11,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "JiraGenericCommand": {
+    "Method": {
+      "input_type": "dropdown",
+      "total_observations": 37,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "POST",
+          "count": 31,
+          "pct": 84
+        },
+        {
+          "value": "PUT",
+          "count": 5,
+          "pct": 14
+        }
+      ]
+    },
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 37,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "KM_JIRA",
+          "count": 25,
+          "pct": 68
+        },
+        {
+          "value": "Jira",
+          "count": 12,
+          "pct": 32
+        }
+      ]
+    }
+  },
+  "JiraGetIssue": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 24,
+      "values_excluded_noise": 2,
+      "values": [
+        {
+          "value": "Jira",
+          "count": 22,
+          "pct": 92
+        }
+      ]
+    },
+    "outputFormat_UI": {
+      "input_type": "dropdown",
+      "total_observations": 23,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Display name and values",
+          "count": 22,
+          "pct": 96
+        }
+      ]
+    },
+    "outputType_UI": {
+      "input_type": "dropdown",
+      "total_observations": 23,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "ResultSet",
+          "count": 23,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "JiraUpdateIssue": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 22,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "KM_JIRA",
+          "count": 11,
+          "pct": 50
+        },
+        {
+          "value": "Jira",
+          "count": 10,
+          "pct": 45
+        }
+      ]
+    }
+  },
+  "JsonToTable": {
+    "SessionName": {
+      "input_type": "dropdown",
+      "total_observations": 95,
+      "values_excluded_noise": 34,
+      "values": [
+        {
+          "value": "ReceiveJSON",
+          "count": 13,
+          "pct": 14
+        },
+        {
+          "value": "StartJSON",
+          "count": 6,
+          "pct": 6
+        },
+        {
+          "value": "existingJiraCommentsJSONSession",
+          "count": 5,
+          "pct": 5
+        },
+        {
+          "value": "TokenNetBackupJSON",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "CorrigoTicketAttachmentsJson",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "fsHttpDataSession",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "fsDataSession",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "jsonSessionCurrUserData",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "subsDataSession",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "fsAccountRecordInfo",
+          "count": 3,
+          "pct": 3
+        },
+        {
+          "value": "UserJobsSession",
+          "count": 3,
+          "pct": 3
+        }
+      ]
+    }
+  },
+  "Memory": {
+    "SelectedDeviceStatus": {
+      "input_type": "dropdown",
+      "total_observations": 13,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Usage",
+          "count": 8,
+          "pct": 62
+        },
+        {
+          "value": "Total",
+          "count": 3,
+          "pct": 23
+        }
+      ]
+    }
+  },
+  "MemoryClean": {
+    "VariableScope": {
+      "input_type": "radiobutton",
+      "total_observations": 66,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Workflow",
+          "count": 66,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "MemorySet": {
+    "VariableScope": {
+      "input_type": "radiobutton",
+      "total_observations": 1509,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Workflow",
+          "count": 1481,
+          "pct": 98
+        },
+        {
+          "value": "Global",
+          "count": 28,
+          "pct": 2
+        }
+      ]
+    }
+  },
+  "NewIncident": {
+    "Severity": {
+      "input_type": "dropdown",
+      "total_observations": 57,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Critical",
+          "count": 45,
+          "pct": 79
+        },
+        {
+          "value": "Info",
+          "count": 8,
+          "pct": 14
+        },
+        {
+          "value": "Major",
+          "count": 3,
+          "pct": 5
+        }
+      ]
+    },
+    "Type": {
+      "input_type": "radiobutton",
+      "total_observations": 57,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "1",
+          "count": 42,
+          "pct": 74
+        },
+        {
+          "value": "0",
+          "count": 15,
+          "pct": 26
+        }
+      ]
+    },
+    "statusTextBox": {
+      "input_type": "dropdown",
+      "total_observations": 57,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Down",
+          "count": 57,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "PasswordGenerator": {
+    "LetterCase": {
+      "input_type": "dropdown",
+      "total_observations": 10,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Upper and Lower case",
+          "count": 10,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "ReadFile": {
+    "ReadingDirection": {
+      "input_type": "dropdown",
+      "total_observations": 28,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Top",
+          "count": 28,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "RegistryQuery": {
+    "RegistryKey": {
+      "input_type": "dropdown",
+      "total_observations": 18,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "HKEY_LOCAL_MACHINE",
+          "count": 17,
+          "pct": 94
+        }
+      ]
+    }
+  },
+  "SLNPMGetNode": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 6,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Solarwinds",
+          "count": 4,
+          "pct": 67
+        }
+      ]
+    }
+  },
+  "SLNPMUnManageNode": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 10,
+      "values_excluded_noise": 3,
+      "values": [
+        {
+          "value": "SolarWinds",
+          "count": 6,
+          "pct": 60
+        }
+      ]
+    },
+    "TimeIntervalInternal": {
+      "input_type": "dropdown",
+      "total_observations": 10,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "No Limit",
+          "count": 10,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "SNCreateRecord": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 24,
+      "values_excluded_noise": 6,
+      "values": [
+        {
+          "value": "ServiceNow",
+          "count": 13,
+          "pct": 54
+        },
+        {
+          "value": "SNOW - peel dev",
+          "count": 4,
+          "pct": 17
+        }
+      ]
+    }
+  },
+  "SNGetCatalogVariables": {
+    "CatalogTypeUI": {
+      "input_type": "dropdown",
+      "total_observations": 17,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Task",
+          "count": 14,
+          "pct": 82
+        },
+        {
+          "value": "Request Item",
+          "count": 3,
+          "pct": 18
+        }
+      ]
+    },
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 17,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "ServiceNow",
+          "count": 12,
+          "pct": 71
+        },
+        {
+          "value": "ServiceNowDEV",
+          "count": 4,
+          "pct": 24
+        }
+      ]
+    }
+  },
+  "SNGetRecord": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 40,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "ServiceNow",
+          "count": 13,
+          "pct": 32
+        },
+        {
+          "value": "SNOW-Blackbaud",
+          "count": 8,
+          "pct": 20
+        },
+        {
+          "value": "SNOW - peel dev",
+          "count": 7,
+          "pct": 18
+        },
+        {
+          "value": "SNOW",
+          "count": 6,
+          "pct": 15
+        },
+        {
+          "value": "SN - SE",
+          "count": 5,
+          "pct": 12
+        }
+      ]
+    },
+    "outputFormat_UI": {
+      "input_type": "dropdown",
+      "total_observations": 40,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Display name and values",
+          "count": 40,
+          "pct": 100
+        }
+      ]
+    },
+    "outputType_UI": {
+      "input_type": "dropdown",
+      "total_observations": 40,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "ResultSet",
+          "count": 40,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "SNUpdateRecord": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 126,
+      "values_excluded_noise": 4,
+      "values": [
+        {
+          "value": "ServiceNow",
+          "count": 103,
+          "pct": 82
+        },
+        {
+          "value": "ServiceNow (1906)",
+          "count": 8,
+          "pct": 6
+        },
+        {
+          "value": "SNOW-Blackbaud",
+          "count": 5,
+          "pct": 4
+        },
+        {
+          "value": "SNOW",
+          "count": 4,
+          "pct": 3
+        }
+      ]
+    }
+  },
+  "SendEmail": {
+    "MessageType": {
+      "input_type": "radiobutton",
+      "total_observations": 186,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Custom",
+          "count": 181,
+          "pct": 97
+        },
+        {
+          "value": "Original",
+          "count": 4,
+          "pct": 2
+        }
+      ]
+    }
+  },
+  "SendSMS": {
+    "MessageType": {
+      "input_type": "radiobutton",
+      "total_observations": 22,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Custom",
+          "count": 21,
+          "pct": 95
+        }
+      ]
+    }
+  },
+  "ServerRestart": {
+    "ActionType": {
+      "input_type": "dropdown",
+      "total_observations": 10,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Normal",
+          "count": 6,
+          "pct": 60
+        },
+        {
+          "value": "Forced",
+          "count": 4,
+          "pct": 40
+        }
+      ]
+    }
+  },
+  "SetCellValue": {
+    "ColumnType": {
+      "input_type": "radiobutton-extended",
+      "total_observations": 306,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Name",
+          "count": 270,
+          "pct": 88
+        },
+        {
+          "value": "Number",
+          "count": 36,
+          "pct": 12
+        }
+      ]
+    }
+  },
+  "SetIncidentTicketID": {
+    "Type": {
+      "input_type": "radiobutton",
+      "total_observations": 8,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 8,
+          "pct": 100
+        }
+      ]
+    },
+    "isCurrent": {
+      "input_type": "radiobutton",
+      "total_observations": 8,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "True",
+          "count": 8,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "SortTable": {
+    "NameType": {
+      "input_type": "radiobutton",
+      "total_observations": 20,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "0",
+          "count": 20,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "Split": {
+    "SelectedKey": {
+      "input_type": "dropdown",
+      "total_observations": 112,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Enter",
+          "count": 100,
+          "pct": 89
+        },
+        {
+          "value": "Space",
+          "count": 8,
+          "pct": 7
+        },
+        {
+          "value": "Line Feed",
+          "count": 4,
+          "pct": 4
+        }
+      ]
+    },
+    "SelectionType": {
+      "input_type": "radiobutton",
+      "total_observations": 112,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "1",
+          "count": 91,
+          "pct": 81
+        },
+        {
+          "value": "2",
+          "count": 21,
+          "pct": 19
+        }
+      ]
+    }
+  },
+  "StartFTPSession": {
+    "TransferMode": {
+      "input_type": "radiobutton",
+      "total_observations": 3,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Active",
+          "count": 3,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "Wait": {
+    "TimeInterval": {
+      "input_type": "dropdown",
+      "total_observations": 111,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "Seconds",
+          "count": 66,
+          "pct": 59
+        },
+        {
+          "value": "Minutes",
+          "count": 44,
+          "pct": 40
+        }
+      ]
+    },
+    "isDefault": {
+      "input_type": "radiobutton",
+      "total_observations": 126,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "1",
+          "count": 111,
+          "pct": 88
+        },
+        {
+          "value": "0",
+          "count": 15,
+          "pct": 12
+        }
+      ]
+    }
+  },
+  "WebServiceResponse": {
+    "SelectedModuleName": {
+      "input_type": "dropdown",
+      "total_observations": 4,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "webService",
+          "count": 4,
+          "pct": 100
+        }
+      ]
+    }
+  },
+  "WorkflowCounter": {
+    "useWorkflow": {
+      "input_type": "radiobutton",
+      "total_observations": 41,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "selectDifferentWorkflow",
+          "count": 35,
+          "pct": 85
+        },
+        {
+          "value": "useCurrentWorkflow",
+          "count": 6,
+          "pct": 15
+        }
+      ]
+    }
+  },
+  "XMLElementstoTable": {
+    "SessionName": {
+      "input_type": "dropdown",
+      "total_observations": 4,
+      "values_excluded_noise": 1,
+      "values": [
+        {
+          "value": "StartWFDetails",
+          "count": 3,
+          "pct": 75
+        }
+      ]
+    }
+  },
+  "ZipCompress": {
+    "EncryptionType": {
+      "input_type": "dropdown",
+      "total_observations": 9,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Standard",
+          "count": 9,
+          "pct": 100
+        }
+      ]
+    },
+    "ZipCompressionLevel": {
+      "input_type": "dropdown",
+      "total_observations": 7,
+      "values_excluded_noise": 0,
+      "values": [
+        {
+          "value": "Super Fast",
+          "count": 7,
+          "pct": 100
+        }
+      ]
+    }
+  }
+}

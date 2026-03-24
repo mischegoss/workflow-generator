@@ -1,0 +1,54 @@
+{
+  "CreateMemoryTable": {
+    "isEmptyGrid": "0"
+  },
+  "DateDifference": {
+    "IsNowSelected": "1"
+  },
+  "GetCellValue": {
+    "ColumnType": "Name"
+  },
+  "GetDate": {
+    "FuturePast": "0",
+    "TimeToAdd": "0"
+  },
+  "GetWindowEventLogs": {
+    "FilterType": "Error"
+  },
+  "JiraGenericCommand": {
+    "Method": "POST"
+  },
+  "MemoryClean": {
+    "VariableScope": "Workflow"
+  },
+  "MemorySet": {
+    "IsAppend": "False",
+    "IsSaved": "False",
+    "VariableScope": "Workflow"
+  },
+  "SendEmail": {
+    "Channel": "0",
+    "DestinationType": "User",
+    "DestinationTypeCc": "User",
+    "SendRN": "False"
+  },
+  "SendEyeShareIM": {
+    "Channel": "Listener",
+    "DestinationType": "User",
+    "SendRN": "False"
+  },
+  "SendSMS": {
+    "Channel": "SMS",
+    "DestinationType": "User",
+    "SendRN": "False"
+  },
+  "SetCellValue": {
+    "ColumnType": "Name"
+  },
+  "Split": {
+    "SelectionType": "1"
+  },
+  "WriteFile": {
+    "IsAppend": "True"
+  }
+}
