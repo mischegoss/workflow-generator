@@ -14,10 +14,96 @@ directly — no change needed here beyond confirming the field is used.
 Output directory: json_files/ (relative to project root, created if missing)
 """
 
+import copy
 import json
 import pathlib
 
-from tools.build_tools import generate_pnumber, generate_workflow_name
+from tools.build_tools import generate_pnumber, generate_workflow_name, load_activity_template
+
+
+# ---------------------------------------------------------------------------
+# Metadata enrichment
+# ---------------------------------------------------------------------------
+
+# Fields that StructureBuilder sets and owns — never overwrite with template values.
+# Everything else (id, activityLicenseType, visible, Timeout, etc.) comes from
+# the template so the JSON is complete for direct consumption by Kevin's workflow.
+_PRESERVE_FIELDS = {
+    "xName", "CustomTypeName", "TypeName", "name",
+    "IsValid", "Description", "description",
+    "Counter", "exitWhileInsideWhile", "whileSequenceActivity", "isValid",
+    "ConditionType", "Value", "Type", "UseBranchWhenTimeout", "UseStoredValue",
+    "Formula", "IsValid",
+    # Activity-specific wiring fields
+    "ResultSet", "ResultSetName", "RowNumber", "ColumnNumber", "ColumnType",
+    "HostName", "HostId",
+    "ValueToDisplay",
+    "VariableName", "VariableValue", "VariableScope", "IsSaved", "IsAppend",
+    "FuturePast", "TimeInterval", "TimeToAdd", "DateFormat", "TimeZoneName",
+    "FirstDate", "SecondDate", "ReturnFormat",
+    "TableName", "Condition",
+    "To", "Subject", "Body", "MessageType",
+    "notes",
+}
+
+
+def _enrich_activity(activity: dict) -> dict:
+    """
+    Merge full template metadata into a generated activity dict.
+
+    Strategy: load the template for this activity's CustomTypeName, then
+    build a merged dict where:
+      - Template fields provide the base (id, activityLicenseType, visible,
+        Timeout, TimeInSeconds, RecoveryMethodSelection, Path, DisplayName,
+        TargetModuleID, TargetModuleName, label, readPermission, writePermission,
+        modulePermissions, isFavorite, isJsonValid, disabled, etc.)
+      - _PRESERVE_FIELDS from the generated activity always win — these are
+        the functional fields StructureBuilder set intentionally.
+      - Nested child activities are recursed into.
+    """
+    ct = activity.get("CustomTypeName", "")
+    if not ct:
+        return activity
+
+    template = load_activity_template(ct) if ct else {}
+
+    # Start with template as base, then overlay preserved fields
+    merged = copy.deepcopy(template) if template else {}
+
+    # Overlay all _PRESERVE_FIELDS from the generated activity
+    for key, val in activity.items():
+        if key in _PRESERVE_FIELDS:
+            merged[key] = val
+        elif isinstance(val, dict) and val.get("CustomTypeName"):
+            # Nested activity — recurse
+            merged[key] = _enrich_activity(val)
+        elif isinstance(val, dict):
+            # Non-activity dict (e.g. null fields) — keep as-is
+            merged[key] = val
+
+    # Ensure xName is correct (template has placeholder value)
+    merged["xName"] = activity.get("xName", merged.get("xName", ""))
+
+    # Preserve any nested activity children not already in merged
+    for key, val in activity.items():
+        if key not in merged:
+            if isinstance(val, dict) and val.get("CustomTypeName"):
+                merged[key] = _enrich_activity(val)
+            else:
+                merged[key] = val
+
+    return merged
+
+
+def _enrich_workflow(workflow_raw_data: dict) -> dict:
+    """Walk all top-level and nested activities and enrich each with template metadata."""
+    enriched = {}
+    for xname, activity in workflow_raw_data.items():
+        if isinstance(activity, dict):
+            enriched[xname] = _enrich_activity(activity)
+        else:
+            enriched[xname] = activity
+    return enriched
 
 
 # ---------------------------------------------------------------------------
@@ -52,16 +138,18 @@ def format_json_output(
     if validation_result.get("status") != "valid":
         raise PipelineValidationError(validation_result.get("errors", []))
 
-    workflow_json = validation_result["workflow_json"]
+    workflow_json    = validation_result["workflow_json"]
+    raw_data         = workflow_json.get("workflow_raw_data", workflow_json)
+    enriched_raw     = _enrich_workflow(raw_data)
 
     return {
         "name":               generate_workflow_name(base_name),
         "pnumber":            generate_pnumber(),
         "workflow_type":      "Regular",
         "created_by":         "adk-pipeline-v2",
-        "workflow_raw_data":  workflow_json.get("workflow_raw_data", workflow_json),
+        "workflow_raw_data":  enriched_raw,
         "placeholder_summary": validation_result.get("placeholder_summary", []),
-        "pipeline_notes":     validation_result.get("verify_notes", []),  # Fix 9
+        "pipeline_notes":     validation_result.get("verify_notes", []),
         "errors":             [],
     }
 
