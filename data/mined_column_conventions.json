@@ -1,0 +1,488 @@
+{
+  "TSQL Query": {
+    "top_columns": [
+      {
+        "column": "name",
+        "frequency": 10
+      },
+      {
+        "column": "WorkflowName",
+        "frequency": 9
+      },
+      {
+        "column": "CONVERT(varchar",
+        "frequency": 9
+      },
+      {
+        "column": "RANK",
+        "frequency": 8
+      },
+      {
+        "column": "BADGE",
+        "frequency": 8
+      },
+      {
+        "column": "vCenterName",
+        "frequency": 8
+      },
+      {
+        "column": "vCenterLocation",
+        "frequency": 8
+      },
+      {
+        "column": "SolarWindsServer",
+        "frequency": 8
+      },
+      {
+        "column": "source",
+        "frequency": 8
+      },
+      {
+        "column": "effectiveStartDate",
+        "frequency": 8
+      },
+      {
+        "column": "effectiveEndDate",
+        "frequency": 8
+      },
+      {
+        "column": "nextRenewalDate",
+        "frequency": 8
+      },
+      {
+        "column": "previousRenewalDate",
+        "frequency": 8
+      },
+      {
+        "column": "Role",
+        "frequency": 8
+      },
+      {
+        "column": "EMPLOYEENUMBER",
+        "frequency": 7
+      },
+      {
+        "column": "Status",
+        "frequency": 7
+      },
+      {
+        "column": "Uname",
+        "frequency": 7
+      },
+      {
+        "column": "id",
+        "frequency": 7
+      },
+      {
+        "column": "Username",
+        "frequency": 7
+      },
+      {
+        "column": "JOBCODE",
+        "frequency": 6
+      }
+    ],
+    "query_samples": [
+      "DECLARE @daysBack int = -60 IF OBJECT_ID('tempdb..#AyehuWf') IS Not NULL DROP TABLE #AyehuWf IF OBJECT_ID('tempdb..#AyehuLog') IS Not NULL DROP TABLE #AyehuLog select p.name,isnull(f.KeyPath,'Root') A",
+      "Select EMPLOYEE_NUMBER as EMPLOYEENUMBER ,RANK,JOB_CODE AS JOBCODE, BADGE,MAIL_GROUP as MAILGROUP,DEPARTMENT, POSITION_NBR AS POSITIONNBR from [dbo].[PERSONNEL_LDM] where ( ([TERMINATION_DATE] is null",
+      "SELECT * from %empRankTable% where (badge='%currBadge%')",
+      "SELECT Hname,Mname,TypeName FROM Hosts, ModulesInstances, Modules,TBL_ModuleTypes where ( (Hosts.Hnumber = ModulesInstances.HostID) and (ModulesInstances.ModuleID = Modules.Mnumber) and (Modules.Mtype",
+      "Select EMPLOYEE_NUMBER as EMPLOYEENUMBER ,RANK,JOB_CODE AS JOBCODE, BADGE,MAIL_GROUP as MAILGROUP,DEPARTMENT, POSITION_NBR AS POSITIONNBR from [dbo].[PERSONNEL_LDM] where ( ([TERMINATION_DATE] is null"
+    ],
+    "note": ""
+  },
+  "HTTP Request": {
+    "top_columns": [
+      {
+        "column": "Status Code",
+        "frequency": 999
+      },
+      {
+        "column": "Body",
+        "frequency": 999
+      },
+      {
+        "column": "Request",
+        "frequency": 999
+      }
+    ],
+    "query_samples": [],
+    "note": "HTTP Request always returns exactly these 3 columns. They are platform-defined and do not vary."
+  },
+  "Create Memory Table": {
+    "top_columns": [
+      {
+        "column": "RESULT",
+        "frequency": 10
+      },
+      {
+        "column": "ServerName",
+        "frequency": 4
+      },
+      {
+        "column": "value",
+        "frequency": 4
+      },
+      {
+        "column": "fieldType",
+        "frequency": 4
+      },
+      {
+        "column": "isRequired",
+        "frequency": 4
+      },
+      {
+        "column": "incomingVar",
+        "frequency": 4
+      },
+      {
+        "column": "Status",
+        "frequency": 3
+      },
+      {
+        "column": "A",
+        "frequency": 3
+      },
+      {
+        "column": "DURATION",
+        "frequency": 3
+      },
+      {
+        "column": "ServiceName",
+        "frequency": 2
+      },
+      {
+        "column": "SoftwareName",
+        "frequency": 2
+      },
+      {
+        "column": "policyName",
+        "frequency": 2
+      },
+      {
+        "column": "Workflow",
+        "frequency": 2
+      },
+      {
+        "column": "XPathQuery",
+        "frequency": 2
+      },
+      {
+        "column": "UseAttributes",
+        "frequency": 2
+      },
+      {
+        "column": "mail",
+        "frequency": 2
+      },
+      {
+        "column": "displayname",
+        "frequency": 2
+      },
+      {
+        "column": "FieldName",
+        "frequency": 2
+      },
+      {
+        "column": "OS",
+        "frequency": 1
+      },
+      {
+        "column": "data",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  },
+  "JSON to Table": {
+    "top_columns": [
+      {
+        "column": "success",
+        "frequency": 32
+      },
+      {
+        "column": "notes",
+        "frequency": 30
+      },
+      {
+        "column": "Number",
+        "frequency": 15
+      },
+      {
+        "column": "Request item",
+        "frequency": 4
+      },
+      {
+        "column": "group",
+        "frequency": 4
+      },
+      {
+        "column": "action",
+        "frequency": 4
+      },
+      {
+        "column": "name",
+        "frequency": 4
+      },
+      {
+        "column": "Body",
+        "frequency": 4
+      },
+      {
+        "column": "datastore",
+        "frequency": 3
+      },
+      {
+        "column": "OS",
+        "frequency": 3
+      },
+      {
+        "column": "vmName",
+        "frequency": 3
+      },
+      {
+        "column": "IP_Address",
+        "frequency": 3
+      },
+      {
+        "column": "Category",
+        "frequency": 3
+      },
+      {
+        "column": "TicketNum",
+        "frequency": 3
+      },
+      {
+        "column": "failedConns",
+        "frequency": 3
+      },
+      {
+        "column": "hostLocation",
+        "frequency": 3
+      },
+      {
+        "column": "token",
+        "frequency": 3
+      },
+      {
+        "column": "records",
+        "frequency": 3
+      },
+      {
+        "column": "Documents",
+        "frequency": 3
+      },
+      {
+        "column": "StatusId",
+        "frequency": 3
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  },
+  "Get Rows": {
+    "top_columns": [
+      {
+        "column": "Result",
+        "frequency": 2
+      },
+      {
+        "column": "Sys Id",
+        "frequency": 1
+      },
+      {
+        "column": "Created",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  },
+  "SN Get Record": {
+    "top_columns": [
+      {
+        "column": "Number",
+        "frequency": 10
+      },
+      {
+        "column": "Sys ID",
+        "frequency": 5
+      },
+      {
+        "column": "Short Description",
+        "frequency": 4
+      },
+      {
+        "column": "File name",
+        "frequency": 2
+      },
+      {
+        "column": "SYS ID",
+        "frequency": 2
+      },
+      {
+        "column": "Effective Number",
+        "frequency": 1
+      },
+      {
+        "column": "Short description",
+        "frequency": 1
+      },
+      {
+        "column": "SysID",
+        "frequency": 1
+      },
+      {
+        "column": "Parent",
+        "frequency": 1
+      },
+      {
+        "column": "File Name",
+        "frequency": 1
+      },
+      {
+        "column": "Value",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  },
+  "XML to Table": {
+    "top_columns": [
+      {
+        "column": "CommandLine",
+        "frequency": 1
+      },
+      {
+        "column": "totalPages",
+        "frequency": 1
+      },
+      {
+        "column": "searchId",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  },
+  "MySQL Query": {
+    "top_columns": [
+      {
+        "column": "osplit",
+        "frequency": 2
+      },
+      {
+        "column": "substring_index(sa.value",
+        "frequency": 2
+      },
+      {
+        "column": "'-'",
+        "frequency": 2
+      },
+      {
+        "column": "osplit_lambert_x",
+        "frequency": 2
+      },
+      {
+        "column": "osplit_lambert_y",
+        "frequency": 2
+      },
+      {
+        "column": "count(a1.value)",
+        "frequency": 1
+      },
+      {
+        "column": "a1.value",
+        "frequency": 1
+      },
+      {
+        "column": "'FCID'",
+        "frequency": 1
+      },
+      {
+        "column": "s.availability",
+        "frequency": 1
+      },
+      {
+        "column": "'UTAC'",
+        "frequency": 1
+      },
+      {
+        "column": "isam_port",
+        "frequency": 1
+      },
+      {
+        "column": "trm_system",
+        "frequency": 1
+      },
+      {
+        "column": "gpon_id",
+        "frequency": 1
+      },
+      {
+        "column": "trm_status",
+        "frequency": 1
+      },
+      {
+        "column": "p.status",
+        "frequency": 1
+      },
+      {
+        "column": "p.processing_status",
+        "frequency": 1
+      },
+      {
+        "column": "concat(p.origin_db",
+        "frequency": 1
+      },
+      {
+        "column": "':'",
+        "frequency": 1
+      },
+      {
+        "column": "origin_ref",
+        "frequency": 1
+      },
+      {
+        "column": "grd_start_time_human",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [
+      "jdghj",
+      "select count(a1.value) from correlator.t_resource_attributes a1 where a1.name='gpon_id' and a1.value = (select a.value from correlator.t_resource_attributes a inner join correlator.t_resources r on a.",
+      "select a1.value from correlator.t_resource_attributes a1 where a1.name='gpon_id' and a1.value = (select a.value from correlator.t_resource_attributes a inner join correlator.t_resources r on a.oid = r",
+      "SELECT s.name as 'FCID' , s.availability , a.value as 'UTAC' FROM t_resources p INNER JOIN t_impacts i ON p.oid = i.impactor INNER JOIN t_resources s ON i.impacted = s.oid INNER JOIN t_resource_attrib",
+      "select * from t_resources r inner join t_resource_attributes a on r.oid = a.oid where r.name= '%ISAM%'"
+    ],
+    "note": ""
+  },
+  "Convert Text To Table": {
+    "top_columns": [
+      {
+        "column": "INDEX_NB",
+        "frequency": 2
+      },
+      {
+        "column": "PORT",
+        "frequency": 1
+      },
+      {
+        "column": "LOSSSTATUS",
+        "frequency": 1
+      },
+      {
+        "column": "ONT_VALUE",
+        "frequency": 1
+      },
+      {
+        "column": "DYING_GASP_STATUS",
+        "frequency": 1
+      }
+    ],
+    "query_samples": [],
+    "note": ""
+  }
+}

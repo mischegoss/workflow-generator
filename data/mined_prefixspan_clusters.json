@@ -1,0 +1,572 @@
+[
+  {
+    "support_count": 219,
+    "support_pct": 45.2,
+    "pattern": [
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Get Cell Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 218,
+    "support_pct": 45.0,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 217,
+    "support_pct": 44.8,
+    "pattern": [
+      "MemorySet",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Memory Set"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 211,
+    "support_pct": 43.6,
+    "pattern": [
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 205,
+    "support_pct": 42.4,
+    "pattern": [
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Display Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 197,
+    "support_pct": 40.7,
+    "pattern": [
+      "GetRowsCount",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Display Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 194,
+    "support_pct": 40.1,
+    "pattern": [
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Display Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 171,
+    "support_pct": 35.3,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 167,
+    "support_pct": 34.5,
+    "pattern": [
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Memory Set",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 162,
+    "support_pct": 33.5,
+    "pattern": [
+      "MemorySet",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Get Cell Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 160,
+    "support_pct": 33.1,
+    "pattern": [
+      "DisplayValue",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Display Value",
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 160,
+    "support_pct": 33.1,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value",
+      "Get Cell Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 158,
+    "support_pct": 32.6,
+    "pattern": [
+      "GetRowsCount",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Memory Set"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 157,
+    "support_pct": 32.4,
+    "pattern": [
+      "GetCellValue",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Get Cell Value",
+      "Get Cell Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 156,
+    "support_pct": 32.2,
+    "pattern": [
+      "MemorySet",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Memory Set",
+      "Memory Set"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 152,
+    "support_pct": 31.4,
+    "pattern": [
+      "GetCellValue",
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Get Cell Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 150,
+    "support_pct": 31.0,
+    "pattern": [
+      "MemorySet",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 147,
+    "support_pct": 30.4,
+    "pattern": [
+      "GetCellValue",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Memory Set"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 144,
+    "support_pct": 29.8,
+    "pattern": [
+      "MemorySet",
+      "GetRowsCount"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Get Rows Count"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 144,
+    "support_pct": 29.8,
+    "pattern": [
+      "GetRowsCount",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 142,
+    "support_pct": 29.3,
+    "pattern": [
+      "GetCellValue",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 140,
+    "support_pct": 28.9,
+    "pattern": [
+      "GetCellValue",
+      "GetRowsCount"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Get Rows Count"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 139,
+    "support_pct": 28.7,
+    "pattern": [
+      "DisplayValue",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Display Value",
+      "Memory Set"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 138,
+    "support_pct": 28.5,
+    "pattern": [
+      "GetRowsCount",
+      "GetRowsCount"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Rows Count"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 133,
+    "support_pct": 27.5,
+    "pattern": [
+      "MemorySet",
+      "MemorySet",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Memory Set",
+      "Memory Set",
+      "Memory Set"
+    ],
+    "length": 4
+  },
+  {
+    "support_count": 133,
+    "support_pct": 27.5,
+    "pattern": [
+      "MemorySet",
+      "GetCellValue",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Get Cell Value",
+      "Get Cell Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 132,
+    "support_pct": 27.3,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue",
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value",
+      "Get Cell Value",
+      "Display Value"
+    ],
+    "length": 4
+  },
+  {
+    "support_count": 131,
+    "support_pct": 27.1,
+    "pattern": [
+      "GetRowsCount",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Memory Set",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 130,
+    "support_pct": 26.9,
+    "pattern": [
+      "MultiMemorySet",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Multi Memory Set",
+      "Display Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 128,
+    "support_pct": 26.4,
+    "pattern": [
+      "MemorySet",
+      "GetCellValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Get Cell Value",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 127,
+    "support_pct": 26.2,
+    "pattern": [
+      "GetRowsCount",
+      "MemorySet",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Memory Set",
+      "Memory Set"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 126,
+    "support_pct": 26.0,
+    "pattern": [
+      "MemorySet",
+      "MemorySet",
+      "MemorySet",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Memory Set",
+      "Memory Set",
+      "Display Value"
+    ],
+    "length": 4
+  },
+  {
+    "support_count": 125,
+    "support_pct": 25.8,
+    "pattern": [
+      "MemorySet",
+      "GetRowsCount",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Memory Set",
+      "Get Rows Count",
+      "Display Value"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 123,
+    "support_pct": 25.4,
+    "pattern": [
+      "DisplayValue",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Display Value",
+      "Get Cell Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 123,
+    "support_pct": 25.4,
+    "pattern": [
+      "MultiMemorySet",
+      "GetRowsCount"
+    ],
+    "pattern_display": [
+      "Multi Memory Set",
+      "Get Rows Count"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 121,
+    "support_pct": 25.0,
+    "pattern": [
+      "GetCellValue",
+      "GetCellValue",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Get Cell Value",
+      "Get Cell Value",
+      "Memory Set"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 121,
+    "support_pct": 25.0,
+    "pattern": [
+      "CreateMemoryTable",
+      "GetCellValue"
+    ],
+    "pattern_display": [
+      "Create Memory Table",
+      "Get Cell Value"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 120,
+    "support_pct": 24.8,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue",
+      "MemorySet"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value",
+      "Memory Set"
+    ],
+    "length": 3
+  },
+  {
+    "support_count": 119,
+    "support_pct": 24.6,
+    "pattern": [
+      "CreateMemoryTable",
+      "GetRowsCount"
+    ],
+    "pattern_display": [
+      "Create Memory Table",
+      "Get Rows Count"
+    ],
+    "length": 2
+  },
+  {
+    "support_count": 119,
+    "support_pct": 24.6,
+    "pattern": [
+      "GetRowsCount",
+      "GetCellValue",
+      "DisplayValue",
+      "DisplayValue"
+    ],
+    "pattern_display": [
+      "Get Rows Count",
+      "Get Cell Value",
+      "Display Value",
+      "Display Value"
+    ],
+    "length": 4
+  }
+]

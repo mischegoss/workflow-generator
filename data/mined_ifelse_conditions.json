@@ -1,0 +1,242 @@
+[
+  {
+    "conditionType": "",
+    "value": "",
+    "useBranchWhenTimeout": "True",
+    "count": 1239
+  },
+  {
+    "conditionType": "Formula",
+    "value": "",
+    "useBranchWhenTimeout": "False",
+    "count": 300
+  },
+  {
+    "conditionType": "",
+    "value": "",
+    "useBranchWhenTimeout": "",
+    "count": 294
+  },
+  {
+    "conditionType": "Equals",
+    "value": "True",
+    "useBranchWhenTimeout": "False",
+    "count": 135
+  },
+  {
+    "conditionType": "Equals",
+    "value": "Success",
+    "useBranchWhenTimeout": "False",
+    "count": 83
+  },
+  {
+    "conditionType": "Equals",
+    "value": "1",
+    "useBranchWhenTimeout": "False",
+    "count": 72
+  },
+  {
+    "conditionType": "Equals",
+    "value": "",
+    "useBranchWhenTimeout": "True",
+    "count": 62
+  },
+  {
+    "conditionType": "Equals",
+    "value": "False",
+    "useBranchWhenTimeout": "False",
+    "count": 44
+  },
+  {
+    "conditionType": "Formula",
+    "value": "(",
+    "useBranchWhenTimeout": "False",
+    "count": 35
+  },
+  {
+    "conditionType": "Formula",
+    "value": "contains(",
+    "useBranchWhenTimeout": "False",
+    "count": 32
+  },
+  {
+    "conditionType": "Equals",
+    "value": "0",
+    "useBranchWhenTimeout": "False",
+    "count": 23
+  },
+  {
+    "conditionType": "Formula",
+    "value": "Contains(",
+    "useBranchWhenTimeout": "False",
+    "count": 19
+  },
+  {
+    "conditionType": "Formula",
+    "value": "%BypassWorkflowLogger% = 'true'",
+    "useBranchWhenTimeout": "False",
+    "count": 19
+  },
+  {
+    "conditionType": "Equals",
+    "value": "200",
+    "useBranchWhenTimeout": "False",
+    "count": 15
+  },
+  {
+    "conditionType": "",
+    "value": "",
+    "useBranchWhenTimeout": "False",
+    "count": 14
+  },
+  {
+    "conditionType": "Formula",
+    "value": "",
+    "useBranchWhenTimeout": "True",
+    "count": 10
+  },
+  {
+    "conditionType": "Equals",
+    "value": "False",
+    "useBranchWhenTimeout": "True",
+    "count": 10
+  },
+  {
+    "conditionType": "Not Equals",
+    "value": "1",
+    "useBranchWhenTimeout": "False",
+    "count": 8
+  },
+  {
+    "conditionType": "Equals",
+    "value": "Failure",
+    "useBranchWhenTimeout": "False",
+    "count": 6
+  },
+  {
+    "conditionType": "Formula",
+    "value": "contains(",
+    "useBranchWhenTimeout": "True",
+    "count": 6
+  },
+  {
+    "conditionType": "Not Equals",
+    "value": "1",
+    "useBranchWhenTimeout": "True",
+    "count": 5
+  },
+  {
+    "conditionType": "Equals",
+    "value": "True",
+    "useBranchWhenTimeout": "True",
+    "count": 5
+  },
+  {
+    "conditionType": "Formula",
+    "value": "%BypassCaUpdate% = 'true'",
+    "useBranchWhenTimeout": "False",
+    "count": 5
+  },
+  {
+    "conditionType": "Contains",
+    "value": "Teatinos",
+    "useBranchWhenTimeout": "False",
+    "count": 5
+  },
+  {
+    "conditionType": "Contains",
+    "value": "Quilicura",
+    "useBranchWhenTimeout": "False",
+    "count": 5
+  },
+  {
+    "conditionType": "Contains",
+    "value": "Error",
+    "useBranchWhenTimeout": "False",
+    "count": 5
+  },
+  {
+    "conditionType": "Formula",
+    "value": "%childWfCount% < %maxNumOfWorkers%",
+    "useBranchWhenTimeout": "False",
+    "count": 5
+  },
+  {
+    "conditionType": "Equals",
+    "value": "Failure",
+    "useBranchWhenTimeout": "True",
+    "count": 4
+  },
+  {
+    "conditionType": "Not Equals",
+    "value": "200",
+    "useBranchWhenTimeout": "True",
+    "count": 4
+  },
+  {
+    "conditionType": "Equals",
+    "value": "Running",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "<",
+    "value": "1",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Formula",
+    "value": "(",
+    "useBranchWhenTimeout": "True",
+    "count": 4
+  },
+  {
+    "conditionType": "Contains",
+    "value": "Gold",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Formula",
+    "value": "%step% == 1",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Equals",
+    "value": "",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Equals",
+    "value": "No matching",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Contains",
+    "value": "InstanceId",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Contains",
+    "value": "Get-WindowsUpdate",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Contains",
+    "value": "not found",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  },
+  {
+    "conditionType": "Equals",
+    "value": "User does not exist",
+    "useBranchWhenTimeout": "False",
+    "count": 4
+  }
+]

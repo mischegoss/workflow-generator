@@ -1,0 +1,677 @@
+{
+  "top_variable_names": [
+    {
+      "name": "Status",
+      "count": 48
+    },
+    {
+      "name": "Notes",
+      "count": 48
+    },
+    {
+      "name": "tempLogEntry",
+      "count": 38
+    },
+    {
+      "name": "vCenterRJF",
+      "count": 34
+    },
+    {
+      "name": "sqlStatement",
+      "count": 28
+    },
+    {
+      "name": "errorList",
+      "count": 26
+    },
+    {
+      "name": "wfResult",
+      "count": 24
+    },
+    {
+      "name": "htmlData",
+      "count": 22
+    },
+    {
+      "name": "TTDescription",
+      "count": 19
+    },
+    {
+      "name": "subErrors",
+      "count": 16
+    },
+    {
+      "name": "serverPass",
+      "count": 16
+    },
+    {
+      "name": "logEntry",
+      "count": 14
+    },
+    {
+      "name": "htmlTemplateInput",
+      "count": 13
+    },
+    {
+      "name": "addUserToGroup",
+      "count": 12
+    },
+    {
+      "name": "searchExistingTicket",
+      "count": 11
+    },
+    {
+      "name": "createJiraTicket",
+      "count": 11
+    },
+    {
+      "name": "step",
+      "count": 11
+    },
+    {
+      "name": "currOs",
+      "count": 11
+    },
+    {
+      "name": "currPrompt",
+      "count": 9
+    },
+    {
+      "name": "myAction",
+      "count": 8
+    },
+    {
+      "name": "loopCounter",
+      "count": 8
+    },
+    {
+      "name": "powershellcmd",
+      "count": 8
+    },
+    {
+      "name": "queryResultValid",
+      "count": 8
+    },
+    {
+      "name": "TTStatus",
+      "count": 8
+    },
+    {
+      "name": "TTAssignement",
+      "count": 8
+    },
+    {
+      "name": "userDetails",
+      "count": 7
+    },
+    {
+      "name": "myOutput",
+      "count": 7
+    },
+    {
+      "name": "currContext",
+      "count": 7
+    },
+    {
+      "name": "dbServer",
+      "count": 7
+    },
+    {
+      "name": "myUrl",
+      "count": 7
+    }
+  ],
+  "scope_distribution": {
+    "Workflow": 1959,
+    "Global": 28
+  },
+  "value_type_distribution": {
+    "empty": 548,
+    "literal": 1048,
+    "variable_reference": 391
+  },
+  "top_header_patterns": [
+    {
+      "pattern": [
+        "Display Value"
+      ],
+      "count": 12
+    },
+    {
+      "pattern": [
+        "StartJsonSession",
+        "JSON to Table",
+        "Get Cell Value",
+        "SNGetCatalogVariables",
+        "GetCellValueAdvanced"
+      ],
+      "count": 9
+    },
+    {
+      "pattern": [
+        "ConvertPasswordToPlaintext",
+        "PowerShellScript",
+        "StartJsonSession",
+        "JSON to Table",
+        "Get Cell Value"
+      ],
+      "count": 7
+    },
+    {
+      "pattern": [
+        "Memory Set",
+        "Memory Set",
+        "Display Value",
+        "VMExists",
+        "VMPowerState"
+      ],
+      "count": 6
+    },
+    {
+      "pattern": [
+        "Multi Memory Set",
+        "Get Date",
+        "Get Date",
+        "Get Date",
+        "TSQL Query"
+      ],
+      "count": 4
+    },
+    {
+      "pattern": [
+        "Get Date",
+        "WorkflowCounter",
+        "Display Value",
+        "StartJsonSession",
+        "JSON to Table"
+      ],
+      "count": 4
+    },
+    {
+      "pattern": [
+        "ReadXLS",
+        "Get Rows Count",
+        "Get Cell Value",
+        "Ping"
+      ],
+      "count": 4
+    },
+    {
+      "pattern": [
+        "StartJsonSession",
+        "JSON to Table",
+        "Get Cell Value",
+        "Get Cell Value",
+        "SNGetCatalogVariables"
+      ],
+      "count": 4
+    },
+    {
+      "pattern": [
+        "ReadXLS",
+        "Memory Set"
+      ],
+      "count": 4
+    },
+    {
+      "pattern": [
+        "Get Date",
+        "Multi Memory Set",
+        "FolderExist",
+        "Multi Memory Set",
+        "FolderExist"
+      ],
+      "count": 3
+    },
+    {
+      "pattern": [
+        "Memory Set",
+        "Memory Set",
+        "ConvertPasswordToPlaintext",
+        "PowerShellScript",
+        "StartJsonSession"
+      ],
+      "count": 3
+    },
+    {
+      "pattern": [
+        "Get Date",
+        "RunWorkflow",
+        "Memory Set",
+        "WorkflowCounter",
+        "Display Value"
+      ],
+      "count": 3
+    },
+    {
+      "pattern": [
+        "Split",
+        "Get Cell Value",
+        "Get Cell Value",
+        "StartJsonSession",
+        "JSON to Table"
+      ],
+      "count": 3
+    },
+    {
+      "pattern": [
+        "Memory Set",
+        "Memory Set",
+        "VMExists",
+        "VMPowerState",
+        "Get Cell Value"
+      ],
+      "count": 3
+    },
+    {
+      "pattern": [
+        "Display Value",
+        "TSQL Query"
+      ],
+      "count": 3
+    }
+  ],
+  "total_memoryset_instances": 1987,
+  "sample_details": [
+    {
+      "type": "MultiMemorySet",
+      "xname": "setWFvariables",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setRemoveActionDemotion",
+      "variableName": "myAction",
+      "variableValue": "remove",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setRemoveActionOld",
+      "variableName": "myAction",
+      "variableValue": "remove",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet1",
+      "variableName": "myAction",
+      "variableValue": "add",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet2",
+      "variableName": "myAction",
+      "variableValue": "add",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "initUserJobsAddOldCounter",
+      "variableName": "userJobsAddOldCounter",
+      "variableValue": "%userJobsCounter%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msMacAddress",
+      "variableName": "MAC",
+      "variableValue": "SEP%parent.MACAddress%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msHpTemplatePayload",
+      "variableName": "hpTemplatePayload",
+      "variableValue": "<soapenv:Envelope xmlns:soapenv=",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msPhoneConfig",
+      "variableName": "PhoneConfig",
+      "variableValue": "<soapenv:Envelope xmlns:soapenv=",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfResult",
+      "variableName": "wfResult",
+      "variableValue": "Success",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfFailResult",
+      "variableName": "wfResult",
+      "variableValue": "Error : %buildHardPhoneResult%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "multiMemorySet1",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "multiMemorySet1",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet2",
+      "variableName": "infraServerList",
+      "variableValue": "%getExpressInfra%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setExecutorFlagFound",
+      "variableName": "executorLock",
+      "variableValue": "True",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setExecutorRemote",
+      "variableName": "myExecutor",
+      "variableValue": "%currExecutorName%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setExecutorFlagNotFound",
+      "variableName": "executorLock",
+      "variableValue": "False",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet1",
+      "variableName": "myExecutor",
+      "variableValue": "%getEngineExeName%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "ReportDirectory",
+      "variableName": "repDirectory",
+      "variableValue": "\\\\hqpurstoprd03.ent.peelpolice.net\\Infra-CSB\\VSphere Host Inventory Reports",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet1",
+      "variableName": "writePath",
+      "variableValue": "%repDirectory%\\%today%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet2",
+      "variableName": "wfResult",
+      "variableValue": "Error: user (%alias%) ldap sync failed.",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "mergeLdapUserDataToOrig",
+      "variableName": "ldapUserData",
+      "variableValue": "%getCellValue1%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setTestData",
+      "variableName": "ldapUserData",
+      "variableValue": "{\r\n    ",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "buildCreatePayload",
+      "variableName": "createVmPayload",
+      "variableValue": "{\r\n    ",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfResult",
+      "variableName": "wfResult",
+      "variableValue": "Success",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "buildMessageHandlerConstants",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setRelayAddress",
+      "variableName": "relayAddress",
+      "variableValue": "%userid%@spencerfane.mail.onmicrosoft.com",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "buildMessageActionsPayload",
+      "variableName": "messageHandlerPayload",
+      "variableValue": "{\r\n  ",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setMessageActionsSuccess",
+      "variableName": "messageActionsResult",
+      "variableValue": "SUCCESS",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setMessageActionsFailed",
+      "variableName": "messageActionsResult",
+      "variableValue": "ERROR: %messageActionsBody%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setGetMsgActionsFailed",
+      "variableName": "messageActionsResult",
+      "variableValue": "ERROR: get failed %getMessageActionsBody%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "buildSmtpAddress",
+      "variableName": "smtpAddress",
+      "variableValue": "%userid%@sfbbkcunity1.spencerfane.com",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "buildSmtpPayload",
+      "variableName": "smtpPayload",
+      "variableValue": "{\r\n  ",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setSmtpProxySuccess",
+      "variableName": "smtpRelayResult",
+      "variableValue": "SUCCESS",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setSmtpProxyFailed",
+      "variableName": "smtpRelayResult",
+      "variableValue": "ERROR: %smtpProxyBody%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setDefaultPin",
+      "variableName": "pin",
+      "variableValue": "00000",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "pinResultSuccess",
+      "variableName": "pinResult",
+      "variableValue": "SUCCESS",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "pinResultFailed",
+      "variableName": "pinResult",
+      "variableValue": "ERROR: %setUserVmailPinBody%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "setVmailResultsString",
+      "variableName": "vmailResults",
+      "variableValue": "Create Account: %wfResult%, Set PIN: %pinResult%, Set Message Actions: %messageA",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfResultsFailure",
+      "variableName": "wfResult",
+      "variableValue": "Failure : %vmailResults%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfResultsSuccess",
+      "variableName": "wfResult",
+      "variableValue": "Success",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "msWfResultFailed",
+      "variableName": "wfResult",
+      "variableValue": "Error: %createVmUserResult%",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "memorySet1",
+      "variableName": "wfResult",
+      "variableValue": "Error: user (%alias%) not found to be imported",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "CorrectvCenter",
+      "variableName": "vCenterRJF",
+      "variableValue": "%vCenter%",
+      "scope": "Workflow",
+      "valueType": "variable_reference"
+    },
+    {
+      "type": "MemorySet",
+      "xname": "vCenterAppend",
+      "variableName": "vCenterRJF",
+      "variableValue": "%vCenter%.rjf.vm",
+      "scope": "Workflow",
+      "valueType": "literal"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "BuildSuccess",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "VMSetVLANFailure",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "SCCMRemoveMachineVars",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "SCCMgetDeployMsgFail",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    },
+    {
+      "type": "MultiMemorySet",
+      "xname": "SCCMgetTSDeploymentIDFailure",
+      "variableName": "",
+      "variableValue": "",
+      "scope": "Workflow",
+      "valueType": "empty"
+    }
+  ]
+}

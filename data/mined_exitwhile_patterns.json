@@ -1,0 +1,106 @@
+{
+  "exitwhile_counter_sources": [
+    {
+      "sourceActivityType": "Get Rows Count",
+      "count": 349
+    },
+    {
+      "sourceActivityType": "HARDCODED_INTEGER",
+      "count": 41
+    },
+    {
+      "sourceActivityType": "UNKNOWN",
+      "count": 19
+    },
+    {
+      "sourceActivityType": "Get Columns Count",
+      "count": 4
+    },
+    {
+      "sourceActivityType": "FunctionCalculator",
+      "count": 3
+    },
+    {
+      "sourceActivityType": "OTHER:",
+      "count": 1
+    }
+  ],
+  "getcellvalue_rownumber_sources": [
+    {
+      "sourceActivityType": "WhileActivity",
+      "count": 706
+    },
+    {
+      "sourceActivityType": "OTHER:1",
+      "count": 547
+    },
+    {
+      "sourceActivityType": "OTHER:2",
+      "count": 31
+    },
+    {
+      "sourceActivityType": "OTHER:3",
+      "count": 9
+    },
+    {
+      "sourceActivityType": "Exit While",
+      "count": 5
+    },
+    {
+      "sourceActivityType": "Get Rows Count",
+      "count": 4
+    },
+    {
+      "sourceActivityType": "FunctionCalculator",
+      "count": 3
+    },
+    {
+      "sourceActivityType": "UNKNOWN",
+      "count": 3
+    },
+    {
+      "sourceActivityType": "OTHER:0",
+      "count": 2
+    },
+    {
+      "sourceActivityType": "OTHER:4",
+      "count": 2
+    },
+    {
+      "sourceActivityType": "OTHER:sfh",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "Get Cell Value",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:5",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:6",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:9",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:10",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:11",
+      "count": 1
+    },
+    {
+      "sourceActivityType": "OTHER:14",
+      "count": 1
+    }
+  ]
+}

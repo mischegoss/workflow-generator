@@ -1,0 +1,132 @@
+WORKFLOW MINING SUMMARY
+============================================================
+Total workflows analysed: 484
+
+TOP 20 ACTIVITY CLUSTERS (PrefixSpan)
+----------------------------------------
+   1. [219 wf, 45.2%] Get Cell Value → Get Cell Value
+   2. [218 wf, 45.0%] Get Rows Count → Get Cell Value
+   3. [217 wf, 44.8%] Memory Set → Memory Set
+   4. [211 wf, 43.6%] Display Value → Display Value
+   5. [205 wf, 42.4%] Memory Set → Display Value
+   6. [197 wf, 40.7%] Get Rows Count → Display Value
+   7. [194 wf, 40.1%] Get Cell Value → Display Value
+   8. [171 wf, 35.3%] Get Rows Count → Get Cell Value → Display Value
+   9. [167 wf, 34.5%] Memory Set → Memory Set → Display Value
+  10. [162 wf, 33.5%] Memory Set → Get Cell Value
+  11. [160 wf, 33.1%] Display Value → Display Value → Display Value
+  12. [160 wf, 33.1%] Get Rows Count → Get Cell Value → Get Cell Value
+  13. [158 wf, 32.6%] Get Rows Count → Memory Set
+  14. [157 wf, 32.4%] Get Cell Value → Get Cell Value → Get Cell Value
+  15. [156 wf, 32.2%] Memory Set → Memory Set → Memory Set
+  16. [152 wf, 31.4%] Get Cell Value → Get Cell Value → Display Value
+  17. [150 wf, 31.0%] Memory Set → Display Value → Display Value
+  18. [147 wf, 30.4%] Get Cell Value → Memory Set
+  19. [144 wf, 29.8%] Memory Set → Get Rows Count
+  20. [144 wf, 29.8%] Get Rows Count → Display Value → Display Value
+
+COLUMN NAME CONVENTIONS PER DATATABLE PRODUCER
+----------------------------------------
+  TSQL Query:
+    Top columns: "name" (10x), "WorkflowName" (9x), "CONVERT(varchar" (9x), "RANK" (8x), "BADGE" (8x), "vCenterName" (8x), "vCenterLocation" (8x), "SolarWindsServer" (8x)
+  HTTP Request:
+    Top columns: "Status Code" (999x), "Body" (999x), "Request" (999x)
+    Note: HTTP Request always returns exactly these 3 columns. They are platform-defined and do not vary.
+  Create Memory Table:
+    Top columns: "RESULT" (10x), "ServerName" (4x), "value" (4x), "fieldType" (4x), "isRequired" (4x), "incomingVar" (4x), "Status" (3x), "A" (3x)
+  JSON to Table:
+    Top columns: "success" (32x), "notes" (30x), "Number" (15x), "Request item" (4x), "group" (4x), "action" (4x), "name" (4x), "Body" (4x)
+  Get Rows:
+    Top columns: "Result" (2x), "Sys Id" (1x), "Created" (1x)
+  SN Get Record:
+    Top columns: "Number" (10x), "Sys ID" (5x), "Short Description" (4x), "File name" (2x), "SYS ID" (2x), "Effective Number" (1x), "Short description" (1x), "SysID" (1x)
+  XML to Table:
+    Top columns: "CommandLine" (1x), "totalPages" (1x), "searchId" (1x)
+  MySQL Query:
+    Top columns: "osplit" (2x), "substring_index(sa.value" (2x), "'-'" (2x), "osplit_lambert_x" (2x), "osplit_lambert_y" (2x), "count(a1.value)" (1x), "a1.value" (1x), "'FCID'" (1x)
+  Convert Text To Table:
+    Top columns: "INDEX_NB" (2x), "PORT" (1x), "LOSSSTATUS" (1x), "ONT_VALUE" (1x), "DYING_GASP_STATUS" (1x)
+
+MEMORYSET PATTERNS
+----------------------------------------
+  Total MemorySet instances: 1987
+  Scope: {'Workflow': 1959, 'Global': 28}
+  Value types: {'empty': 548, 'literal': 1048, 'variable_reference': 391}
+  Top variable names:
+    Status (48x)
+    Notes (48x)
+    tempLogEntry (38x)
+    vCenterRJF (34x)
+    sqlStatement (28x)
+    errorList (26x)
+    wfResult (24x)
+    htmlData (22x)
+    TTDescription (19x)
+    subErrors (16x)
+    serverPass (16x)
+    logEntry (14x)
+    htmlTemplateInput (13x)
+    addUserToGroup (12x)
+    searchExistingTicket (11x)
+  Top header patterns (first 5 activities):
+    [12x] Display Value
+    [9x] StartJsonSession → JSON to Table → Get Cell Value → SNGetCatalogVariables → GetCellValueAdvanced
+    [7x] ConvertPasswordToPlaintext → PowerShellScript → StartJsonSession → JSON to Table → Get Cell Value
+    [6x] Memory Set → Memory Set → Display Value → VMExists → VMPowerState
+    [4x] Multi Memory Set → Get Date → Get Date → Get Date → TSQL Query
+    [4x] Get Date → WorkflowCounter → Display Value → StartJsonSession → JSON to Table
+    [4x] ReadXLS → Get Rows Count → Get Cell Value → Ping
+    [4x] StartJsonSession → JSON to Table → Get Cell Value → Get Cell Value → SNGetCatalogVariables
+
+IFELSE CONDITION VALUES (ground truth)
+----------------------------------------
+  ConditionType=''                   Value=''                   Timeout=True (1239x)
+  ConditionType='Formula'            Value=''                   Timeout=False (300x)
+  ConditionType=''                   Value=''                   Timeout= (294x)
+  ConditionType='Equals'             Value='True'               Timeout=False (135x)
+  ConditionType='Equals'             Value='Success'            Timeout=False (83x)
+  ConditionType='Equals'             Value='1'                  Timeout=False (72x)
+  ConditionType='Equals'             Value=''                   Timeout=True (62x)
+  ConditionType='Equals'             Value='False'              Timeout=False (44x)
+  ConditionType='Formula'            Value='('                  Timeout=False (35x)
+  ConditionType='Formula'            Value='contains('          Timeout=False (32x)
+  ConditionType='Equals'             Value='0'                  Timeout=False (23x)
+  ConditionType='Formula'            Value='Contains('          Timeout=False (19x)
+  ConditionType='Formula'            Value="%BypassWorkflowLogger% = 'true'" Timeout=False (19x)
+  ConditionType='Equals'             Value='200'                Timeout=False (15x)
+  ConditionType=''                   Value=''                   Timeout=False (14x)
+  ConditionType='Formula'            Value=''                   Timeout=True (10x)
+  ConditionType='Equals'             Value='False'              Timeout=True (10x)
+  ConditionType='Not Equals'         Value='1'                  Timeout=False (8x)
+  ConditionType='Equals'             Value='Failure'            Timeout=False (6x)
+  ConditionType='Formula'            Value='contains('          Timeout=True (6x)
+
+EXITWHILE / GETCELLVALUE SOURCES
+----------------------------------------
+  ExitWhile Counter sources:
+    Get Rows Count: 349x
+    HARDCODED_INTEGER: 41x
+    UNKNOWN: 19x
+    Get Columns Count: 4x
+    FunctionCalculator: 3x
+    OTHER:: 1x
+  GetCellValue RowNumber sources:
+    WhileActivity: 706x
+    OTHER:1: 547x
+    OTHER:2: 31x
+    OTHER:3: 9x
+    Exit While: 5x
+    Get Rows Count: 4x
+    FunctionCalculator: 3x
+    UNKNOWN: 3x
+    OTHER:0: 2x
+    OTHER:4: 2x
+    OTHER:sfh: 1x
+    OTHER:: 1x
+    Get Cell Value: 1x
+    OTHER:5: 1x
+    OTHER:6: 1x
+    OTHER:9: 1x
+    OTHER:10: 1x
+    OTHER:11: 1x
+    OTHER:14: 1x
