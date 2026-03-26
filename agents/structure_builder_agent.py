@@ -8,15 +8,11 @@ from tools.build_tools import (
 )
 from tools.pattern_tools import get_examples_for_control_flow
 
-# LiteLlm used instead of native Gemini() class — the native class causes
-# 400 errors on tool schema serialization (additional_properties=null ADK bug).
-# temperature=0.2: reduced creativity on the most complex assembly task.
 MODEL = LiteLlm(
     model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
     temperature=0.2,
 )
 
-# Fields to keep when trimming examples for injection
 _KEEP_FIELDS = {
     "xName", "CustomTypeName", "name", "IsValid", "Description", "description",
     "TypeName", "Counter", "exitWhileInsideWhile", "isValid", "whileSequenceActivity",
@@ -30,7 +26,6 @@ _KEEP_FIELDS = {
     "Condition", "UseStoredValue",
 }
 
-
 def _trim(node):
     if not isinstance(node, dict):
         return node
@@ -42,7 +37,6 @@ def _trim(node):
             result[k] = v
     return result
 
-
 def _load_example(control_flow_type: str, index: int) -> str:
     data_dir = os.getenv("DATA_DIR", "/app/data")
     path = os.path.join(data_dir, "examples", f"example_{control_flow_type}_{index}.json")
@@ -53,19 +47,10 @@ def _load_example(control_flow_type: str, index: int) -> str:
     trimmed = _trim(data.get("workflow_raw_data", {}))
     return json.dumps(trimmed, indent=2)
 
-
-# Primary examples — while+ifelse and while+email (unchanged)
 _EXAMPLE_WHILE_IFELSE     = _load_example("while_ifelse", 4)
 _EXAMPLE_WHILE_WITH_EMAIL = _load_example("while", 5)
-
-# Added: linear and ifelse-only examples.
-# Previously StructureBuilder had zero structural reference for these two
-# control flows — every non-loop workflow was assembled purely from rules.
-# These give the LLM a confirmed working skeleton for the most common
-# non-loop patterns.
-_EXAMPLE_LINEAR = _load_example("linear", 4)
-_EXAMPLE_IFELSE = _load_example("ifelse", 4)
-
+_EXAMPLE_LINEAR           = _load_example("linear", 4)
+_EXAMPLE_IFELSE           = _load_example("ifelse", 4)
 
 INSTRUCTION = f"""
 OUTPUT RULE: Output only the JSON object described below. No prose, no explanation, no markdown.
@@ -165,7 +150,8 @@ PRE-OUTPUT CHECKLIST — verify all 10 items before returning
    If not in the contract, remove it or replace with a PLACEHOLDER_.
 9. Every SequenceActivity inside a WhileActivity has full attributes:
    xName, CustomTypeName, name, IsValid, Description, description.
-10. Every empty IfElse branch contains only ReturnValue — no Continue, DisplayValue, or filler.
+10. Every condition branch ReturnValue uses the correct Type for its preceding activity —
+    consult the RETURNVALUE TYPE RULES table below before setting Type on any ReturnValue.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PLATFORM RULES — enforce exactly
@@ -286,7 +272,7 @@ XNAME RULES:
 - WhileActivity carries NO Counter attribute — Counter belongs ONLY on ExitWhile.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GETCELLVALUE COLUMN RULES — fix for Issue 1
+GETCELLVALUE COLUMN RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - ColumnType is always "Name" — the serializer sets this automatically. Do NOT set it.
 - ColumnNumber MUST be the EXACT column name from the prompt or variable contract —
@@ -303,47 +289,133 @@ IFELSE STRUCTURE
 - IfElseActivity contains IfElseBranchActivity children.
 - Each IfElseBranchActivity: ReturnValue first, then branch activities (if any).
 - Valid ConditionType values: "" | "Equals" | "Contains" | "Not Contains" | "Not Equals" |
-  "Formula" | ">" | "<" | ">=" | "<="
+  "Formula" | ">" | "<" | ">=" | "<=" | "=>"
 - Default branch: Type="StoredValue", ConditionType="", Value="", IsValid="False",
   UseBranchWhenTimeout="True"
-
-RETURNVALUE FIELD RULES — fix for Issue 4:
-- Type must ALWAYS be "StoredValue". This is the only confirmed-working value across
-  625 real workflows. "UserDefinedValue" does NOT work for runtime comparisons.
-- UseStoredValue:
-    Condition branch (non-default): UseStoredValue="True"
-    Default branch:                 omit or set to "False"
-- UseBranchWhenTimeout:
-    Condition branch: UseBranchWhenTimeout="False"
-    Default branch:   UseBranchWhenTimeout="True"
-- Formula: Do NOT set. Leave it out entirely — the serializer computes it.
+  NOTE: Do NOT set UseStoredValue on default branches — leave it absent.
+        Corpus analysis of 1,361 default branches: UseStoredValue is absent in 91%
+        of cases. Setting UseStoredValue="False" causes platform import issues.
 
 EMPTY BRANCH RULE:
 - Empty branch = ONLY ReturnValue. No Continue, DisplayValue, or filler.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ACTIVITY OUTPUT VALUES — fix for Issue 5
+RETURNVALUE TYPE RULES — corpus-derived from 1,888 condition branches / 625 workflows
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-When an IfElseActivity branches on the result of a preceding activity, use these
-confirmed success values for the condition branch ReturnValue.Value field.
-These are the exact strings the platform returns — using any other value means
-the condition branch will never fire.
+The Type field on a CONDITION branch ReturnValue depends on the preceding activity.
+DEFAULT branches always use Type="StoredValue" regardless of preceding activity.
 
-  Ping              → Value="Success",  ConditionType="Equals"
-  ServiceStatus     → Value="Running",  ConditionType="Equals"
-  ServiceStart      → Value="Success",  ConditionType="Equals"
-  ServiceStop       → Value="Success",  ConditionType="Equals"
-  FileExist         → Value="True",     ConditionType="Equals"
-  URLCheck          → Value="Success",  ConditionType="Equals"
-  ADIsAccountLocked → Value="True",     ConditionType="Equals"
-  ADIsAccountDisabled → Value="True",   ConditionType="Equals"
-  Contains          → Value="True",     ConditionType="Equals"
-  IsEmpty           → Value="True",     ConditionType="Equals"
+STEP 1 — Identify the preceding activity: the last non-container activity before
+the IfElseActivity in sibling order. That is the activity whose output is being tested.
 
-For activities not in this list, read the description of the condition in the prompt
-and use "Equals" with the most specific literal value mentioned.
-If the prompt says "if the result contains X", use ConditionType="Contains", Value="X".
-If the prompt says "if it fails", use the default branch — do not invent a failure value.
+STEP 2 — Apply the rule for that activity type:
+
+── TIER 1: Type="StoredValue", UseStoredValue="True" ──────────────────────────
+Use for boolean producers and activities that return a known platform-defined string.
+
+  Activity                    ConditionType   Confirmed Values
+  ────────────────────────────────────────────────────────────────────
+  IsEmpty                     Equals          "True" or "False"
+  IsNumeric                   Equals          "True" or "False"
+  ADUserExists                Equals          "True" or "False"
+  FileExist                   Equals          "True" or "False"
+  FolderExist                 Equals          "True" or "False"
+  FolderExistRemote           Equals          "True" or "False"
+  Contains                    Equals          "True" or "False"
+                              Formula         (complex multi-condition expressions)
+  XMLEditNode                 Equals          "Success" or "Failure"
+  Ping                        Equals          "Success" or "Failure"
+  URLCheck                    (empty)         (no ConditionType needed)
+  ServiceStart                Equals          "Success"
+  ServiceStop                 Equals          "Success"
+  ADRemoveFromGroup           Equals          "Success"
+  ADAddtoGroup                Equals          "Success"
+  FileCopy                    Equals          "Success"
+  VMPowerOn                   Equals          "Success"
+  VMMarkTemplate              Equals          "Success"
+  SLNPMManageNode             Equals          "Success"
+  SLNPMUnManageNode           Equals          "Success"
+  PowerShellScript            Equals          "Success"
+
+── TIER 2: Type="UserDefinedValue", UseStoredValue="False" ────────────────────
+Use for activities that return a number, computed string, or value requiring
+operator comparison. The branch supplies its own comparison value.
+
+  Activity                    ConditionType options
+  ────────────────────────────────────────────────────────────────────
+  GetRowsCount                > | Equals | Formula
+  Length                      > | Equals | Formula
+  WorkflowCounter             > | => | < | Formula
+  DateDifference              > | < | =>
+  Counter                     > | Equals | <= | =>
+  FunctionCalculator          Formula
+  GetCellValue                Equals | Contains | Formula
+  GetCellValueAdvanced        Formula | Contains
+  MemorySet                   Formula | Equals
+  MultiMemorySet              Formula
+  RunWorkflow                 Formula
+  DisplayValue                Formula
+  DisplayMultiValue           Formula | Equals
+  TSQLStatement               Equals | Formula
+  TSQLQuery                   > | Formula
+  ResultSetFilter             Equals | Formula | Not Contains
+  HTTPRequest                 Formula
+  SingleSSHCommand            Formula | Contains | Equals | Not Contains
+  PowerShell                  Contains | Equals | <
+  SendEmail                   Contains | Equals | Formula | Not Contains
+  MatchRegularExpression      Equals | Contains | Formula
+  ReplaceString               Contains | Equals | > | Formula
+  RegistryQuery               Contains | Not Equals
+  LowerCase                   Formula | Equals
+  ConvertPasswordToPlaintext  Equals | Formula
+  ReadFile                    Contains | Equals | Not Contains
+  XMLEvaluateXpathExpression  Equals | Formula | Not Equals
+  MsTeamsSendMessage          Equals
+  ChatGPTQuery                Contains | Formula
+  ADPassExpDaysLeft           > | => | <= | Contains
+  FileSize                    Equals | < | => | Not Equals
+  DiskSpace                   => | <
+  SystemUptime                > | < | <=
+  TerminateWorkflow           Formula | Equals | >
+  VMPowerState                Equals | Formula               (71% UDV, n=21 — weak signal)
+  SetCellValue                Equals | Formula
+  NestedJsonToTable           Formula | Equals
+  GetDate                     Formula | Equals | >
+  ReadContinuousFile          Contains | Not Contains
+  NetBackupChangePolicy       Not Equals | Formula
+  ConvertToPlainText          Formula
+  SLNPMGetNode                Contains
+  CherwellCreateRecord        Formula | Contains
+  VMPowerOff                  Formula | Equals
+  CreateMemoryTable           Formula
+
+── MIXED — apply disambiguation rule ──────────────────────────────────────────
+No clear majority in corpus. Choose Type by examining what the condition tests:
+
+  ServiceStatus         SV=54% / UDV=46%  (n=13) — use StoredValue for "Running"/"Stopped"; UserDefinedValue for computed expressions
+  SNUpdateRecord        SV=68% / UDV=32%  (n=19) — use StoredValue when testing a known status string; UserDefinedValue for Formula
+  SNOWupdateCatalogVariable SV=71% / UDV=29% (n=7) — prefer StoredValue; use UserDefinedValue if condition is complex
+  ServerRestart         SV=67% / UDV=33%  (n=3)  — prefer StoredValue Equals "Success"
+  VMExists              SV=56% / UDV=44%  (n=9)
+  AdvancedCommunicate   SV=40% / UDV=60%  (n=5)
+  GoTo                  SV=75% / UDV=25%  (n=4)
+  SNGetRecord           SV=33% / UDV=67%  (n=3)
+  SLNPMAcknowledgeAlert SV=25% / UDV=50%  (n=4)
+  FolderList            SV=33% / UDV=67%  (n=3)
+  TableReplaceCellValues SV=50% / UDV=50% (n=4)
+
+  DISAMBIGUATION RULE:
+  - Condition tests a known platform status string ("Running", "Success", "True",
+    "False") → Type="StoredValue", UseStoredValue="True"
+  - Condition uses >, <, =>, <=, Formula, or Contains on a runtime/computed value
+    → Type="UserDefinedValue", UseStoredValue="False"
+
+── For any activity not listed above ─────────────────────────────────────────
+Apply the disambiguation rule directly. Do not guess a tier.
+
+── Formula field ──────────────────────────────────────────────────────────────
+Do NOT set the Formula field on any ReturnValue. Leave it out entirely.
+The serializer computes it from Type, ConditionType, and Value.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 WORKFLOW TERMINATION:
@@ -362,8 +434,8 @@ CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
     GetCellValue
     DateDifference
     IfElseActivity →
-      IfElseBranchActivity (condition) → ReturnValue (Type="StoredValue") + action activity
-      IfElseBranchActivity (default)   → ReturnValue only, nothing else
+      IfElseBranchActivity (condition) → ReturnValue (Type="UserDefinedValue", UseStoredValue="False") + action activity
+      IfElseBranchActivity (default)   → ReturnValue (Type="StoredValue", UseBranchWhenTimeout="True") only, no UseStoredValue
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXAMPLE A — while_ifelse structure:

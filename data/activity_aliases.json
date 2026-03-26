@@ -1,0 +1,354 @@
+{
+  "_comment": "Plain-language phrases that should strongly match a specific activity. Used by retrieval Layer 3 (alias matching). Each entry is activity_name -> list of phrase strings. Phrases are checked as substrings of the lowercased query. Add entries here when corpus testing reveals systematic vocabulary gaps between how users describe steps and how the platform names activities.",
+
+  "MemorySet": [
+    "store variable",
+    "save variable",
+    "set variable",
+    "assign variable",
+    "initialize variable",
+    "store result",
+    "save result",
+    "store value",
+    "assign value",
+    "save value",
+    "store in variable",
+    "save to variable",
+    "set a variable",
+    "write to variable"
+  ],
+
+  "MultiMemorySet": [
+    "set multiple variables",
+    "store multiple variables",
+    "assign multiple",
+    "set several variables",
+    "multiple variable"
+  ],
+
+  "Ping": [
+    "ping",
+    "check connectivity",
+    "connectivity check",
+    "host reachable",
+    "network ping",
+    "ping host",
+    "ping server",
+    "ping the",
+    "is reachable",
+    "network reachable",
+    "check reachable"
+  ],
+
+  "SNGetRecord": [
+    "servicenow",
+    "servicenow query",
+    "query servicenow",
+    "get servicenow",
+    "servicenow record",
+    "snow record",
+    "snow query",
+    "service now record",
+    "servicenow table",
+    "retrieve servicenow",
+    "fetch servicenow",
+    "snow get",
+    "sn get"
+  ],
+
+  "ServiceStatus": [
+    "service running",
+    "service status",
+    "check service",
+    "is service running",
+    "service state",
+    "get service status",
+    "service is running",
+    "service is stopped",
+    "check if service"
+  ],
+
+  "GetRowsCount": [
+    "count rows",
+    "row count",
+    "number of rows",
+    "how many rows",
+    "table size",
+    "rows in table",
+    "count the rows",
+    "get row count",
+    "rows count",
+    "count entries",
+    "number of entries",
+    "how many entries"
+  ],
+
+  "DisplayValue": [
+    "display result",
+    "show result",
+    "log result",
+    "print result",
+    "output result",
+    "display value",
+    "show value",
+    "log value",
+    "display the",
+    "show the result",
+    "write to log",
+    "log the",
+    "print the"
+  ],
+
+  "DisplayMultiValue": [
+    "display multiple",
+    "show multiple values",
+    "log multiple",
+    "display several"
+  ],
+
+  "ExitWhile": [
+    "exit loop",
+    "end loop",
+    "stop loop",
+    "exit while",
+    "break loop",
+    "terminate loop",
+    "leave loop"
+  ],
+
+  "WorkflowCounter": [
+    "count active workflows",
+    "active workflow count",
+    "how many workflows running",
+    "workflow instances",
+    "running instances"
+  ],
+
+  "Contains": [
+    "contains",
+    "check if contains",
+    "string contains",
+    "substring check",
+    "check if string contains",
+    "does it contain",
+    "search for string",
+    "find in string"
+  ],
+
+  "IsEmpty": [
+    "is empty",
+    "check empty",
+    "null check",
+    "empty check",
+    "check if empty",
+    "is blank",
+    "check blank",
+    "value is empty",
+    "variable is empty"
+  ],
+
+  "GetDate": [
+    "get current date",
+    "current date",
+    "get today",
+    "todays date",
+    "current timestamp",
+    "get timestamp",
+    "what is the date",
+    "get the date",
+    "retrieve date",
+    "fetch date"
+  ],
+
+  "DateDifference": [
+    "date difference",
+    "days between",
+    "time between",
+    "date gap",
+    "difference between dates",
+    "days until",
+    "days since",
+    "calculate days",
+    "how many days",
+    "date calculation"
+  ],
+
+  "CreateMemoryTable": [
+    "create table",
+    "new table",
+    "initialize table",
+    "memory table",
+    "create a table",
+    "build table",
+    "create empty table",
+    "make a table"
+  ],
+
+  "GetCellValue": [
+    "get cell",
+    "cell value",
+    "read cell",
+    "get value from cell",
+    "retrieve cell",
+    "read from table",
+    "get column value",
+    "value at row"
+  ],
+
+  "SetCellValue": [
+    "set cell",
+    "update cell",
+    "write cell",
+    "write to cell",
+    "update table cell",
+    "set table value",
+    "put value in cell"
+  ],
+
+  "ServiceStart": [
+    "start service",
+    "restart service",
+    "start the service",
+    "launch service"
+  ],
+
+  "ServiceStop": [
+    "stop service",
+    "halt service",
+    "stop the service",
+    "shut down service"
+  ],
+
+  "ServiceRestart": [
+    "restart service",
+    "reboot service",
+    "cycle service",
+    "bounce service"
+  ],
+
+  "SendEmail": [
+    "send email",
+    "send an email",
+    "email notification",
+    "send notification",
+    "notify by email",
+    "send mail",
+    "email alert",
+    "send alert email"
+  ],
+
+  "WaitForEmail": [
+    "wait for email",
+    "wait for reply",
+    "email reply",
+    "wait for response",
+    "listen for email",
+    "receive email response"
+  ],
+
+  "TSQLQuery": [
+    "sql query",
+    "sql select",
+    "query sql",
+    "run sql",
+    "mssql",
+    "tsql",
+    "microsoft sql",
+    "sql server query",
+    "run sql query"
+  ],
+
+  "PowerShell": [
+    "powershell script",
+    "run powershell",
+    "execute powershell",
+    "ps script",
+    "powershell command",
+    "run ps script"
+  ],
+
+  "PowerShellScript": [
+    "powershell script file",
+    "run ps1",
+    "powershell file",
+    "execute ps1"
+  ],
+
+  "GetRowsCount": [
+    "count rows",
+    "row count",
+    "number of rows",
+    "how many rows"
+  ],
+
+  "ResultSetFilter": [
+    "filter table",
+    "filter results",
+    "filter rows",
+    "where clause",
+    "filter by",
+    "filter the table",
+    "subset table",
+    "filter data"
+  ],
+
+  "Split": [
+    "split string",
+    "split by delimiter",
+    "tokenize",
+    "divide string",
+    "split on",
+    "break string",
+    "parse delimited"
+  ],
+
+  "FileExist": [
+    "file exists",
+    "check file",
+    "does file exist",
+    "file present",
+    "verify file exists",
+    "check if file"
+  ],
+
+  "FolderExist": [
+    "folder exists",
+    "directory exists",
+    "check folder",
+    "does folder exist",
+    "check directory"
+  ],
+
+  "ADUserExists": [
+    "user exists",
+    "ad user exists",
+    "check user",
+    "does user exist",
+    "active directory user exists",
+    "verify user"
+  ],
+
+  "SNUpdateRecord": [
+    "update servicenow",
+    "servicenow update",
+    "snow update",
+    "update snow record",
+    "update sn record",
+    "update servicenow record",
+    "patch servicenow"
+  ],
+
+  "ConvertToHTMLTable": [
+    "convert to html",
+    "table to html",
+    "html table",
+    "format as html",
+    "html format table"
+  ],
+
+  "GetCellValueAdvanced": [
+    "advanced cell value",
+    "get cell advanced",
+    "cell by expression"
+  ]
+}

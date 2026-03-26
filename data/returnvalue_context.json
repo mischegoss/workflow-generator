@@ -1,0 +1,3215 @@
+{
+  "generated_from": "/Users/tamargrafana/Documents/workflow_generator/workflows_raw",
+  "total_workflows_parsed": 625,
+  "workflows_with_ifelse": 400,
+  "total_condition_branches": 1888,
+  "min_count_threshold": 3,
+  "preceding_activity": {
+    "GetRowsCount": {
+      "total_condition_branches": 277,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 273,
+          "pct": 99
+        },
+        "StoredValue": {
+          "count": 4,
+          "pct": 1
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 137,
+          "Equals": 80,
+          "Formula": 36,
+          "Not Equals": 12,
+          "<": 5,
+          "<=": 3
+        },
+        "StoredValue": {
+          "Equals": 4
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "0",
+            "count": 155
+          },
+          {
+            "value": "1",
+            "count": 70
+          },
+          {
+            "value": "5",
+            "count": 2
+          },
+          {
+            "value": "contains(\"%currSwExecutable%\", \".msi\")",
+            "count": 2
+          },
+          {
+            "value": "contains(\"%currSwExecutable%\", \".ps1\")",
+            "count": 2
+          },
+          {
+            "value": "1000",
+            "count": 2
+          },
+          {
+            "value": "(\"getcellvalue(%dbBindingRow%,1,Status)\"<>\"IGNORE\") and \n (\"getcellvalue(%outputBindingTable%,1,Status)\"=\"ERROR\")",
+            "count": 2
+          },
+          {
+            "value": "((%GetCPURunning% >  95) OR (%GetMemRunning% > 95)) AND (%CheckFailureRestart% = 0)",
+            "count": 1
+          },
+          {
+            "value": "\"%doObjectNameLookup%\" = \"True\"",
+            "count": 1
+          },
+          {
+            "value": "'%currCorrigoStatus%' = 'Completed'",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "'%CRL_GRD_PW_SPLITTER_END%' = ''",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "_no_preceding": {
+      "total_condition_branches": 201,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 183,
+          "pct": 91
+        },
+        "StoredValue": {
+          "count": 15,
+          "pct": 7
+        },
+        "CustomCondition": {
+          "count": 3,
+          "pct": 1
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 173,
+          "Regex": 3,
+          "Contains": 3,
+          ">": 2,
+          "Equals": 1,
+          "Not Contains": 1
+        },
+        "StoredValue": {
+          "Equals": 15
+        },
+        "CustomCondition": {
+          "": 3
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "Contains(\"%vCenter%\", \".rjf.vm\")",
+            "count": 16
+          },
+          {
+            "value": "'%serverOS%' = 'Windows'",
+            "count": 3
+          },
+          {
+            "value": "'%serverOS%' = 'Linux'",
+            "count": 3
+          },
+          {
+            "value": "Connecting to remote server .*? failed",
+            "count": 3
+          },
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 3
+          },
+          {
+            "value": "'%domain%' = 'ent2.peelpolice.net'",
+            "count": 3
+          },
+          {
+            "value": "contains(\"%Classification%\",\"Windows Server Alert - HTTP URL Down\")",
+            "count": 3
+          },
+          {
+            "value": "(%roundedNeededWorkers% - %workerInstance%) <= 0",
+            "count": 2
+          },
+          {
+            "value": "(%newWorkerCount%+%workflowCounter1%) <= %roundedNeededWorkers%",
+            "count": 2
+          },
+          {
+            "value": "(\"%corrigoTicketStatus%\" = 'Completed') and (\"%jiraTicketStatus%\" = 'To Do')",
+            "count": 2
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 5
+          },
+          {
+            "value": "True",
+            "count": 2
+          },
+          {
+            "value": "'%CRL_GRD_PW_SPLITTER_END%' = ''",
+            "count": 1
+          },
+          {
+            "value": "False",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "Contains": {
+      "total_condition_branches": 200,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 156,
+          "pct": 78
+        },
+        "UserDefinedValue": {
+          "count": 44,
+          "pct": 22
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 109,
+          "": 47
+        },
+        "UserDefinedValue": {
+          "Formula": 41,
+          ">": 2,
+          "Contains": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 125
+          },
+          {
+            "value": "False",
+            "count": 24
+          },
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "\"%domainVMExist%\" = \"True\" or \"%nondomainVMExist%\" = \"True\"",
+            "count": 3
+          },
+          {
+            "value": "\"%psADObjectExists%\" = \"True\"",
+            "count": 3
+          },
+          {
+            "value": "\"%psADObjectExists%\" = \"No Response\"",
+            "count": 3
+          },
+          {
+            "value": "\"%skipServiceNowQueries%\" = \"True\"",
+            "count": 2
+          },
+          {
+            "value": "\"%skipServiceNowUpdates%\" = \"True\"",
+            "count": 2
+          },
+          {
+            "value": "0",
+            "count": 2
+          },
+          {
+            "value": "'%approvalStatus%' = 'noMatchManager'",
+            "count": 2
+          },
+          {
+            "value": "'%approvalStatus%' = 'Yes'",
+            "count": 2
+          },
+          {
+            "value": "'%approvalStatus%' = 'No'",
+            "count": 2
+          },
+          {
+            "value": "\"%containsHrList%\" = \"True\"",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "GetCellValue": {
+      "total_condition_branches": 199,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 183,
+          "pct": 92
+        },
+        "StoredValue": {
+          "count": 15,
+          "pct": 8
+        },
+        "": {
+          "count": 1,
+          "pct": 1
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 80,
+          "Contains": 58,
+          "Equals": 27,
+          "Regex": 5,
+          "Not Equals": 5,
+          ">": 4,
+          "<": 1,
+          "=>": 1,
+          "Not Contains": 1,
+          "<=": 1
+        },
+        "": {
+          "": 1
+        },
+        "StoredValue": {
+          "Equals": 15
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "200",
+            "count": 17
+          },
+          {
+            "value": "\"%oldRank%\" = \"%currRank%\"",
+            "count": 6
+          },
+          {
+            "value": "Teatinos",
+            "count": 5
+          },
+          {
+            "value": "Quilicura",
+            "count": 5
+          },
+          {
+            "value": "Gold",
+            "count": 5
+          },
+          {
+            "value": "201",
+            "count": 3
+          },
+          {
+            "value": "0",
+            "count": 3
+          },
+          {
+            "value": "3",
+            "count": 2
+          },
+          {
+            "value": "name=",
+            "count": 2
+          },
+          {
+            "value": "notes=",
+            "count": 2
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 2
+          },
+          {
+            "value": "'%serverDomain%' = 'bbpdev.blackbaud.com.au'",
+            "count": 1
+          },
+          {
+            "value": "True",
+            "count": 1
+          },
+          {
+            "value": "Running",
+            "count": 1
+          },
+          {
+            "value": "Stopped",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "DisplayValue": {
+      "total_condition_branches": 81,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 76,
+          "pct": 94
+        },
+        "StoredValue": {
+          "count": 3,
+          "pct": 4
+        },
+        "": {
+          "count": 1,
+          "pct": 1
+        },
+        "CustomCondition": {
+          "count": 1,
+          "pct": 1
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 73,
+          "Contains": 3
+        },
+        "StoredValue": {
+          "Equals": 3
+        },
+        "": {
+          "": 1
+        },
+        "CustomCondition": {
+          "": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "(\"%ticketExpertGroup%\" = \"12026\" or \"%ticketAssignedToGroup%\" = \"12026\" or \"%ticketExpertGroup%\" = \"599168\" or \"%ticketAssignedToGroup%\" = \"599168\")",
+            "count": 3
+          },
+          {
+            "value": "(\"%ticketRequestsOffering%\" = \"88479\" or \"%ticketRequestsOffering%\" = \"88054\" or \"%ticketRequestsOffering%\" = \"88104\" or \"%ticketRequestsOffering%\" = \"88113\" or \"%ticketRequestsOffering%\" = \"87780\" or \"%ticketRequestsOffering%\" = \"88468\" or \"%ticketRequestsOffering%\" = \"88112\" or \"%ticketRequestsOffering%\" = \"88120\")",
+            "count": 3
+          },
+          {
+            "value": "\"%newUserAdded%\" = \"True\"",
+            "count": 3
+          },
+          {
+            "value": "\"%ticketRequestsOffering%\" = \"10542\" or \"%ticketRequestsOffering%\" = \"10566\" or \"%ticketRequestsOffering%\" = \"30228\" or \"%ticketRequestsOffering%\" = \"543254\" or \"%ticketExpertGroup%\" = \"17759\" or \"%ticketAssignedToGroup%\" = \"17759\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"17757\" or \"%ticketAssignedToGroup%\" = \"17757\" or \"%ticketRequestsOffering%\" = \"10532\" or \"%ticketRequestsOffering%\" = \"10544\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"17754\" or \"%ticketAssignedToGroup%\" = \"17754\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"17761\" or \"%ticketAssignedToGroup%\" = \"17761\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"17753\" or \"%ticketAssignedToGroup%\" = \"17753\" or \"%ticketExpertGroup%\" = \"17755\" or \"%ticketAssignedToGroup%\" = \"17755\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"17756\" or \"%ticketAssignedToGroup%\" = \"17756\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ticketExpertGroup%\" = \"771886\" or \"%ticketAssignedToGroup%\" = \"771886\"",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "Length": {
+      "total_condition_branches": 53,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 53,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 35,
+          "Formula": 8,
+          "Equals": 7,
+          "<": 2,
+          "Not Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "0",
+            "count": 24
+          },
+          {
+            "value": "1",
+            "count": 12
+          },
+          {
+            "value": "5",
+            "count": 3
+          },
+          {
+            "value": "('%currentDisabled%' = 'False') and (%noteLength% > 0)",
+            "count": 2
+          },
+          {
+            "value": "12",
+            "count": 2
+          },
+          {
+            "value": "'%row_count_CRL_ISAM%' = '0'",
+            "count": 1
+          },
+          {
+            "value": "36",
+            "count": 1
+          },
+          {
+            "value": "10",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "MemorySet": {
+      "total_condition_branches": 52,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 50,
+          "pct": 96
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 4
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 44,
+          "Contains": 2,
+          ">": 2,
+          "Equals": 2
+        },
+        "StoredValue": {
+          "Equals": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "contains(\"%authToken%\", \"ERROR\")",
+            "count": 5
+          },
+          {
+            "value": "\"%currAction%\" = \"add\"",
+            "count": 4
+          },
+          {
+            "value": "0",
+            "count": 2
+          },
+          {
+            "value": "200",
+            "count": 2
+          },
+          {
+            "value": "(%chatGptCounter% < 3)",
+            "count": 2
+          },
+          {
+            "value": "\"%sqlSuccess%\" = \"False\"",
+            "count": 2
+          },
+          {
+            "value": "\"%ErrorState%\"=\"false\"",
+            "count": 1
+          },
+          {
+            "value": "\"%vmExists1%\" = \"false\"",
+            "count": 1
+          },
+          {
+            "value": "\"%successValue%\"=\"success\"",
+            "count": 1
+          },
+          {
+            "value": "Error",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "'%CRL_GRD_PW_SPLITTER_END%' = ''",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "RunWorkflow": {
+      "total_condition_branches": 49,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 48,
+          "pct": 98
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 2
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 45,
+          ">": 3
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "0",
+            "count": 3
+          },
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 2
+          },
+          {
+            "value": "\"%DataStore.Status%\" = \"true\"",
+            "count": 1
+          },
+          {
+            "value": "\"%DeleteVM.success%\" = \"true\"",
+            "count": 1
+          },
+          {
+            "value": "\"%PowerOnVM.Success%\"=\"True\"",
+            "count": 1
+          },
+          {
+            "value": "\"%ErrorState%\"=\"False\"",
+            "count": 1
+          },
+          {
+            "value": "\"%XDAddMachine.Status%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%XDAddUser.Status%\"=\"success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%vCenterSetVLAN.Success%\" = \"success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%SCCMdelete.success%\" = \"true\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "PowerShell": {
+      "total_condition_branches": 47,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 34,
+          "pct": 72
+        },
+        "StoredValue": {
+          "count": 13,
+          "pct": 28
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 13
+        },
+        "UserDefinedValue": {
+          "Contains": 19,
+          "Equals": 4,
+          "<": 4,
+          "=>": 4,
+          "Formula": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 4
+          },
+          {
+            "value": "Failure",
+            "count": 1
+          },
+          {
+            "value": "No Response",
+            "count": 1
+          },
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "4",
+            "count": 6
+          },
+          {
+            "value": "False",
+            "count": 4
+          },
+          {
+            "value": "InstanceId",
+            "count": 4
+          },
+          {
+            "value": "Get-WindowsUpdate",
+            "count": 4
+          },
+          {
+            "value": "ComputerName",
+            "count": 2
+          },
+          {
+            "value": "Failed",
+            "count": 2
+          },
+          {
+            "value": "5",
+            "count": 2
+          },
+          {
+            "value": "ERROR:",
+            "count": 2
+          },
+          {
+            "value": "(\"%CheckPing%\" = \"Success\") OR (\"%CheckRDP%\" = \"True\")",
+            "count": 1
+          },
+          {
+            "value": "Windows",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "WorkflowCounter": {
+      "total_condition_branches": 30,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 30,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 10,
+          "Formula": 8,
+          "=>": 8,
+          "<": 3,
+          "<=": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "1",
+            "count": 4
+          },
+          {
+            "value": "0",
+            "count": 3
+          },
+          {
+            "value": "(%checkChildren% > 0)",
+            "count": 2
+          },
+          {
+            "value": "20",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "SingleSSHCommand": {
+      "total_condition_branches": 24,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 22,
+          "pct": 92
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 8
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 11,
+          "Not Contains": 5,
+          "Contains": 4,
+          "Equals": 2
+        },
+        "StoredValue": {
+          "Equals": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "'Linux'",
+            "count": 3
+          },
+          {
+            "value": "load average",
+            "count": 3
+          },
+          {
+            "value": "contains(\"%InstallSecurityUpdates%\",\"No packages needed for security\") OR contains(\"%InstallSecurityUpdates%\",\"No es necesaria ninguna\")",
+            "count": 2
+          },
+          {
+            "value": "contains(\"%InstallSecurityUpdates%\",\"Updated\") OR contains(\"%InstallSecurityUpdates%\",\"Actualizado:\")",
+            "count": 2
+          },
+          {
+            "value": "0",
+            "count": 2
+          },
+          {
+            "value": "contains(\"%CheckWindowsOS%\",\"Windows\")",
+            "count": 2
+          },
+          {
+            "value": "contains(\"%CheckLinuxOS%\",\"Linux\")",
+            "count": 2
+          },
+          {
+            "value": "(\"%CheckPing%\" = \"Success\") OR (\"%CheckSSHAccess%\" = 0 )",
+            "count": 1
+          },
+          {
+            "value": "contains(\"%verticaNodeStatusCheck_INITIAL%\", \"DOWN\") OR contains(\"%verticaNodeStatusCheck_INITIAL%\", \"UNKNOWN\")",
+            "count": 1
+          },
+          {
+            "value": "All Nodes are UP",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "No Response",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "IsEmpty": {
+      "total_condition_branches": 24,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 24,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 22,
+          "": 2
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 17
+          },
+          {
+            "value": "False",
+            "count": 7
+          }
+        ]
+      }
+    },
+    "DateDifference": {
+      "total_condition_branches": 24,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 24,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 10,
+          "<": 6,
+          "=>": 6,
+          "<=": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "30",
+            "count": 5
+          },
+          {
+            "value": "5",
+            "count": 5
+          },
+          {
+            "value": "120",
+            "count": 4
+          },
+          {
+            "value": "2",
+            "count": 2
+          },
+          {
+            "value": "24",
+            "count": 2
+          },
+          {
+            "value": "10",
+            "count": 1
+          },
+          {
+            "value": "0",
+            "count": 1
+          },
+          {
+            "value": "60",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "HTTPRequest": {
+      "total_condition_branches": 23,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 22,
+          "pct": 96
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 4
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 22
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "\"%resultSyntax%\" = 'json'",
+            "count": 1
+          },
+          {
+            "value": "\"%resultSyntax%\" = 'text'",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "MultiMemorySet": {
+      "total_condition_branches": 23,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 21,
+          "pct": 91
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 9
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 21
+        },
+        "StoredValue": {
+          "Equals": 1,
+          "": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "\"%DatabaseCluster%\"=\"sql_only\"",
+            "count": 2
+          },
+          {
+            "value": "\"%queryResultValid%\" = \"False\"",
+            "count": 2
+          },
+          {
+            "value": "\"%LineResult%\" = \"Success\" AND \"%HardPhoneResult%\" = \"Success\" AND \"%SoftPhoneResult%\" = \"Success\" AND \"%EMResult%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%currColB%\" = \"colB\"",
+            "count": 1
+          },
+          {
+            "value": "\"%useMfa%\" = \"True\"",
+            "count": 1
+          },
+          {
+            "value": "\"%mfaStatus%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "(\"%mfaStatus%\" = \"Success\") or (\"%mfaStatus%\" = \"NA\")",
+            "count": 1
+          },
+          {
+            "value": "\"%authUserStatus%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%updatePassStatus%\" = Success",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "MatchRegularExpression": {
+      "total_condition_branches": 22,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 17,
+          "pct": 77
+        },
+        "StoredValue": {
+          "count": 5,
+          "pct": 23
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 8,
+          "Equals": 5,
+          "Formula": 3,
+          "Not Equals": 1
+        },
+        "StoredValue": {
+          "Equals": 5
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "No matching",
+            "count": 7
+          },
+          {
+            "value": "chg",
+            "count": 2
+          },
+          {
+            "value": "href",
+            "count": 2
+          },
+          {
+            "value": "\"%checkForTicketInfo%\" == \"No matching\"",
+            "count": 1
+          },
+          {
+            "value": "'%updateEngageStatus%' = 'true'",
+            "count": 1
+          },
+          {
+            "value": "Full",
+            "count": 1
+          },
+          {
+            "value": "Case/Task/Event",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 5
+          }
+        ]
+      }
+    },
+    "VMPowerState": {
+      "total_condition_branches": 21,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 15,
+          "pct": 71
+        },
+        "StoredValue": {
+          "count": 6,
+          "pct": 29
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 14,
+          "Equals": 1
+        },
+        "StoredValue": {
+          "Equals": 6
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%vmPowerState1%\" = \"On\"",
+            "count": 4
+          },
+          {
+            "value": "\"%vmPowerState1%\" = \"Off\"",
+            "count": 3
+          },
+          {
+            "value": "\"%vmExists1%\" = \"True\" AND \"%vmPowerState1%\" = \"On\"",
+            "count": 2
+          },
+          {
+            "value": "Off",
+            "count": 1
+          },
+          {
+            "value": "\"%vmPowerState1%\"=\"On\"",
+            "count": 1
+          },
+          {
+            "value": "\"%VMPoweredOff%\"=\"Off\"",
+            "count": 1
+          },
+          {
+            "value": "\"%PowerState2%\"=\"On\"",
+            "count": 1
+          },
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 1
+          },
+          {
+            "value": "\"%vmExists1%\" = \"True\" AND \"%vmPowerState1%\" = \"Off\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "DisplayMultiValue": {
+      "total_condition_branches": 21,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 19,
+          "pct": 90
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 10
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 19
+        },
+        "StoredValue": {
+          "Equals": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%alertSeverity%\" = \"P1\"",
+            "count": 2
+          },
+          {
+            "value": "\"%alertSeverity%\" = \"P2\"",
+            "count": 2
+          },
+          {
+            "value": "\"%alertSeverity%\" = \"P3\"",
+            "count": 2
+          },
+          {
+            "value": "\"%alertSeverity%\" = \"P4\"",
+            "count": 2
+          },
+          {
+            "value": "\"%adFullName%\" = \"%fullName%\"",
+            "count": 2
+          },
+          {
+            "value": "'%first_command_result%' = 'unknown'",
+            "count": 1
+          },
+          {
+            "value": "'%first_command_result%' = 'ommand not executed' OR '%first_command_duration%' = 'command not executed'",
+            "count": 1
+          },
+          {
+            "value": "'%flag_successul_connection%' = 'True'",
+            "count": 1
+          },
+          {
+            "value": "'%first_command_result_SSH2%' = 'unknown'",
+            "count": 1
+          },
+          {
+            "value": "'%first_command_result_SSH2%' = 'ommand not executed' OR '%first_command_duration_SSH2%' = 'command not executed'",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SNUpdateRecord": {
+      "total_condition_branches": 19,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 13,
+          "pct": 68
+        },
+        "UserDefinedValue": {
+          "count": 6,
+          "pct": 32
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 5,
+          "Equals": 1
+        },
+        "StoredValue": {
+          "Equals": 13
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%psReady%\" = \"true\"",
+            "count": 3
+          },
+          {
+            "value": "User does not exist",
+            "count": 1
+          },
+          {
+            "value": "\"%woStatus%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%woStatus%\" = \"Failure\"",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 13
+          }
+        ]
+      }
+    },
+    "Ping": {
+      "total_condition_branches": 18,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 15,
+          "pct": 83
+        },
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 17
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "": 9,
+          "Equals": 6
+        },
+        "UserDefinedValue": {
+          "Formula": 1,
+          "Equal": 1,
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 13
+          },
+          {
+            "value": "Failure",
+            "count": 2
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 1
+          },
+          {
+            "value": "Success",
+            "count": 1
+          },
+          {
+            "value": "0",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SendEmail": {
+      "total_condition_branches": 16,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 13,
+          "pct": 81
+        },
+        "StoredValue": {
+          "count": 3,
+          "pct": 19
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 7,
+          "Not Contains": 4,
+          "Formula": 2
+        },
+        "StoredValue": {
+          "Equals": 2,
+          "": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "yes",
+            "count": 6
+          },
+          {
+            "value": "Yes",
+            "count": 3
+          },
+          {
+            "value": "You have successfully reached",
+            "count": 2
+          },
+          {
+            "value": "(%insertDbRow% = 1) and contains(\"%snCreateRecord1%\",\"INC\")",
+            "count": 1
+          },
+          {
+            "value": "(%insertDbRow% = 1) and contains(\"%snCreateRequest%\",\"REQ\")",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Response",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "TerminateWorkflow": {
+      "total_condition_branches": 16,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 15,
+          "pct": 94
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 6
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 6,
+          "Equals": 4,
+          ">": 3,
+          "Not Equals": 1,
+          "Contains": 1
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "1",
+            "count": 4
+          },
+          {
+            "value": "0",
+            "count": 4
+          },
+          {
+            "value": "(\"%ticketPhaseId%\" = \"Fulfill\" or \"%ticketPhaseId%\" = \"Approve\" or \"%ticketPhaseId%\" = \"Classify\" or \"%ticketPhaseId%\" = \"FirstLineSupport\" or \"%ticketPhaseId%\" = \"Accept\" or \"%ticketPhaseId%\" = \"Review\" or %ticketPhaseId% = \"Escalate\" or \"%ticketPhaseId%\" = \"Log\")",
+            "count": 1
+          },
+          {
+            "value": "Alias",
+            "count": 1
+          },
+          {
+            "value": "\"%woStatus%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%woStatus%\" = \"Failure\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "TSQLStatement": {
+      "total_condition_branches": 16,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 16,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 12,
+          "Formula": 2,
+          "Contains": 1,
+          ">": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "1",
+            "count": 11
+          },
+          {
+            "value": "\"%myEnv%\" = \"Prod\"",
+            "count": 2
+          },
+          {
+            "value": "Incorrect",
+            "count": 1
+          },
+          {
+            "value": "0",
+            "count": 1
+          },
+          {
+            "value": "-1",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ADUserExists": {
+      "total_condition_branches": 14,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 14,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 12,
+          "": 2
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 5
+          },
+          {
+            "value": "False",
+            "count": 5
+          }
+        ]
+      }
+    },
+    "GetDate": {
+      "total_condition_branches": 14,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 11,
+          "pct": 79
+        },
+        "StoredValue": {
+          "count": 3,
+          "pct": 21
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 5,
+          ">": 4,
+          "Equals": 1,
+          "Not Equals": 1
+        },
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "0",
+            "count": 4
+          },
+          {
+            "value": "Wednesday",
+            "count": 2
+          },
+          {
+            "value": "\"%oldRank%\" = \"%currRank%\"",
+            "count": 2
+          },
+          {
+            "value": "Contains(\"%tz_TOMORROW%\",\"+2\")",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "ServiceStatus": {
+      "total_condition_branches": 13,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 7,
+          "pct": 54
+        },
+        "UserDefinedValue": {
+          "count": 6,
+          "pct": 46
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "": 5,
+          "Equals": 2
+        },
+        "UserDefinedValue": {
+          "Equals": 5,
+          "Contains": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Running",
+            "count": 5
+          },
+          {
+            "value": "Stopped",
+            "count": 2
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "Stopped",
+            "count": 3
+          },
+          {
+            "value": "Running",
+            "count": 2
+          },
+          {
+            "value": "SUCCESS",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "FunctionCalculator": {
+      "total_condition_branches": 11,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 11,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 11
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "(%calcTimeDiff% >= 0) and (%calcTimeDiff% <= (10*60))",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "GetCellValueAdvanced": {
+      "total_condition_branches": 11,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 11,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 4,
+          "Contains": 2,
+          "Not Equals": 1,
+          "=>": 1,
+          "Regex": 1,
+          "Equals": 1,
+          ">": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "Not found.",
+            "count": 3
+          },
+          {
+            "value": "2097152",
+            "count": 1
+          },
+          {
+            "value": "^.+$",
+            "count": 1
+          },
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 1
+          },
+          {
+            "value": "Contains(\"%vCenter%\", \".rjf.vm\")",
+            "count": 1
+          },
+          {
+            "value": "contains(\u201c%ADOUdatabase%\u201d,\u201dOU=\u201d)",
+            "count": 1
+          },
+          {
+            "value": "contains(\u201c%ADOUother%\u201d,\u201dOU=\u201d)",
+            "count": 1
+          },
+          {
+            "value": "Windows",
+            "count": 1
+          },
+          {
+            "value": "0",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "TSQLQuery": {
+      "total_condition_branches": 11,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 10,
+          "pct": 91
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 9
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 7,
+          "Formula": 3
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "0",
+            "count": 7
+          },
+          {
+            "value": "\"%approvalStatus%\" = \"approved\" AND \"%currentStatus%\" = \"new\"",
+            "count": 1
+          },
+          {
+            "value": "\"%approvalStatus%\" = \"denied\" AND \"%currentStatus%\" = \"new\"",
+            "count": 1
+          },
+          {
+            "value": "\"getrowscount(%CheckTableExist%)\" = \"1\"",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Failure",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ResultSetFilter": {
+      "total_condition_branches": 11,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 10,
+          "pct": 91
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 9
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 6,
+          "Not Contains": 2,
+          "Formula": 2
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"getcellvalue(%dbCheckForIgnore%,1,Status)\"=\"IGNORE\"",
+            "count": 2
+          },
+          {
+            "value": "Filter statement not valid",
+            "count": 2
+          },
+          {
+            "value": "Places",
+            "count": 1
+          },
+          {
+            "value": "AZR0PAUEAYEXE01",
+            "count": 1
+          },
+          {
+            "value": "AZR0PEUSAYEXE01",
+            "count": 1
+          },
+          {
+            "value": "AZR0PWEUAYEXE01",
+            "count": 1
+          },
+          {
+            "value": "SC10PAYEHUEXE01",
+            "count": 1
+          },
+          {
+            "value": "Nessus",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "Counter": {
+      "total_condition_branches": 10,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 10,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 5,
+          "=>": 2,
+          "<=": 2,
+          ">": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "2",
+            "count": 4
+          },
+          {
+            "value": "1",
+            "count": 1
+          },
+          {
+            "value": "10",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "FileExist": {
+      "total_condition_branches": 9,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 9,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 6,
+          "": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 8
+          },
+          {
+            "value": "False",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "FolderExist": {
+      "total_condition_branches": 9,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 9,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 9
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 7
+          },
+          {
+            "value": "False",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "XMLEvaluateXpathExpression": {
+      "total_condition_branches": 9,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 9,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 4,
+          "Not Equals": 4,
+          "Formula": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "1",
+            "count": 8
+          },
+          {
+            "value": "Customer Validation falied",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "VMExists": {
+      "total_condition_branches": 9,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 5,
+          "pct": 56
+        },
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 44
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 4
+        },
+        "StoredValue": {
+          "Equals": 5
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%vmExists1%\" = \"true\"",
+            "count": 3
+          },
+          {
+            "value": "\"%ErrorState%\" = \"false\"",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 3
+          },
+          {
+            "value": "False",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "ReplaceString": {
+      "total_condition_branches": 8,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 8,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 4,
+          "Formula": 2,
+          ">": 1,
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "not found",
+            "count": 2
+          },
+          {
+            "value": "Modificaci\u00f3n",
+            "count": 1
+          },
+          {
+            "value": "The string in the Find field was not found",
+            "count": 1
+          },
+          {
+            "value": "35",
+            "count": 1
+          },
+          {
+            "value": "\"%subTask%\" = \"add\"",
+            "count": 1
+          },
+          {
+            "value": "OK",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "RegistryQuery": {
+      "total_condition_branches": 8,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 8,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Not Equals": 6,
+          "Contains": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "1",
+            "count": 6
+          },
+          {
+            "value": "Registry key not found",
+            "count": 1
+          },
+          {
+            "value": "not found",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ConvertPasswordToPlaintext": {
+      "total_condition_branches": 8,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 7,
+          "pct": 88
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 12
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 6,
+          "Equals": 1
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "(%LogDest% == 1) or\n(%LogDest% == 3)",
+            "count": 2
+          },
+          {
+            "value": "(%LogDest% == 2) or\n(%LogDest% == 3)",
+            "count": 2
+          },
+          {
+            "value": "\"true\"",
+            "count": 1
+          },
+          {
+            "value": "\"%ErrorState%\" != \"true\"",
+            "count": 1
+          },
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "LowerCase": {
+      "total_condition_branches": 8,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 7,
+          "pct": 88
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 12
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 7
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "'%lcserverDomain%' = 'blackbaud.global'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'pdnt.blackbaud.com'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'blackbaud.com'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'bbpdev.blackbaud.com.au'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'blackbaudlab.global'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'pdexchange.test'",
+            "count": 1
+          },
+          {
+            "value": "'%lcserverDomain%' = 'avamar-test.local'",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "'%serverDomain%' = 'bbpdev.blackbaud.com.au'",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "FolderExistRemote": {
+      "total_condition_branches": 8,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 8,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 8
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 4
+          },
+          {
+            "value": "False",
+            "count": 4
+          }
+        ]
+      }
+    },
+    "ADPassExpDaysLeft": {
+      "total_condition_branches": 7,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 7,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 3,
+          "<=": 2,
+          ">": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "14",
+            "count": 4
+          },
+          {
+            "value": "Password expired",
+            "count": 1
+          },
+          {
+            "value": "password expired",
+            "count": 1
+          },
+          {
+            "value": "Password never expires",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SNOWupdateCatalogVariable": {
+      "total_condition_branches": 7,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 5,
+          "pct": 71
+        },
+        "UserDefinedValue": {
+          "count": 2,
+          "pct": 29
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 2
+        },
+        "StoredValue": {
+          "Equals": 5
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%UpdateCatalogItemCluster.success%\" = \"true\"",
+            "count": 2
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "XMLEditNode": {
+      "total_condition_branches": 6,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 6,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 6
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 4
+          },
+          {
+            "value": "Failure",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "FileSize": {
+      "total_condition_branches": 6,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 6,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 2,
+          "Not Equals": 2,
+          "=>": 1,
+          "<": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "5",
+            "count": 2
+          },
+          {
+            "value": "0",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "MsTeamsSendMessage": {
+      "total_condition_branches": 6,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 6,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 6
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "yes",
+            "count": 3
+          },
+          {
+            "value": "callFwd",
+            "count": 1
+          },
+          {
+            "value": "setFwd",
+            "count": 1
+          },
+          {
+            "value": "clearFwd",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "IsNumeric": {
+      "total_condition_branches": 6,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 6,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 6
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 5
+          },
+          {
+            "value": "False",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SetCellValue": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 80
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 20
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 4
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%Status%\" = \"FailedNoPatch\"",
+            "count": 2
+          },
+          {
+            "value": "\"%Status%\" = \"Success\"",
+            "count": 1
+          },
+          {
+            "value": "\"%Status%\" = \"BackupActive\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "URLCheck": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 5,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "": 5
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 5
+          }
+        ]
+      }
+    },
+    "ReadFile": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 5,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 3,
+          "Not Contains": 1,
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "Report Summary",
+            "count": 2
+          },
+          {
+            "value": "10.10.10.1",
+            "count": 1
+          },
+          {
+            "value": "10.10.10.2",
+            "count": 1
+          },
+          {
+            "value": "Failed to process the file.",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "AdvancedCommunicate": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 60
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 40
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "": 2
+        },
+        "UserDefinedValue": {
+          "Contains": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "No Response",
+            "count": 2
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "cpu",
+            "count": 1
+          },
+          {
+            "value": "memory",
+            "count": 1
+          },
+          {
+            "value": "disk",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "CreateMemoryTable": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 80
+        },
+        "CustomCondition": {
+          "count": 1,
+          "pct": 20
+        }
+      },
+      "conditiontype_by_type": {
+        "CustomCondition": {
+          "": 1
+        },
+        "UserDefinedValue": {
+          "Formula": 4
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "'%NCO_NODE_11%' = '%NODE%'",
+            "count": 1
+          },
+          {
+            "value": "'%row_count_CRL_ISAM%' = '0'",
+            "count": 1
+          },
+          {
+            "value": "\"%PX_FTTH_BETty_CHILD_WF_NAME%\" = \"FTTH_BETTY_USER_INTERFACE\" or \"%PX_FTTH_BETty_CHILD_WF_NAME%\" = \"FTTH_BETTY_JMS_QUEUE\"",
+            "count": 1
+          },
+          {
+            "value": "(%apacheCount% > 0)",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ADRemoveFromGroup": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 5,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 5
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 5
+          }
+        ]
+      }
+    },
+    "NestedJsonToTable": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 80
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 20
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 4
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"getcellvalue(%nestedJsonToTable1%,1,AutoReplyState)\" = \"Enabled\"",
+            "count": 1
+          },
+          {
+            "value": "\"getcellvalue(%nestedJsonToTable2%,1,OWAEnabled)\" = \"False\"",
+            "count": 1
+          },
+          {
+            "value": "\"getcellvalue(%nestedJsonToTable3%,1,ActiveSyncEnabled)\" = \"False\"",
+            "count": 1
+          },
+          {
+            "value": "\"getcellvalue(%nestedJsonToTable6%,1,RecipientTypeDetails)\" = \"SharedMailbox\"",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ADAddtoGroup": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 5,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 5
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 5
+          }
+        ]
+      }
+    },
+    "ChatGPTQuery": {
+      "total_condition_branches": 5,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 5,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 3,
+          "Formula": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "**Candidate Summary:",
+            "count": 1
+          },
+          {
+            "value": "Name:",
+            "count": 1
+          },
+          {
+            "value": "Candidate",
+            "count": 1
+          },
+          {
+            "value": "\"%resultSyntax%\" = 'json'",
+            "count": 1
+          },
+          {
+            "value": "\"%resultSyntax%\" = 'text'",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "DiskSpace": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "=>": 2,
+          "<": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "10",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "SystemUptime": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 4,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          ">": 2,
+          "<=": 1,
+          "<": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "120",
+            "count": 2
+          },
+          {
+            "value": "1",
+            "count": 1
+          },
+          {
+            "value": "16",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "VMPowerOff": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 75
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 25
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 3
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%vmPowerOff1%\" = \"Success\"",
+            "count": 3
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "GoTo": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 75
+        },
+        "UserDefinedValue": {
+          "count": 1,
+          "pct": 25
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        },
+        "UserDefinedValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "True",
+            "count": 1
+          },
+          {
+            "value": "False",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "Wednesday",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "TableReplaceCellValues": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 2,
+          "pct": 50
+        },
+        "StoredValue": {
+          "count": 2,
+          "pct": 50
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 2
+        },
+        "StoredValue": {
+          "": 2
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"getcellvalue(%tableReplaceCellValues1%,1,npsScore)\" = \"NA\"",
+            "count": 1
+          },
+          {
+            "value": "\"getcellvalue(%tableReplaceCellValues1%,1,renewalDate)\" = \"NA\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SLNPMAcknowledgeAlert": {
+      "total_condition_branches": 4,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 2,
+          "pct": 50
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 25
+        },
+        "": {
+          "count": 1,
+          "pct": 25
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Equals": 1,
+          "Formula": 1
+        },
+        "StoredValue": {
+          "Equals": 1
+        },
+        "": {
+          "": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "Alert is already acknowledged",
+            "count": 1
+          }
+        ],
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "FolderList": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 2,
+          "pct": 67
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 33
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 1
+        },
+        "UserDefinedValue": {
+          "Formula": 2
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "contains(\"%currSwExecutable%\", \".msi\")",
+            "count": 1
+          },
+          {
+            "value": "contains(\"%currSwExecutable%\", \".ps1\")",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SNGetRecord": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 2,
+          "pct": 67
+        },
+        "StoredValue": {
+          "count": 1,
+          "pct": 33
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 2
+        },
+        "StoredValue": {
+          "Equals": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "\"%ErrorState%\" = \"true\"",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ReadContinuousFile": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 2,
+          "Not Contains": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "failure",
+            "count": 2
+          },
+          {
+            "value": "Backup Failed",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "NetBackupChangePolicy": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Not Equals": 2,
+          "Formula": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "NoContent",
+            "count": 2
+          },
+          {
+            "value": "Resume Job Failed",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ConvertToPlainText": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 3
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "'%executorSource%' = 'file'",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "SLNPMUnManageNode": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "SLNPMManageNode": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "SLNPMGetNode": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Contains": 3
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "NodeID",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "FileCopy": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 2,
+          "": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "CherwellCreateRecord": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "UserDefinedValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "UserDefinedValue": {
+          "Formula": 2,
+          "Contains": 1
+        }
+      },
+      "top_values_by_type": {
+        "UserDefinedValue": [
+          {
+            "value": "\"%currType%\" = \"Service\"",
+            "count": 1
+          },
+          {
+            "value": "\"%currType%\" = \"Server\"",
+            "count": 1
+          },
+          {
+            "value": "Incident.Config Item Display Name is not valid.",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "VMPowerOn": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "VMMarkTemplate": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 3
+          }
+        ]
+      }
+    },
+    "PowerShellScript": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 3,
+          "pct": 100
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "Equals": 3
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "False",
+            "count": 1
+          },
+          {
+            "value": "Success",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "ServerRestart": {
+      "total_condition_branches": 3,
+      "type_distribution": {
+        "StoredValue": {
+          "count": 2,
+          "pct": 67
+        },
+        "UserDefinedValue": {
+          "count": 1,
+          "pct": 33
+        }
+      },
+      "conditiontype_by_type": {
+        "StoredValue": {
+          "": 1,
+          "Equals": 1
+        },
+        "UserDefinedValue": {
+          "Contains": 1
+        }
+      },
+      "top_values_by_type": {
+        "StoredValue": [
+          {
+            "value": "Success",
+            "count": 2
+          }
+        ],
+        "UserDefinedValue": [
+          {
+            "value": "Waiting",
+            "count": 1
+          }
+        ]
+      }
+    }
+  }
+}
