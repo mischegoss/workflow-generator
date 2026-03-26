@@ -37,7 +37,6 @@ def _load_wiring_map() -> list:
     """
     Load wiring_map.json once and cache.
     Handles both a bare list and a {"wiring": [...]} dict wrapper.
-    Returns the flat list of wiring entries, or [] on missing file.
     """
     if not hasattr(_load_wiring_map, "_cache"):
         data_dir = os.getenv("DATA_DIR", "data")
@@ -64,8 +63,7 @@ def _build_wiring_lookup(wiring_entries: list) -> dict:
     Structure:
       { source_activity: { target_activity: { field: {"pct": N, "authoritative": bool} } } }
 
-    First-write-wins: authoritative entries are prepended in wiring_map.json
-    so they are never overwritten by corpus entries.
+    First-write-wins: authoritative entries are prepended in wiring_map.json.
     """
     lookup: dict = {}
     for entry in wiring_entries:
@@ -80,6 +78,78 @@ def _build_wiring_lookup(wiring_entries: list) -> dict:
         if field not in tgt_map:
             tgt_map[field] = {"pct": pct, "authoritative": auth}
     return lookup
+
+
+# ---------------------------------------------------------------------------
+# Dependency graph helpers
+# ---------------------------------------------------------------------------
+
+def _load_dependency_graph() -> dict:
+    """
+    Load dependency_graph.json once and cache.
+    Returns dict: { consumer_type: { required_inputs: [...] } }
+    """
+    if not hasattr(_load_dependency_graph, "_cache"):
+        data_dir = os.getenv("DATA_DIR", "data")
+        path = os.path.join(data_dir, "dependency_graph.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                _load_dependency_graph._cache = json.load(f)
+            print(f"[pipeline_stages] Loaded dependency graph: "
+                  f"{len(_load_dependency_graph._cache)} consumer types")
+        except FileNotFoundError:
+            print(f"[pipeline_stages] Warning: dependency_graph.json not found at {path}")
+            _load_dependency_graph._cache = {}
+    return _load_dependency_graph._cache
+
+
+def _check_manifest_dependencies(manifest: list, dep_graph: dict) -> list:
+    """
+    Walks the manifest in order and checks whether each activity's required
+    table and session inputs are satisfied by a preceding activity.
+
+    Returns list of warning dicts:
+      { step_id, activity, field, dependency_type, expected_providers, note }
+
+    Only flags:
+    - dep_type "table" or "session" (string deps are too noisy to flag)
+    - Where none of the expected providers appear earlier in the manifest
+    - Where the activity appears in the dependency graph
+    """
+    warnings = []
+    seen_types: set = set()
+
+    for entry in manifest:
+        activity_type = entry.get("selected_activity", "")
+        step_id       = entry.get("step_id", "")
+
+        if not activity_type or entry.get("status") == "UNAVAILABLE":
+            seen_types.add(activity_type)
+            continue
+
+        if activity_type in dep_graph:
+            for dep in dep_graph[activity_type].get("required_inputs", []):
+                dep_type  = dep.get("dependency_type", "")
+                providers = dep.get("provided_by", [])
+                field     = dep.get("field", "")
+                note      = dep.get("notes", "")
+
+                if dep_type not in ("table", "session"):
+                    continue
+
+                if not any(p in seen_types for p in providers):
+                    warnings.append({
+                        "step_id":            step_id,
+                        "activity":           activity_type,
+                        "field":              field,
+                        "dependency_type":    dep_type,
+                        "expected_providers": providers[:3],
+                        "note":               note,
+                    })
+
+        seen_types.add(activity_type)
+
+    return warnings
 
 
 # ---------------------------------------------------------------------------
@@ -106,20 +176,22 @@ def run_retrieval(decomposition: dict) -> list:
     """
     Replaces ActivityRetrieverAgent.
 
-    Attaches pre_filled_fields from wiring_map to consecutive manifest pairs
-    where pct_of_target >= 80 or authoritative=true.
+    Two enrichments applied after manifest assembly:
 
-    Issue 1 fix: Authoritative wiring entries (ExitWhile→GetCellValue.RowNumber,
-    ExitWhile→SetCellValue.RowNumber) are SKIPPED when generating pre_filled_fields
-    hints. These entries have authoritative=true because they are correct by
-    platform rule — but the hint value would be "%exitWhile%" (TypeName-derived),
-    which does NOT match the actual xName StructureBuilder assigns (e.g. "%exitWhile1%").
-    Sending a wrong authoritative hint contradicts StructureBuilder's checklist
-    item 7, which already enforces the correct rule.
+    1. Wiring hints (wiring_map.json): corpus-derived hints attached as
+       _wire_hint_<field> keys in pre_filled_fields. Tell StructureBuilder
+       which upstream activity TYPE typically feeds a field. Format:
+       "_wire_hint_ResultSet": "TSQLQuery:91pct". Not authoritative — the
+       LLM uses these as context to assign the actual xName.
 
-    Corpus-derived wirings with pct >= 80 do generate hints because they reference
-    the source TypeName and the LLM will use them as guidance (not authoritative),
-    filling in the actual xName itself.
+    2. Dependency warnings (dependency_graph.json): checks manifest order
+       for missing table/session prerequisites. If GetCellValue appears
+       but no table producer precedes it, a prerequisite_note is attached
+       to that manifest entry so StructureBuilder adds the missing activity.
+
+    Authoritative wiring entries (ExitWhile→GetCellValue.RowNumber) are
+    SKIPPED for hints — the TypeName-derived xName would be wrong.
+    StructureBuilder's checklist item 7 handles these correctly.
     """
     decomposition  = _ensure_dict(decomposition)
     load_activity_list()
@@ -129,6 +201,7 @@ def run_retrieval(decomposition: dict) -> list:
 
     wiring_entries = _load_wiring_map()
     wiring_lookup  = _build_wiring_lookup(wiring_entries)
+    dep_graph      = _load_dependency_graph()
 
     # Trim manifest to StructureBuilder fields
     trimmed = []
@@ -141,7 +214,7 @@ def run_retrieval(decomposition: dict) -> list:
             "frequency_tier":    s.get("frequency_tier", "medium"),
         })
 
-    # Walk consecutive pairs and attach pre_filled_fields
+    # Enrichment 1: wiring hints from wiring_map
     for i in range(1, len(trimmed)):
         prev     = trimmed[i - 1]
         curr     = trimmed[i]
@@ -155,24 +228,44 @@ def run_retrieval(decomposition: dict) -> list:
         if not tgt_wirings:
             continue
 
-        pre_filled = {}
+        wiring_hints = {}
         for field, info in tgt_wirings.items():
             pct  = info.get("pct", 0)
             auth = info.get("authoritative", False)
 
-            # Issue 1 fix: skip authoritative entries — the hint TypeName
-            # won't match the actual xName. StructureBuilder's checklist
-            # item 7 handles these rules correctly without a hint.
             if auth:
-                continue
+                continue  # handled by StructureBuilder checklist
 
             if pct >= 80:
-                # Corpus-derived hint: camelCase source TypeName
-                hint = src_type[0].lower() + src_type[1:]
-                pre_filled[field] = f"%{hint}%"
+                wiring_hints[f"_wire_hint_{field}"] = f"{src_type}:{pct}pct"
 
-        if pre_filled:
-            curr["pre_filled_fields"] = pre_filled
+        if wiring_hints:
+            curr["pre_filled_fields"] = wiring_hints
+
+    # Enrichment 2: dependency warnings from dependency_graph
+    dep_warnings = _check_manifest_dependencies(trimmed, dep_graph)
+    if dep_warnings:
+        warn_by_step: dict = {}
+        for w in dep_warnings:
+            warn_by_step.setdefault(w["step_id"], []).append(w)
+
+        for entry in trimmed:
+            sid = entry["step_id"]
+            if sid in warn_by_step:
+                entry["missing_prerequisites"] = warn_by_step[sid]
+                missing = [
+                    f"{w['field']} ({w['dependency_type']}, "
+                    f"needs one of: {w['expected_providers']})"
+                    for w in warn_by_step[sid]
+                ]
+                entry["prerequisite_note"] = (
+                    f"PREREQUISITE WARNING: {entry['selected_activity']} requires "
+                    f"a preceding activity for: {'; '.join(missing)}. "
+                    f"Add the appropriate source activity before this step."
+                )
+
+        print(f"[pipeline_stages] Dependency check: {len(dep_warnings)} missing "
+              f"prerequisite(s) flagged in {len(warn_by_step)} step(s)")
 
     return trimmed
 

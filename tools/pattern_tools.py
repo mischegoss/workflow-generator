@@ -38,10 +38,25 @@ def match_pattern(
     """
     Matches decomposition steps against the pattern library using keyword overlap.
     Returns top candidate patterns sorted by score descending.
+
+    Fixes applied:
+    1. Reads both 'description' AND 'intent' from each step — previously only
+       read 'description', so intent values like 'loop' never matched keywords.
+    2. Normalises underscores in intent values to spaces so 'count_rows' matches
+       the keyword 'count rows'.
+    3. Scores by hits / sqrt(keyword_count) instead of hits / keyword_count —
+       prevents penalising patterns with comprehensive keyword lists.
+    4. Sorts ties in favour of patterns that have scaffolds, so MODE 1 fires
+       preferentially when multiple patterns score equally.
     """
     patterns = load_pattern_library()
     steps = decomposition.get("steps", [])
-    step_text = " ".join(s.get("description", "") for s in steps).lower()
+
+    # Fix 1 + 2: include intent with underscores normalised to spaces
+    step_text = " ".join(
+        f"{s.get('description', '')} {s.get('intent', '').replace('_', ' ')}"
+        for s in steps
+    ).lower()
 
     candidates = []
     for pattern in patterns:
@@ -50,10 +65,16 @@ def match_pattern(
             continue
         hits = sum(1 for kw in keywords if kw.lower() in step_text)
         if hits > 0:
-            score = hits / max(len(keywords), 1)
+            # Fix 3: sqrt normalisation — dampens length penalty without removing it
+            score = hits / (len(keywords) ** 0.5)
             candidates.append({**pattern, "_score": round(score, 3)})
 
-    return sorted(candidates, key=lambda x: x["_score"], reverse=True)
+    # Fix 4: break ties by preferring patterns that have scaffolds
+    return sorted(
+        candidates,
+        key=lambda x: (x["_score"], 1 if x.get("scaffold") else 0),
+        reverse=True,
+    )
 
 
 def _detect_fallback_cf(decomposition: dict) -> str:
@@ -99,8 +120,10 @@ def score_pattern_match(
     """
     Applies threshold gate to pattern candidates.
     Returns MATCHED with scaffold or NO_MATCH with fallback control flow type.
-    Fallback detects whether the workflow needs While+IfElse, While, IfElse,
-    UserGroup, or Linear examples based on decomposition steps.
+
+    Fix applied: if the top-scoring pattern has no scaffold, treat as NO_MATCH
+    and fall through to example-guided MODE 2. Prevents fill_scaffold_params
+    being called with a null scaffold.
     """
     if threshold is None:
         threshold = float(os.getenv("PATTERN_MATCH_THRESHOLD", "0.80"))
@@ -121,12 +144,24 @@ def score_pattern_match(
     score = top["_score"]
 
     if score >= threshold:
+        scaffold = top.get("scaffold")
+        if not scaffold:
+            # Pattern matched above threshold but has no scaffold —
+            # fall through to NO_MATCH so MODE 2 example-guided path runs.
+            return {
+                "match_status": "NO_MATCH",
+                "pattern_id": None,
+                "pattern_name": None,
+                "score": round(score, 3),
+                "scaffold": None,
+                "fallback_examples": [fallback_cf],
+            }
         return {
             "match_status": "MATCHED",
             "pattern_id": top.get("pattern_id"),
             "pattern_name": top.get("control_flow"),
             "score": score,
-            "scaffold": top.get("scaffold"),
+            "scaffold": scaffold,
             "fallback_examples": [],
         }
 
@@ -200,9 +235,9 @@ def check_cooccurrence(
 
     activity_set = set(activity_list)
     for pair in ranks[:50]:
-        a1 = pair.get("activity", "")   # fixed: was "activity1"
-        a2 = pair.get("next", "")       # fixed: was "activity2"
-        freq = pair.get("rank", 0)      # fixed: was "frequency"
+        a1 = pair.get("activity", "")
+        a2 = pair.get("next", "")
+        freq = pair.get("rank", 0)
         if freq < 10:
             break
         if a1 in activity_set and a2 not in activity_set:

@@ -4,8 +4,8 @@ from google.adk.models.lite_llm import LiteLlm
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 
 MODEL = LiteLlm(
-    model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
-    temperature=0.0,
+    model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
+    temperature=0.2,
 )
 
 INSTRUCTION = """

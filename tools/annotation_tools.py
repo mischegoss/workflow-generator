@@ -32,7 +32,6 @@ CREDENTIAL_FIELD_KEYS = {
     "ProxyPassword", "SRVPassword", "SrcPassword", "SwitchPassword",
     "URLPassword", "adminConfirmPassword", "api_key", "confirmDomainServerPassword",
     "openai_api_key", "password", "token",
-    # hiddenPassword type
     "ValueToDisplaya", "ValueToDisplayb", "ValueToDisplayc",
 }
 
@@ -43,46 +42,98 @@ MANUAL_CONFIG_ACTIVITIES = {
     ),
 }
 
-# Remaining unconfirmed CLR namespaces (FormatDate, ReadCSV, HTTPRequest
-# were not present in namespace_registry.json).
-UNCONFIRMED_NAMESPACE_ACTIVITIES = {
-    "FormatDate",
-    "ReadCSV",
-    "HTTPRequest",
-}
+UNCONFIRMED_NAMESPACE_ACTIVITIES = set()
 
-# Fields that reference table structure by name — a plain word value here
-# is almost certainly a hardcoded table/column name that needs verification.
-# Issue 4 fix: extend Category 3 to catch these structural fields.
 TABLE_STRUCTURE_FIELDS = {
-    "ColumnNumber",    # GetCellValue / SetCellValue — column name
-    "ResultSetName",   # GetCellValue / GetRows — table variable name literal
-    "TableName",       # GetRowsCount / CreateMemoryTable — table name literal
+    "ColumnNumber",
+    "ResultSetName",
+    "TableName",
 }
 
-# Activities that create or produce a new table in the workflow.
-# Used for Issue 6 (prerequisite check): if a table variable is referenced
-# but none of these activity types exist in the workflow, it's external.
-TABLE_PRODUCING_ACTIVITIES = {
-    "CreateMemoryTable",
-    "ReadXLS",
-    "ReadCSV",
-    "TSQLQuery",
-    "TSQLStatement",
-    "GetRows",
-    "ResultSetFilter",
-    "SNGetRecord",
-    "ADListOU",
-    "ADListGroup",
-    "GetOpenIncidents",
-    "ProcessList",
-    "ServiceList",
-    "FolderList",
-    "GetInstalledSoftware",
-    "GetWindowEventLogs",
+# Fields that MUST receive a DataTable variable (not a scalar)
+TABLE_INPUT_FIELDS = {"ResultSet", "ResultSetName"}
+
+# Fields that MUST receive a scalar (not a DataTable)
+SCALAR_INPUT_FIELDS = {
+    "RowNumber", "Counter", "HostName", "ValueToDisplay",
+    "VariableValue", "TheValue", "TheValue2",
 }
 
-# Cached index: activityName → { "mandatory": [...], "optional": [...] }
+
+# ---------------------------------------------------------------------------
+# Table producers — loaded from corpus-mined table_producers.json
+# ---------------------------------------------------------------------------
+
+_table_producers_cache: set | None = None
+
+
+def _load_table_producers() -> set:
+    global _table_producers_cache
+    if _table_producers_cache is not None:
+        return _table_producers_cache
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "table_producers.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = _json.load(f)
+        _table_producers_cache = set(data.get("producers", []))
+        print(f"[annotation_tools] Loaded {len(_table_producers_cache)} table producers")
+    except FileNotFoundError:
+        print(f"[annotation_tools] Warning: table_producers.json not found. Using fallback.")
+        _table_producers_cache = {
+            "CreateMemoryTable", "ReadXLS", "ReadCSV",
+            "TSQLQuery", "TSQLStatement", "GetRows",
+            "ResultSetFilter", "SNGetRecord", "ADListOU",
+            "ADListGroup", "GetOpenIncidents", "ProcessList",
+            "ServiceList", "FolderList", "GetInstalledSoftware",
+            "GetWindowEventLogs",
+        }
+    return _table_producers_cache
+
+
+def _get_table_producing_activities() -> set:
+    return _load_table_producers()
+
+
+# ---------------------------------------------------------------------------
+# Output registry — loaded from activity_output_registry.json (Category 6)
+# ---------------------------------------------------------------------------
+
+_output_registry_cache: dict | None = None
+
+
+def _load_output_registry() -> dict:
+    """
+    Load activity_output_registry.json once and cache as a dict keyed by
+    activityName → outputType.
+
+    outputType values: "DataTable", "Scalar", "Boolean", "Status", "None"
+    """
+    global _output_registry_cache
+    if _output_registry_cache is not None:
+        return _output_registry_cache
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "activity_output_registry.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            entries = _json.load(f)
+        _output_registry_cache = {
+            e["activityName"]: e["outputType"]
+            for e in entries
+            if "activityName" in e and "outputType" in e
+        }
+        print(f"[annotation_tools] Loaded {len(_output_registry_cache)} output type entries")
+    except FileNotFoundError:
+        print(f"[annotation_tools] Warning: activity_output_registry.json not found at {path}. "
+              f"Category 6 checks disabled.")
+        _output_registry_cache = {}
+    return _output_registry_cache
+
+
+# ---------------------------------------------------------------------------
+# Other cached indices
+# ---------------------------------------------------------------------------
+
 _detailed_index: dict | None = None
 
 
@@ -112,7 +163,6 @@ def _ensure_dict(value) -> dict:
         return value
     if isinstance(value, str):
         text = value.strip()
-        # Strip markdown code fences — Gemini Flash frequently wraps JSON in ```json ... ```
         if text.startswith("```"):
             text = text.split("\n", 1)[-1]
             if text.endswith("```"):
@@ -136,39 +186,34 @@ def _is_variable_reference(value: str) -> bool:
     return bool(re.match(r'^%[^%]+%$', value.strip()))
 
 
+def _extract_var_name(value: str) -> str | None:
+    """Extract the variable name from a %varName% reference, or None."""
+    m = re.match(r'^%([^%]+)%$', value.strip())
+    return m.group(1) if m else None
+
+
 def _looks_like_hardcoded_literal(value: str) -> bool:
-    """
-    Returns True if a string value looks like a hardcoded literal rather
-    than a variable reference or structural default.
-    """
     if not value or not isinstance(value, str):
         return False
     if _is_variable_reference(value):
         return False
-    if value in ("{x:Null}", "", "True", "False", "0", "1"):
-        return False
     if value.startswith("PLACEHOLDER_"):
         return False
-    # Dates
-    if re.match(r'\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', value):
-        return True
-    # IP addresses
-    if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', value):
-        return True
-    # Email addresses
-    if re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', value):
-        return True
-    # URLs / hostnames
+    if value in ("{x:Null}", "", "True", "False", "0", "1", "-1", "-2",
+                 "None", "null", "LocalHost", "localhost"):
+        return False
+    if re.match(r'^[\d\-]+$', value):
+        return False
+    if re.match(r'^\d{2}:\d{2}:\d{2}$', value):
+        return False
+    if re.match(r'^[^@\s]+@[^@\s]+$', value):
+        return False
     if re.match(r'^(https?://|www\.)', value):
         return True
-    return False
+    return len(value) > 2
 
 
 def _is_plain_word(value: str) -> bool:
-    """
-    Returns True if value is a plain alphanumeric word (no spaces, no %%, not a
-    structural platform value). Used for Issue 4: catching hardcoded column/table names.
-    """
     if not value or not isinstance(value, str):
         return False
     if _is_variable_reference(value):
@@ -177,7 +222,6 @@ def _is_plain_word(value: str) -> bool:
         return False
     if value.startswith("PLACEHOLDER_"):
         return False
-    # Plain word: only letters and digits, no separators
     return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9_]*$', value))
 
 
@@ -242,7 +286,6 @@ def annotate_placeholders(
 ) -> dict:
     """
     Replaces credential fields with PLACEHOLDER_ strings.
-    Two passes: SMTP module fields, then all password/token/api_key fields.
     """
     workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
@@ -280,23 +323,17 @@ def add_verify_notes(
     Category 1: Manual config activities (SNGetRecord XMLTableResult).
     Category 2: Unconfirmed CLR namespaces.
     Category 3a: Hardcoded literal values in mandatory textbox fields.
-    Category 3b: Plain word values in structural table/column reference fields
-                 (ColumnNumber, ResultSetName, TableName). These are hardcoded
-                 names that must match the actual table/column at runtime.
-                 (Fix for Issue 4.)
+    Category 3b: Plain word values in structural table/column reference fields.
     Category 4: Empty mandatory textbox/textarea fields that are not credentials.
-                Empty required fields will cause the activity to fail silently
-                at runtime with no platform error message.
-                (Fix for Issue 2.)
-    Category 5: Table variable prerequisite check — table variables referenced
-                in the workflow that are not produced by any activity within it.
-                These are external dependencies the user must populate before
-                running the workflow.
-                (Fix for Issue 6.)
+    Category 5: Table variable prerequisite check.
+    Category 6: Output type mismatch — a scalar-producing activity's %xName%
+                is referenced in a table-input field, or a DataTable-producing
+                activity's %xName% is referenced in a scalar-input field.
     """
     workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
-    detailed_index = _load_detailed_index()
+    detailed_index  = _load_detailed_index()
+    output_registry = _load_output_registry()
 
     def _append_note(node: dict, msg: str):
         existing = node.get("notes", "")
@@ -336,9 +373,8 @@ def add_verify_notes(
                     input_type in ("password", "hiddenPassword")
                     or field_key in CREDENTIAL_FIELD_KEYS
                 )
-
                 if is_credential:
-                    continue  # handled by annotate_placeholders
+                    continue
 
                 # ── Category 3a: Hardcoded literal in mandatory textbox ──────
                 if input_type in ("textbox", "textarea"):
@@ -351,7 +387,6 @@ def add_verify_notes(
                         )
 
                 # ── Category 4: Empty mandatory non-credential field ─────────
-                # Fix for Issue 2: empty required fields fail silently at runtime.
                 if input_type in ("textbox", "textarea") and val == "":
                     _append_note(
                         node,
@@ -361,8 +396,6 @@ def add_verify_notes(
                     )
 
         # ── Category 3b: Plain word in structural table/column fields ────────
-        # Fix for Issue 4: ColumnNumber="server" or TableName="certData" are
-        # hardcoded names that silently return empty if the name doesn't match.
         for field_key in TABLE_STRUCTURE_FIELDS:
             if field_key in node:
                 val = node[field_key]
@@ -370,8 +403,7 @@ def add_verify_notes(
                     _append_note(
                         node,
                         f"VERIFY: '{field_key}' is set to the literal value '{val}'. "
-                        f"Confirm this matches the exact table or column name used at "
-                        f"runtime.",
+                        f"Confirm this matches the exact table or column name used at runtime.",
                     )
 
         # ── Category 3b (CreateMemoryTable): TableAsString sample rows ───────
@@ -399,9 +431,11 @@ def add_verify_notes(
     result["workflow_raw_data"] = process_node(raw)
 
     # ── Category 5: Table variable prerequisite check ────────────────────────
-    # Fix for Issue 6: warn when a table variable is referenced in the workflow
-    # but no activity within the workflow creates or produces it.
     _check_table_prerequisites(result)
+
+    # ── Category 6: Output type mismatch check ───────────────────────────────
+    if output_registry:
+        _check_output_type_mismatches(result, output_registry)
 
     return result
 
@@ -410,24 +444,13 @@ def _check_table_prerequisites(workflow_json: dict) -> None:
     """
     Category 5: Detects table variables referenced in the workflow that are not
     produced by any activity within the workflow.
-
-    These are external dependencies — tables that must exist before execution
-    (e.g. populated by a global variable, a prior workflow, or a trigger).
-    Adds a VERIFY note to the first activity that references the variable.
-
-    Strategy:
-    1. Collect all xNames in the workflow.
-    2. Collect CustomTypeNames of all activities.
-    3. Find all %variable% references used in table-context fields (ResultSet,
-       ResultSetName, TableName).
-    4. For each such variable: if its xName is not in the workflow AND no
-       table-producing activity exists in the workflow, flag it.
+    Uses the corpus-loaded TABLE_PRODUCING_ACTIVITIES set (from table_producers.json).
     """
     raw = workflow_json.get("workflow_raw_data", {})
     if not raw:
         return
 
-    # Collect all xNames in the workflow (flat walk)
+    table_producing_activities = _get_table_producing_activities()
     all_xnames: set = set()
     all_custom_types: set = set()
 
@@ -446,16 +469,12 @@ def _check_table_prerequisites(workflow_json: dict) -> None:
         if isinstance(activity, dict):
             _collect(activity)
 
-    has_table_producer = bool(all_custom_types & TABLE_PRODUCING_ACTIVITIES)
+    has_table_producer = bool(all_custom_types & table_producing_activities)
 
-    # Fields whose values are table-context variable references
     TABLE_REF_FIELDS = {"ResultSet", "ResultSetName", "TableName", "Value"}
-
-    # Find all table variable references and where they first appear
-    referenced_tables: dict = {}  # varname → first activity node that references it
+    referenced_tables: dict = {}
 
     def _find_table_refs(node: dict):
-        xn = node.get("xName", "")
         for field_key, val in node.items():
             if field_key in TABLE_REF_FIELDS and isinstance(val, str):
                 m = re.match(r'^%([^%]+)%$', val.strip())
@@ -471,22 +490,95 @@ def _check_table_prerequisites(workflow_json: dict) -> None:
         if isinstance(activity, dict):
             _find_table_refs(activity)
 
-    # For each referenced table variable: if its xName is not in the workflow
-    # and no table-producing activity exists, it's an external dependency.
     for varname, first_node in referenced_tables.items():
         if varname in all_xnames:
-            continue  # produced by an activity in this workflow
+            continue
         if has_table_producer:
-            continue  # a table-creating activity exists; assume it covers this
-        # External dependency — add VERIFY note to the first referencing activity
+            continue
         msg = (
             f"VERIFY: '%{varname}%' is referenced as a table but is not created by any "
-            f"activity in this workflow. Ensure '{varname}' is populated (e.g. via a "
-            f"global variable, prior workflow, or trigger) before running this workflow."
+            f"activity in this workflow. Ensure '{varname}' is populated before running."
         )
         existing = first_node.get("notes", "")
         if msg not in existing:
             first_node["notes"] = (existing + "  " + msg).strip()
+
+
+def _check_output_type_mismatches(workflow_json: dict, output_registry: dict) -> None:
+    """
+    Category 6: Detects output type mismatches using activity_output_registry.json.
+
+    Two checks:
+    A. A DataTable-producing activity's %xName% is referenced in a SCALAR_INPUT_FIELD.
+       (e.g. TSQLQuery result wired directly into HostName — needs GetCellValue first)
+
+    B. A non-DataTable activity's %xName% is referenced in a TABLE_INPUT_FIELD.
+       (e.g. GetDate result wired into ResultSet — GetDate returns a string, not a table)
+
+    Builds an xName → (CustomTypeName, outputType) map, then walks all activities
+    looking for %xName% references in the relevant fields.
+    """
+    raw = workflow_json.get("workflow_raw_data", {})
+    if not raw:
+        return
+
+    # Build xName → (type, outputType) index
+    xname_to_output: dict = {}
+
+    def _index(node: dict):
+        xn = node.get("xName", "")
+        ct = node.get("CustomTypeName", "")
+        if xn and ct:
+            output_type = output_registry.get(ct, "Scalar")  # default: Scalar
+            xname_to_output[xn] = (ct, output_type)
+        for v in node.values():
+            if isinstance(v, dict):
+                _index(v)
+
+    for activity in raw.values():
+        if isinstance(activity, dict):
+            _index(activity)
+
+    def _append_note(node: dict, msg: str):
+        existing = node.get("notes", "")
+        if msg not in existing:
+            node["notes"] = (existing + "  " + msg).strip()
+
+    def _check_node(node: dict):
+        for field_key, val in node.items():
+            if not isinstance(val, str):
+                continue
+            var_name = _extract_var_name(val)
+            if not var_name or var_name not in xname_to_output:
+                continue
+
+            source_type, output_type = xname_to_output[var_name]
+
+            # Check A: DataTable wired into scalar field
+            if output_type == "DataTable" and field_key in SCALAR_INPUT_FIELDS:
+                _append_note(
+                    node,
+                    f"VERIFY: '{field_key}' references '%{var_name}%' which is a "
+                    f"DataTable output from {source_type}. This field expects a scalar "
+                    f"value. Use GetCellValue to extract a single cell from the table first.",
+                )
+
+            # Check B: Non-DataTable wired into table field
+            if output_type != "DataTable" and output_type != "None" and field_key in TABLE_INPUT_FIELDS:
+                _append_note(
+                    node,
+                    f"VERIFY: '{field_key}' references '%{var_name}%' which is a "
+                    f"{output_type} output from {source_type}. This field expects a "
+                    f"DataTable variable. Ensure the upstream activity produces a table.",
+                )
+
+        for v in node.values():
+            if isinstance(v, dict):
+                _check_node(v)
+
+    for activity in raw.values():
+        if isinstance(activity, dict):
+            _check_node(activity)
 
 
 def collect_placeholder_summary(
@@ -506,11 +598,11 @@ def collect_placeholder_summary(
             if isinstance(value, str):
                 if value.startswith("PLACEHOLDER_"):
                     items.append({
-                        "activity": xname,
-                        "type":     custom_type,
-                        "field":    key,
+                        "activity":    xname,
+                        "type":        custom_type,
+                        "field":       key,
                         "placeholder": value,
-                        "kind":     "placeholder",
+                        "kind":        "placeholder",
                     })
             if key == "notes" and isinstance(value, str) and "VERIFY" in value:
                 for note in value.split("VERIFY:"):

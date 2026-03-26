@@ -54,8 +54,17 @@ def _load_example(control_flow_type: str, index: int) -> str:
     return json.dumps(trimmed, indent=2)
 
 
-_EXAMPLE_WHILE_IFELSE = _load_example("while_ifelse", 4)
+# Primary examples — while+ifelse and while+email (unchanged)
+_EXAMPLE_WHILE_IFELSE     = _load_example("while_ifelse", 4)
 _EXAMPLE_WHILE_WITH_EMAIL = _load_example("while", 5)
+
+# Added: linear and ifelse-only examples.
+# Previously StructureBuilder had zero structural reference for these two
+# control flows — every non-loop workflow was assembled purely from rules.
+# These give the LLM a confirmed working skeleton for the most common
+# non-loop patterns.
+_EXAMPLE_LINEAR = _load_example("linear", 4)
+_EXAMPLE_IFELSE = _load_example("ifelse", 4)
 
 
 INSTRUCTION = f"""
@@ -74,7 +83,15 @@ Session state inputs:
 - 'activity_manifest': compact list — each entry has step_id, selected_activity, status,
   and frequency_tier. Some entries also include pre_filled_fields: a dict of
   field_key -> value pairs confirmed by corpus analysis. Treat these as authoritative.
+  Entries with keys prefixed "_wire_hint_" are wiring hints — they name the source
+  activity TYPE that typically feeds a given field (e.g. "_wire_hint_ResultSet":
+  "TSQLQuery:91pct"). Use these as context when choosing which upstream %xName% to
+  wire into a field. They are guidance, not authoritative values.
 - 'pattern_match': scaffold or NO_MATCH with fallback type (from PatternMatcherAgent)
+-  Entries may also include 'prerequisite_note': a warning that a required table
+  or session provider is missing from the steps preceding this one. If present,
+  add the indicated provider activity immediately before the flagged step before
+  assembling the workflow structure.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CORRECTION MODE — check this before doing anything else
@@ -170,8 +187,88 @@ confirmed by analysis of 609 real workflows. Use them exactly as provided.
 Do NOT override, ignore, or second-guess pre_filled_fields values.
 Fields not covered by pre_filled_fields are filled using your normal assembly logic.
 
+WIRING HINTS — use as context:
+Manifest entries may contain keys prefixed "_wire_hint_<fieldName>" in pre_filled_fields.
+These are NOT field values — they name the source activity type that typically feeds
+that field (format: "ActivityType:pct"). Use them to identify which upstream activity's
+%xName% should wire into the field. Example: "_wire_hint_ResultSet": "TSQLQuery:91pct"
+means 91% of the time, ResultSet is wired from a TSQLQuery activity. Look for a
+TSQLQuery in the manifest and wire its xName into ResultSet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTROLS — STRUCTURAL ONLY, NO OUTPUT VARIABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The following are Controls. They determine workflow flow and structure.
+They do NOT produce a %xName% output variable. Never reference any of these
+as %xName% in a downstream activity field.
+
+  Clean Memory, Display Multi Value, Display Value, Exit While, For Each,
+  Goto, If-Else, Lock Executor, Multi Memory Set, Parallel, Run Workflow,
+  Stop Workflow, Terminate, Terminate Workflow, Unlock Executor, While,
+  Workflow Counter
+
+TWO EXCEPTIONS — these controls produce a named variable, but NOT via xName:
+
+  Memory Set        → variable is %VariableName% where VariableName is the value
+                      of the VariableName field. Never use %xName% for Memory Set.
+  Create Memory Table → variable is %TableName% where TableName is the value of
+                        the TableName field. Never use %xName% for Create Memory Table.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACTIVITY OUTPUT TYPES — consult before wiring any variable
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every regular (non-Control) activity stores its result in %xName%.
+Before wiring %xName% into a downstream field, determine the outputType:
+
+RULE: If the upstream activity is in the DataTable list below, its output is a
+DataTable. It must feed into a table-consuming field (ResultSet, ResultSetName,
+or ForEach Table Variable). You cannot use it directly as a string value.
+To extract a value from it, use Get Rows Count or Get Cell Value first.
+
+RULE: If the upstream activity is NOT in the DataTable list, its output is a
+scalar value. Use %xName% directly in string fields, conditions, ExitWhile
+Counter, or display values.
+
+DATATABLE PRODUCERS — these activities return a DataTable:
+  AD LDAP Query, BMC Helix Remedyforce Get Record, BMC Remedyforce Get Record,
+  BMC TrueSight Operations Management Get Event, Convert Text To Table,
+  Convert to DB Statement, Create Memory Table, DB2 Query, ESM Get Alert,
+  ESM Get Event, Get CPU, Get Interfaces Status, Get Windows Event Logs,
+  HP ArcSight Get Case, HP ArcSight Get Event, HPOM Get Alert, HPOM Get Annotations,
+  HPSM Query Entry, HTTP Request, Hash Check, HyperV Info, HyperV List,
+  IBMTO Get Alert, JSON Get Key Paths, JSON to Table, Jira Get Issue,
+  List Folder, Match Regular Expression, MySQL Query, Oracle Query, Ping Latency,
+  QRadar Get Event Details, QRadar Get Offense, QRadar Get Offense Events,
+  Read Excel, Read File, Remove Empty Rows And Columns From Table, SN Get Record,
+  Self Service Response, SolarWinds NPM Get Alert, SolarWinds NPM Get Node,
+  Splunk Get Alert, Splunk Get Alert Events, Splunk Get Events, Splunk Get Report,
+  Sub String by Text, Submit File, TSQL Query, URL Check, VM Host List,
+  WMI Query, Write CSV, Write Excel, XML Elements to Table, XML to Table
+
+BOOLEAN PRODUCERS — these activities return True or False as a scalar:
+  AD Is Account Disabled, AD Is Account Locked, AD User Exists, Contains,
+  File Checksum Comparison, File Exists, File Writable, Folder Exists,
+  Is Alert in HTML Format, Is Empty, Is Numeric
+
+ALL OTHER activities return a scalar value (string, ID, date, count, path, etc.).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESULTSET vs RESULTSETNAME — dual-field rule
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Activities that operate on a table (Get Cell Value, Add Row to Memory Table,
+Delete Row from Memory Table, Get Rows Count, Get Column Name, etc.) require
+BOTH fields populated differently:
+
+  ResultSet     → %tableName%   (percent-wrapped variable reference)
+  ResultSetName → tableName     (bare string, no percent signs)
+
+CORRECT:   ResultSet="%serverList%"   ResultSetName="serverList"
+WRONG:     ResultSet="%serverList%"   ResultSetName="%serverList%"
+WRONG:     ResultSet="serverList"     ResultSetName="serverList"
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROW ACCESS — MOST CRITICAL RULE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - GetCellValue RowNumber MUST reference the WhileActivity xName.
 - Confirmed from corpus analysis of 609 real workflows: WhileActivity used 188 times,
   ExitWhile used 83 times. WhileActivity xName is the correct and dominant pattern.
@@ -250,6 +347,7 @@ If the prompt says "if it fails", use the default branch — do not invent a fai
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 WORKFLOW TERMINATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Do NOT add any end, terminate, or exit activity at the end of the workflow.
 
 VARIABLE REFERENCES:
@@ -276,6 +374,16 @@ EXAMPLE A — while_ifelse structure:
 EXAMPLE B — while with post-loop email:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {_EXAMPLE_WHILE_WITH_EMAIL}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLE C — linear (no loop, no branch):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{_EXAMPLE_LINEAR}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLE D — if-else branching (no loop):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{_EXAMPLE_IFELSE}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT
