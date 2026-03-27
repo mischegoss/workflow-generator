@@ -1,0 +1,7 @@
+Test ID:      t07
+Control flow: while_ifelse
+Source file:  example_while_ifelse_1.json
+Rationale:    GetInstalledSoftware → loop → PowerShell → branch on result. Loop+branch, realistic remediation pattern.
+
+PROMPT:
+Get a list of machines that have Trend Micro installed by querying installed software. Loop through each machine, copy the uninstall script to the remote machine, run it via PowerShell, and check whether uninstall succeeded or failed. Log the result for each machine.

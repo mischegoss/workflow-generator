@@ -1,0 +1,7 @@
+Test ID:      t05
+Control flow: while
+Source file:  example_while_1.json
+Rationale:    ReadCSV → loop → TSQLStatement. Simplest possible while loop, good structural baseline.
+
+PROMPT:
+Read a CSV file into a table, then loop through each row and insert it into a SQL database table using a SQL statement. Display the count of rows loaded when complete.

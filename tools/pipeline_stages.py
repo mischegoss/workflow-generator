@@ -352,3 +352,77 @@ def run_validation(annotation_result: dict) -> dict:
         "errors":              val_result.get("errors", []),
         "verify_notes":        verify_notes,
     }
+    
+    # ---------------------------------------------------------------------------
+# Stage 4b — Enrich  (Python, deterministic — between Placer and Wirer)
+# ---------------------------------------------------------------------------
+
+def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
+    """
+    For every activity in the placed skeleton:
+      1. Load its full template from activity_json_syntax.json
+      2. Merge template fields as base (non-destructive — xName/CustomTypeName win)
+      3. Apply any pre_filled_fields from the manifest entry (authoritative)
+
+    This replaces the _enrich_workflow call in output_tools.py,
+    moving it upstream so WirerAgent sees fully-formed activities.
+    """
+    from tools.build_tools import load_activity_template
+    from tools.annotation_tools import _ensure_dict
+
+    placed_skeleton = _ensure_dict(placed_skeleton)
+    raw = placed_skeleton.get("workflow_raw_data", placed_skeleton)
+
+    # Build manifest lookup by selected_activity type for pre_filled_fields
+    manifest_lookup: dict = {}
+    if isinstance(activity_manifest, list):
+        for entry in activity_manifest:
+            act = entry.get("selected_activity")
+            if act:
+                manifest_lookup[act] = entry.get("pre_filled_fields", {})
+
+    def enrich_node(node: dict) -> dict:
+        if not isinstance(node, dict):
+            return node
+
+        ct = node.get("CustomTypeName", "")
+        xname = node.get("xName", "")
+
+        if ct:
+            template = load_activity_template(ct)
+            if template:
+                # Template is the base; skeleton values override
+                merged = {**template, **{
+                    k: v for k, v in node.items()
+                    if v is not None and v != ""
+                }}
+                # Ensure xName is always from the skeleton
+                merged["xName"] = xname or merged.get("xName", "")
+
+                # Apply pre_filled_fields from manifest (authoritative)
+                for field, value in manifest_lookup.get(ct, {}).items():
+                    if not field.startswith("_wire_hint_"):
+                        merged[field] = value
+            else:
+                merged = dict(node)
+        else:
+            merged = dict(node)
+
+        # Recurse into nested activities
+        for k, v in list(merged.items()):
+            if isinstance(v, dict) and v.get("CustomTypeName"):
+                merged[k] = enrich_node(v)
+
+        return merged
+
+    enriched = {}
+    for xname, activity in raw.items():
+        if isinstance(activity, dict):
+            enriched[xname] = enrich_node(activity)
+        else:
+            enriched[xname] = activity
+
+    return {
+        "workflow_raw_data": enriched,
+        "variable_contracts": placed_skeleton.get("variable_contracts", {}),
+    }

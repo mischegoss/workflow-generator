@@ -1,0 +1,18 @@
+Test ID:  t06
+Status:   PASS
+Elapsed:  99.0s
+
+Notes:
+  JSON: 22638 bytes
+  XML: 12529 bytes — VALID
+  10 VERIFY note(s) for reviewer:
+    [createMemoryTable1] VERIFY: 'TableName' is set to the literal value 'rankingTable'. Confirm this matches the exact table or column name used
+    [createMemoryTable1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'queryDatabase1'. Confirm this matches the exact table or column nam
+    [getRowsCount1] VERIFY: 'ResultSet' references '%queryDatabase1%' which is a Scalar output from TSQLQuery. This field expects a DataTabl
+    [getCellValue1] VERIFY: 'ResultSetName' is set to the literal value 'queryDatabase1'. Confirm this matches the exact table or column nam
+    [getCellValue1] VERIFY: 'ColumnNumber' is set to the literal value 'itemName'. Confirm this matches the exact table or column name used 
+    [getCellValue1] VERIFY: 'ResultSet' references '%queryDatabase1%' which is a Scalar output from TSQLQuery. This field expects a DataTabl
+    [getCellValue2] VERIFY: 'ResultSetName' is set to the literal value 'queryDatabase1'. Confirm this matches the exact table or column nam
+    [getCellValue2] VERIFY: 'ColumnNumber' is set to the literal value 'score'. Confirm this matches the exact table or column name used at 
+    [getCellValue2] VERIFY: 'ResultSet' references '%queryDatabase1%' which is a Scalar output from TSQLQuery. This field expects a DataTabl

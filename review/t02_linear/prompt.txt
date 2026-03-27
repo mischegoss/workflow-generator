@@ -1,0 +1,7 @@
+Test ID:      t02
+Control flow: linear
+Source file:  example_linear_4.json
+Rationale:    Tests FTP session + table filtering + sort + GetCellValue chain. Clean linear, no niche activities.
+
+PROMPT:
+Connect to an FTP server, list all files in a folder, filter for files only, sort by size descending, download the largest file, and delete it from the FTP server.

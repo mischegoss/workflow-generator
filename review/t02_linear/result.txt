@@ -1,0 +1,9 @@
+Test ID:  t02
+Status:   FAIL
+Elapsed:  49.1s
+
+Notes:
+  Pipeline produced no output.
+  Chat response: Workflow generation failed — no output produced and no error captured.
+  This was a rate limit fail. Google stoped working <= Tamar note
+

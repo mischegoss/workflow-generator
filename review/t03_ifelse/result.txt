@@ -1,0 +1,10 @@
+Test ID:  t03
+Status:   PASS
+Elapsed:  55.2s
+
+Notes:
+  JSON: 8181 bytes
+  XML: 7120 bytes — VALID
+  2 VERIFY note(s) for reviewer:
+    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'getEventLog1'. Confirm this matches the exact table or column name 
+    [getRowsCount1] VERIFY: 'ResultSet' references '%getEventLog1%' which is a Scalar output from DisplayValue. This field expects a DataTab

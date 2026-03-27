@@ -1,0 +1,7 @@
+Test ID:      t03
+Control flow: ifelse
+Source file:  example_ifelse_1.json
+Rationale:    GetWindowEventLogs → count → branch → email. Classic alert-and-notify pattern.
+
+PROMPT:
+Query the Windows event log for error events in the last 24 hours. If any errors are found, convert the results to an HTML table and send an email alert with the error details.

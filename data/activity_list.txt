@@ -150,15 +150,15 @@ ConditionalWait	Puts the Workflow on hold until a specified condition applies
 Contains	Checks if a sub string exists within a string/table
 ConvertDateToFileTime	Convert a datetime formatted date to filetime format for use with Active Directory and other applications.
 ConvertHexStringToDecimal	Return decimal version of a Hex string
-ConvertHtmlToPlainText	Convert HTML to plaintext.
-ConvertPasswordToPlaintext	Return plaintext version of an encrypted password variable.
+ConvertHtmlToPlainText	Strips HTML tags and converts HTML markup to plaintext string. For HTML content only. NOT for passwords or table variables.
+ConvertPasswordToPlaintext	Decrypts an encrypted/stored password variable to plaintext. USE THIS for any "convert password to plaintext" or "decrypt stored credential" task. NOT for converting table data or HTML.
 ConvertTabletoCSV	Convert a result-set table to CSV.
 ConvertTableToJSON	Convert a result-set table to JSON.
 ConvertTextToTable	Converts a text variable into a table according to predefined column/row delimiters
 ConvertToBaseSixtyFourString	Convert a string to Base64.
 ConvertToDBStatement	Converts a table into a DB2/Oracle/MySQL/TSQL Insert statement
 ConvertToHTMLTable	Converts a table variable into an HTML table and stores it in a different variable
-ConvertToPlainText	Converts a table variable into plain text and stores it in a different variable
+ConvertToPlainText	Converts a TABLE VARIABLE (result set) into plain text and stores it in a different variable. For converting text or string values only. NOT for passwords or credentials — use ConvertPasswordToPlaintext for that.
 ConvertUNIXTimeToHumanReadable	Convert a UNIX timestamp to human-readable format in UTC.
 CorrigoAddComment	add a comment to an existing ticket.  URL must be updated to point to customer environment.
 CorrigoCreateTicket	create new Corrigo ticket via api
@@ -654,11 +654,3 @@ XMLElementstoTable	Converts a specific table with its attributes within the spec
 XMLEvaluateXpathExpression	Queries for an XML value
 XMLtoTable	Converts a specific table within the specified XML to a table variable
 ZipDecompress	Extracts a selected compressed file
-FileCopy	Copies a file to a specified destination
-FileMove	Moves a file to a specified destination
-FolderCopy	Copies a folder to a specified destination
-VMHostList	Retrieves a list of VMware hosts
-DisplayMultiValue	Displays multiple eyeShare variable values in the active logs
-RunWorkflow	Runs an existing workflow
-ZipCompress	Compresses files into a ZIP archive
-SMTPSendEmail	Sends an email using SMTP

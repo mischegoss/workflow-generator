@@ -1,0 +1,7 @@
+Test ID:      t06
+Control flow: while
+Source file:  example_while_3.json
+Rationale:    SQL query → loop with GetDate + multi-variable assignment. Tests date handling inside loops.
+
+PROMPT:
+Query a database for ranked items, get today's date, and build a ranking table by looping through the results. For each row, extract the item name and score, calculate any adjustments, and write the final rankings back to the database.

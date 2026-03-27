@@ -1,0 +1,7 @@
+Test ID:      t10
+Control flow: usergroup
+Source file:  example_usergroup_4.json
+Rationale:    HTTPRequest → MemorySet → branch on failure → GoTo. Tests error handling and GoTo pattern.
+
+PROMPT:
+Send an HTTP request to an external API and store the response in a variable. If the request fails, retrieve the error details from the response, display the error message, and use a GoTo to jump to the error handling section of the workflow.

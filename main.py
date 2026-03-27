@@ -1,3 +1,16 @@
+"""
+main.py — entry point for the workflow generator.
+
+Retry logic:
+  Attempt 1: full pipeline (Decomposer → Placer → Enrichment → Wirer)
+  Attempt 2 on validation failure: CorrectionPipeline (Wirer only, reusing
+    decomposition and placed_skeleton from attempt 1's persisted output_keys)
+  Attempt 2 on empty response: full pipeline retry with fresh session
+
+The correction pipeline fix prevents DecomposerAgent from receiving the
+CORRECTION REQUIRED error list and trying to decompose it as a workflow.
+"""
+
 import argparse
 import asyncio
 import json
@@ -10,7 +23,8 @@ from dotenv import load_dotenv
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part
 
-from agents import build_pipeline
+from agents import build_pipeline, WorkflowPipeline
+from agents.pipeline import build_correction_pipeline, CorrectionPipeline
 from tools.retrieval_tools import load_activity_list
 from tools.decompose_tools import assess_complexity, estimate_activity_count
 
@@ -60,13 +74,7 @@ def _ensure_dict(value) -> dict:
 
 
 def _find_output_file(run_start: float) -> pathlib.Path | None:
-    """
-    Scan json_files/ for any .json file written after run_start.
-
-    Python-stage state mutations (including output_result) don't survive
-    ADK's get_session() call — only LlmAgent output_key values are persisted.
-    The pipeline writes the file to disk successfully; we find it by mtime.
-    """
+    """Scan json_files/ for any .json file written after run_start."""
     if not OUTPUT_DIR.exists():
         return None
     candidates = [
@@ -75,7 +83,6 @@ def _find_output_file(run_start: float) -> pathlib.Path | None:
     ]
     if not candidates:
         return None
-    # Most recently written file wins (handles parallel runs gracefully)
     return max(candidates, key=lambda f: f.stat().st_mtime)
 
 
@@ -96,12 +103,12 @@ def _check_needs_retry(state: dict) -> tuple:
 
 async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     """
+    Full pipeline run (Attempt 1).
     Returns (output_file: pathlib.Path | None, session_state: dict).
-    Output file is found by scanning json_files/ for files written during this run.
     """
-    app_name    = f"wf_gen_{run_id}"
-    user_id     = f"system_{run_id}"
-    run_start   = time.time()
+    app_name  = f"wf_gen_{run_id}"
+    user_id   = f"system_{run_id}"
+    run_start = time.time()
 
     pipeline = build_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
@@ -164,6 +171,82 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     return output_file, state
 
 
+async def _run_correction_pipeline(
+    prior_state: dict,
+    error_summary: str,
+    original_prompt: str,
+    run_id: str,
+) -> tuple:
+    """
+    Correction pipeline run (Attempt 2 on validation failure).
+
+    Creates a new session pre-loaded with decomposition and placed_skeleton
+    from attempt 1 (both persist as output_key values). WirerAgent receives
+    the CORRECTION REQUIRED prompt as its user message.
+
+    Returns (output_file: pathlib.Path | None, session_state: dict).
+    """
+    app_name  = f"wf_corr_{run_id}"
+    user_id   = f"system_{run_id}"
+    run_start = time.time()
+
+    pipeline = build_correction_pipeline()
+    runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
+
+    session = await runner.session_service.create_session(
+        app_name=app_name,
+        user_id=user_id,
+    )
+
+    # Pre-load persisted values from attempt 1
+    session.state["prompt"]          = original_prompt
+    session.state["decomposition"]   = prior_state.get("decomposition", {})
+    session.state["placed_skeleton"] = prior_state.get("placed_skeleton", {})
+
+    correction_message = (
+        f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "
+        f"that prevented it from being imported. Fix ALL of the following errors. "
+        f"Do not reproduce any of these errors:\n\n"
+        f"{error_summary}\n\n"
+        f"Original workflow request: {original_prompt}"
+    )
+
+    user_message = Content(role="user", parts=[Part(text=correction_message)])
+    event_count  = 0
+
+    try:
+        async for event in runner.run_async(
+            user_id=user_id,
+            session_id=session.id,
+            new_message=user_message,
+        ):
+            event_count += 1
+            print(
+                f"  [event {event_count}] "
+                f"author={getattr(event, 'author', '?')} "
+                f"is_final={event.is_final_response()}"
+            )
+
+    except ValueError as e:
+        if "No message in response" in str(e):
+            print(f"  [correction] Empty response from model")
+            state = await _extract_session_state(runner, app_name, session.id, user_id)
+            return None, {**state, "_empty_response_error": True}
+        raise
+
+    print(f"  Total events: {event_count}")
+    state       = await _extract_session_state(runner, app_name, session.id, user_id)
+    output_file = _find_output_file(run_start)
+
+    print(f"  Session keys: {[k for k in state if not k.startswith('_')]}")
+    if output_file:
+        print(f"  Output file:  {output_file}")
+    else:
+        print("  Output file:  NOT FOUND after correction attempt")
+
+    return output_file, state
+
+
 async def run(prompt: str) -> tuple:
     """
     Returns (output_file_path: str | None, chat_response: str).
@@ -183,7 +266,7 @@ async def run(prompt: str) -> tuple:
         )
         return None, msg
 
-    # ── Attempt 1 ─────────────────────────────────────────────────────────
+    # ── Attempt 1: Full pipeline ───────────────────────────────────────────
     run_id = uuid.uuid4().hex[:12]
     print(f"\n[attempt 1] run_id={run_id}")
     output_file, state = await _run_pipeline(prompt, run_id)
@@ -194,46 +277,40 @@ async def run(prompt: str) -> tuple:
     needs_retry, error_summary = _check_needs_retry(state)
 
     if not needs_retry:
-        # No output file and no retry signal — unexpected failure
         return None, "Workflow generation failed — no output produced and no error captured."
 
-    # ── Attempt 2 (retry) ─────────────────────────────────────────────────
+    # ── Attempt 2 ──────────────────────────────────────────────────────────
     print(f"\n[attempt 2] First attempt failed. Retrying...")
     print(f"  Reason: {error_summary[:200]}")
 
-    # If a correction prompt was stored (validation failure path),
-    # use it so StructureBuilder sees CORRECTION REQUIRED on retry.
-    _correction = state.get("_correction_prompt")
-    if _correction:
-        retry_prompt = _correction
-    elif state.get("_empty_response_error"):
-        retry_prompt = prompt
-    else:
-        retry_prompt = (
-            f"{prompt}\n\n"
-            f"CORRECTION REQUIRED \u2014 The previous attempt produced a workflow with errors "
-            f"that prevented it from being imported. Fix ALL of the following errors in "
-            f"your workflow output. Do not reproduce any of these errors:\n\n"
-            f"{error_summary}"
-        )
     retry_run_id = uuid.uuid4().hex[:12]
     print(f"  retry run_id={retry_run_id}")
-    retry_output_file, retry_state = await _run_pipeline(retry_prompt, retry_run_id)
+
+    if state.get("_empty_response_error"):
+        # Empty model response — retry full pipeline with fresh session
+        print(f"  Strategy: full pipeline retry (empty response)")
+        retry_output_file, retry_state = await _run_pipeline(prompt, retry_run_id)
+    else:
+        # Validation failure — use correction pipeline (Wirer only)
+        print(f"  Strategy: correction pipeline (WirerAgent only)")
+        retry_output_file, retry_state = await _run_correction_pipeline(
+            prior_state=state,
+            error_summary=error_summary,
+            original_prompt=prompt,
+            run_id=retry_run_id,
+        )
 
     if retry_output_file:
         return str(retry_output_file), _build_chat_response(retry_output_file, retry_state)
 
-    retry_needs_retry, retry_error = _check_needs_retry(retry_state)
-    if retry_needs_retry or True:  # surface the error regardless
-        msg = (
-            f"Workflow generation failed after 2 attempts.\n\n"
-            f"Attempt 1: {error_summary}\n\n"
-            f"Attempt 2: {retry_error if retry_needs_retry else 'No output produced.'}\n\n"
-            f"Try breaking the workflow into smaller pieces or simplifying the prompt."
-        )
-        return None, msg
-
-    return None, "Workflow generation failed after 2 attempts."
+    _, retry_error = _check_needs_retry(retry_state)
+    msg = (
+        f"Workflow generation failed after 2 attempts.\n\n"
+        f"Attempt 1: {error_summary}\n\n"
+        f"Attempt 2: {retry_error if retry_error else 'No output produced.'}\n\n"
+        f"Try breaking the workflow into smaller pieces or simplifying the prompt."
+    )
+    return None, msg
 
 
 def _build_chat_response(output_file: pathlib.Path, state: dict) -> str:

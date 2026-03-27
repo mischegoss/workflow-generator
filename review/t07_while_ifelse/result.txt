@@ -1,0 +1,7 @@
+Test ID:  t07
+Status:   FAIL
+Elapsed:  77.5s
+
+Notes:
+  Pipeline produced no output.
+  Chat response: Workflow generation failed — no output produced and no error captured.

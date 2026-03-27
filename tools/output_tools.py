@@ -6,10 +6,20 @@ Replaces ComposerAgent. Deterministic Python output stage.
 Live path:  format_json_output() → write_output_file()
 Manual path: workflow JSON → convert_to_xml.py (separate CLI script)
 
-Fix 9 note: verify_notes in the validation_result dict is now correctly
+ARCHITECTURE NOTE:
+  _enrich_workflow() has been removed from format_json_output(). Template
+  enrichment now happens in Stage 4b (run_enrichment in pipeline_stages.py),
+  upstream of annotation and validation. By the time workflow_json reaches
+  this stage it is already fully enriched — re-enriching here would overwrite
+  WirerAgent's semantic field values with template placeholders.
+
+  _enrich_activity() and _enrich_workflow() are kept below as reference
+  implementations but are no longer called by the live pipeline.
+
+Fix 9 note: verify_notes in the validation_result dict is correctly
 populated by run_validation() in pipeline_stages.py (derived from
 placeholder_summary items with kind == "verify"). This file reads it
-directly — no change needed here beyond confirming the field is used.
+directly.
 
 Output directory: json_files/ (relative to project root, created if missing)
 """
@@ -22,12 +32,10 @@ from tools.build_tools import generate_pnumber, generate_workflow_name, load_act
 
 
 # ---------------------------------------------------------------------------
-# Metadata enrichment
+# Metadata enrichment (reference only — no longer called by live pipeline)
 # ---------------------------------------------------------------------------
 
-# Fields that StructureBuilder sets and owns — never overwrite with template values.
-# Everything else (id, activityLicenseType, visible, Timeout, etc.) comes from
-# the template so the JSON is complete for direct consumption by Kevin's workflow.
+# Fields that WirerAgent sets and owns — never overwrite with template values.
 _PRESERVE_FIELDS = {
     "xName", "CustomTypeName", "TypeName", "name",
     "IsValid", "Description", "description",
@@ -49,42 +57,26 @@ _PRESERVE_FIELDS = {
 
 def _enrich_activity(activity: dict) -> dict:
     """
-    Merge full template metadata into a generated activity dict.
-
-    Strategy: load the template for this activity's CustomTypeName, then
-    build a merged dict where:
-      - Template fields provide the base (id, activityLicenseType, visible,
-        Timeout, TimeInSeconds, RecoveryMethodSelection, Path, DisplayName,
-        TargetModuleID, TargetModuleName, label, readPermission, writePermission,
-        modulePermissions, isFavorite, isJsonValid, disabled, etc.)
-      - _PRESERVE_FIELDS from the generated activity always win — these are
-        the functional fields StructureBuilder set intentionally.
-      - Nested child activities are recursed into.
+    Reference implementation — kept for manual use and convert_to_xml.py.
+    Not called by the live pipeline (enrichment now happens in Stage 4b).
     """
     ct = activity.get("CustomTypeName", "")
     if not ct:
         return activity
 
     template = load_activity_template(ct) if ct else {}
-
-    # Start with template as base, then overlay preserved fields
     merged = copy.deepcopy(template) if template else {}
 
-    # Overlay all _PRESERVE_FIELDS from the generated activity
     for key, val in activity.items():
         if key in _PRESERVE_FIELDS:
             merged[key] = val
         elif isinstance(val, dict) and val.get("CustomTypeName"):
-            # Nested activity — recurse
             merged[key] = _enrich_activity(val)
         elif isinstance(val, dict):
-            # Non-activity dict (e.g. null fields) — keep as-is
             merged[key] = val
 
-    # Ensure xName is correct (template has placeholder value)
     merged["xName"] = activity.get("xName", merged.get("xName", ""))
 
-    # Preserve any nested activity children not already in merged
     for key, val in activity.items():
         if key not in merged:
             if isinstance(val, dict) and val.get("CustomTypeName"):
@@ -96,7 +88,10 @@ def _enrich_activity(activity: dict) -> dict:
 
 
 def _enrich_workflow(workflow_raw_data: dict) -> dict:
-    """Walk all top-level and nested activities and enrich each with template metadata."""
+    """
+    Reference implementation — kept for manual use and convert_to_xml.py.
+    Not called by the live pipeline (enrichment now happens in Stage 4b).
+    """
     enriched = {}
     for xname, activity in workflow_raw_data.items():
         if isinstance(activity, dict):
@@ -118,7 +113,7 @@ class PipelineValidationError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Stage 7 — Output  (replaces ComposerAgent)
+# Stage 7 — Output
 # ---------------------------------------------------------------------------
 
 def format_json_output(
@@ -129,28 +124,24 @@ def format_json_output(
     Adds metadata to a validated workflow JSON and returns the output dict.
     Raises PipelineValidationError if validation_result.status != 'valid'.
 
-    Fix 7 (via build_tools): generate_workflow_name now uses base_name,
-    so the output file is named meaningfully rather than WF_{timestamp}_{suffix}.
-
-    Fix 9: pipeline_notes is populated from validation_result["verify_notes"],
-    which is now correctly derived in run_validation() from the placeholder_summary.
+    NOTE: workflow_raw_data is used as-is. Enrichment happened upstream in
+    Stage 4b (run_enrichment). Do not re-enrich here.
     """
     if validation_result.get("status") != "valid":
         raise PipelineValidationError(validation_result.get("errors", []))
 
-    workflow_json    = validation_result["workflow_json"]
-    raw_data         = workflow_json.get("workflow_raw_data", workflow_json)
-    enriched_raw     = _enrich_workflow(raw_data)
+    workflow_json = validation_result["workflow_json"]
+    raw_data      = workflow_json.get("workflow_raw_data", workflow_json)
 
     return {
-        "name":               generate_workflow_name(base_name),
-        "pnumber":            generate_pnumber(),
-        "workflow_type":      "Regular",
-        "created_by":         "adk-pipeline-v2",
-        "workflow_raw_data":  enriched_raw,
+        "name":                generate_workflow_name(base_name),
+        "pnumber":             generate_pnumber(),
+        "workflow_type":       "Regular",
+        "created_by":          "adk-pipeline-v2",
+        "workflow_raw_data":   raw_data,
         "placeholder_summary": validation_result.get("placeholder_summary", []),
-        "pipeline_notes":     validation_result.get("verify_notes", []),
-        "errors":             [],
+        "pipeline_notes":      validation_result.get("verify_notes", []),
+        "errors":              [],
     }
 
 

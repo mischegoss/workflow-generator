@@ -1,0 +1,72 @@
+[
+  {
+    "id": "t01",
+    "file": "example_linear_3.json",
+    "control_flow": "linear",
+    "rationale": "Tests PowerShell + JSON session + table parsing. Common pattern, standard activities.",
+    "prompt": "Convert a stored password to plaintext, run a PowerShell script to query device inventory from SCCM via JSON session, parse the JSON response into a table, and retrieve a specific cell value from the results."
+  },
+  {
+    "id": "t02",
+    "file": "example_linear_4.json",
+    "control_flow": "linear",
+    "rationale": "Tests FTP session + table filtering + sort + GetCellValue chain. Clean linear, no niche activities.",
+    "prompt": "Connect to an FTP server, list all files in a folder, filter for files only, sort by size descending, download the largest file, and delete it from the FTP server."
+  },
+  {
+    "id": "t03",
+    "file": "example_ifelse_1.json",
+    "control_flow": "ifelse",
+    "rationale": "GetWindowEventLogs → count → branch → email. Classic alert-and-notify pattern.",
+    "prompt": "Query the Windows event log for error events in the last 24 hours. If any errors are found, convert the results to an HTML table and send an email alert with the error details."
+  },
+  {
+    "id": "t04",
+    "file": "example_ifelse_3.json",
+    "control_flow": "ifelse",
+    "rationale": "Simple IfElse with Length + regex validation. Good baseline for branch structure correctness.",
+    "prompt": "Validate an input field value: check its length and run a regular expression match. If the value is invalid, display an error message in the logs and stop the workflow. If valid, store it in a variable and continue."
+  },
+  {
+    "id": "t05",
+    "file": "example_while_1.json",
+    "control_flow": "while",
+    "rationale": "ReadCSV → loop → TSQLStatement. Simplest possible while loop, good structural baseline.",
+    "prompt": "Read a CSV file into a table, then loop through each row and insert it into a SQL database table using a SQL statement. Display the count of rows loaded when complete."
+  },
+  {
+    "id": "t06",
+    "file": "example_while_3.json",
+    "control_flow": "while",
+    "rationale": "SQL query → loop with GetDate + multi-variable assignment. Tests date handling inside loops.",
+    "prompt": "Query a database for ranked items, get today's date, and build a ranking table by looping through the results. For each row, extract the item name and score, calculate any adjustments, and write the final rankings back to the database."
+  },
+  {
+    "id": "t07",
+    "file": "example_while_ifelse_1.json",
+    "control_flow": "while_ifelse",
+    "rationale": "GetInstalledSoftware → loop → PowerShell → branch on result. Loop+branch, realistic remediation pattern.",
+    "prompt": "Get a list of machines that have Trend Micro installed by querying installed software. Loop through each machine, copy the uninstall script to the remote machine, run it via PowerShell, and check whether uninstall succeeded or failed. Log the result for each machine."
+  },
+  {
+    "id": "t08",
+    "file": "example_while_ifelse_2.json",
+    "control_flow": "while_ifelse",
+    "rationale": "Read log → loop → Length check → branch. Tests string operations inside loop body.",
+    "prompt": "Read a system log file and split it into lines. Loop through each log line, check its length, and if it matches a known error pattern, extract the relevant fields and store them in a results table. Terminate if the log is empty."
+  },
+  {
+    "id": "t09",
+    "file": "example_usergroup_1.json",
+    "control_flow": "usergroup",
+    "rationale": "ReadXLS → filter → dedup → rename → count. Tests UserGroup with standard table manipulation.",
+    "prompt": "Read an Excel spreadsheet of file records, filter for image files only, remove duplicate entries and empty rows, rename the result column to a standard name, and display the final count of unique image files found."
+  },
+  {
+    "id": "t10",
+    "file": "example_usergroup_4.json",
+    "control_flow": "usergroup",
+    "rationale": "HTTPRequest → MemorySet → branch on failure → GoTo. Tests error handling and GoTo pattern.",
+    "prompt": "Send an HTTP request to an external API and store the response in a variable. If the request fails, retrieve the error details from the response, display the error message, and use a GoTo to jump to the error handling section of the workflow."
+  }
+]

@@ -1,0 +1,14 @@
+Test ID:  t01
+Status:   FAIL
+Elapsed:  63.2s
+
+Notes:
+  Pipeline produced no output.
+  Chat response: Workflow generation failed after 2 attempts.
+
+Attempt 1: Workflow JSON validation errors:
+- [.convertToPlainText1] 'ConvertToPlainText' missing required field 'Value' (Table Variable)
+
+Attempt 2: No output produced.
+
+Try breaking the workflow into smaller pieces or simplifying the prompt.

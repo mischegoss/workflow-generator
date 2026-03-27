@@ -1,0 +1,7 @@
+Test ID:      t09
+Control flow: usergroup
+Source file:  example_usergroup_1.json
+Rationale:    ReadXLS → filter → dedup → rename → count. Tests UserGroup with standard table manipulation.
+
+PROMPT:
+Read an Excel spreadsheet of file records, filter for image files only, remove duplicate entries and empty rows, rename the result column to a standard name, and display the final count of unique image files found.

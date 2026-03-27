@@ -1,0 +1,7 @@
+Test ID:      t04
+Control flow: ifelse
+Source file:  example_ifelse_3.json
+Rationale:    Simple IfElse with Length + regex validation. Good baseline for branch structure correctness.
+
+PROMPT:
+Validate an input field value: check its length and run a regular expression match. If the value is invalid, display an error message in the logs and stop the workflow. If valid, store it in a variable and continue.

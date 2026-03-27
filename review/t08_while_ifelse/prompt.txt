@@ -1,0 +1,7 @@
+Test ID:      t08
+Control flow: while_ifelse
+Source file:  example_while_ifelse_2.json
+Rationale:    Read log → loop → Length check → branch. Tests string operations inside loop body.
+
+PROMPT:
+Read a system log file and split it into lines. Loop through each log line, check its length, and if it matches a known error pattern, extract the relevant fields and store them in a results table. Terminate if the log is empty.

@@ -1,0 +1,7 @@
+Test ID:      t01
+Control flow: linear
+Source file:  example_linear_3.json
+Rationale:    Tests PowerShell + JSON session + table parsing. Common pattern, standard activities.
+
+PROMPT:
+Convert a stored password to plaintext, run a PowerShell script to query device inventory from SCCM via JSON session, parse the JSON response into a table, and retrieve a specific cell value from the results.

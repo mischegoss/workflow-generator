@@ -1,0 +1,13 @@
+Test ID:  t10
+Status:   FAIL
+Elapsed:  85.7s
+
+Notes:
+  Pipeline produced no output.
+  Chat response: Workflow generation failed after 2 attempts.
+
+Attempt 1: Model returned empty response mid-pipeline. Retrying with fresh session.
+
+Attempt 2: Model returned empty response mid-pipeline. Retrying with fresh session.
+
+Try breaking the workflow into smaller pieces or simplifying the prompt.

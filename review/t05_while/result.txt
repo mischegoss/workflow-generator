@@ -1,0 +1,10 @@
+Test ID:  t05
+Status:   PASS
+Elapsed:  87.4s
+
+Notes:
+  JSON: 17022 bytes
+  XML: 11576 bytes — VALID
+  2 VERIFY note(s) for reviewer:
+    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'readCsvFile1'. Confirm this matches the exact table or column name 
+    [getCellValue1] VERIFY: 'ResultSetName' is set to the literal value 'readCsvFile1'. Confirm this matches the exact table or column name 
