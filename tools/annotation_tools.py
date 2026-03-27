@@ -291,10 +291,23 @@ def annotate_placeholders(
     result = copy.deepcopy(workflow_json)
 
     def process_node(node: dict) -> dict:
+        # Skip credential annotation on container/structural activities.
+        # These types (SequenceActivity, IfElseActivity, etc.) are structural
+        # scaffolding — they should never have SMTP or credential fields applied.
+        # Applying PLACEHOLDER_ values to them causes platform upload failures.
+        custom_type = node.get("CustomTypeName", "")
+        is_container = custom_type in {
+            "WhileActivity", "SequenceActivity", "IfElseActivity",
+            "IfElseBranchActivity", "ParallelActivity", "UserGroup",
+            "ForEachActivity", "ExitWhile", "ReturnValue", "IfElseCondition",
+        }
+
         for key, value in list(node.items()):
             if isinstance(value, dict):
                 node[key] = process_node(value)
                 continue
+            if is_container:
+                continue  # never annotate credentials on container types
             if not isinstance(value, str):
                 continue
             if value.startswith("PLACEHOLDER_"):

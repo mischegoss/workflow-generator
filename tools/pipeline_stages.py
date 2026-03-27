@@ -176,15 +176,21 @@ def run_retrieval(decomposition: dict) -> list:
     """
     Replaces ActivityRetrieverAgent.
 
-    Two enrichments applied after manifest assembly:
+    Three enrichments applied after manifest assembly:
 
-    1. Wiring hints (wiring_map.json): corpus-derived hints attached as
+    1. Confidence + candidates passthrough (retrieval_tools): entries with
+       status="UNCERTAIN" include confidence score and top-3 candidates so
+       StructureBuilder can exercise judgment on low-confidence selections.
+       Entries with status="INTENT_MATCH" or "MATCHED" carry confidence too
+       for transparency, but StructureBuilder treats them as authoritative.
+
+    2. Wiring hints (wiring_map.json): corpus-derived hints attached as
        _wire_hint_<field> keys in pre_filled_fields. Tell StructureBuilder
        which upstream activity TYPE typically feeds a field. Format:
        "_wire_hint_ResultSet": "TSQLQuery:91pct". Not authoritative — the
        LLM uses these as context to assign the actual xName.
 
-    2. Dependency warnings (dependency_graph.json): checks manifest order
+    3. Dependency warnings (dependency_graph.json): checks manifest order
        for missing table/session prerequisites. If GetCellValue appears
        but no table producer precedes it, a prerequisite_note is attached
        to that manifest entry so StructureBuilder adds the missing activity.
@@ -203,16 +209,36 @@ def run_retrieval(decomposition: dict) -> list:
     wiring_lookup  = _build_wiring_lookup(wiring_entries)
     dep_graph      = _load_dependency_graph()
 
-    # Trim manifest to StructureBuilder fields
+    # Build trimmed manifest — pass confidence and candidates for UNCERTAIN entries
+    # so StructureBuilder has enough context to exercise judgment.
     trimmed = []
     for s in manifest:
         activity_type = s.get("selected_activity") or ""
-        trimmed.append({
+        status        = s["status"]
+
+        entry: dict = {
             "step_id":           s["step_id"],
             "selected_activity": activity_type,
-            "status":            s["status"],
+            "status":            status,
             "frequency_tier":    s.get("frequency_tier", "medium"),
-        })
+        }
+
+        # Always pass confidence when present — StructureBuilder uses it
+        # to distinguish INTENT_MATCH (1.0, deterministic) from UNCERTAIN (<0.35)
+        if "confidence" in s:
+            entry["confidence"] = s["confidence"]
+
+        # For UNCERTAIN entries, include the top-3 candidates so StructureBuilder
+        # can choose a better fit if the step description makes the correct
+        # activity clear from context. Without this, UNCERTAIN is a no-op signal.
+        if status == "UNCERTAIN" and s.get("candidates"):
+            entry["candidates"] = [
+                {"activity_name": c["activity_name"],
+                 "combined_score": c.get("combined_score", 0.0)}
+                for c in s["candidates"][:3]
+            ]
+
+        trimmed.append(entry)
 
     # Enrichment 1: wiring hints from wiring_map
     for i in range(1, len(trimmed)):

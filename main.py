@@ -144,6 +144,22 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
         print(f"  Output file:  {output_file}")
     else:
         print("  Output file:  NOT FOUND — checking for validation errors in state")
+        # Python-stage mutations don't survive get_session(), but workflow_json
+        # does (it's an output_key). Run validation here so _check_needs_retry
+        # can surface errors and trigger the correction retry.
+        raw_wf = _ensure_dict(state.get("workflow_json"))
+        if raw_wf:
+            try:
+                from tools.validation_tools import run_all_validators
+                val = run_all_validators(raw_wf)
+                if val["status"] == "invalid":
+                    state = {**state, "validation_result": val}
+                    errors = val.get("errors", [])
+                    correction_lines = ["CORRECTION REQUIRED"] + [f"- {e}" for e in errors]
+                    state["_correction_prompt"] = "\n".join(correction_lines)
+                    print(f"  Post-run validation: invalid ({len(errors)} error(s))")
+            except Exception as e:
+                print(f"  Post-run validation check failed: {e}")
 
     return output_file, state
 
@@ -185,14 +201,21 @@ async def run(prompt: str) -> tuple:
     print(f"\n[attempt 2] First attempt failed. Retrying...")
     print(f"  Reason: {error_summary[:200]}")
 
-    retry_prompt = prompt if state.get("_empty_response_error") else (
-        f"{prompt}\n\n"
-        f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "
-        f"that prevented it from being imported. Fix ALL of the following errors in "
-        f"your workflow output. Do not reproduce any of these errors:\n\n"
-        f"{error_summary}"
-    )
-
+    # If a correction prompt was stored (validation failure path),
+    # use it so StructureBuilder sees CORRECTION REQUIRED on retry.
+    _correction = state.get("_correction_prompt")
+    if _correction:
+        retry_prompt = _correction
+    elif state.get("_empty_response_error"):
+        retry_prompt = prompt
+    else:
+        retry_prompt = (
+            f"{prompt}\n\n"
+            f"CORRECTION REQUIRED \u2014 The previous attempt produced a workflow with errors "
+            f"that prevented it from being imported. Fix ALL of the following errors in "
+            f"your workflow output. Do not reproduce any of these errors:\n\n"
+            f"{error_summary}"
+        )
     retry_run_id = uuid.uuid4().hex[:12]
     print(f"  retry run_id={retry_run_id}")
     retry_output_file, retry_state = await _run_pipeline(retry_prompt, retry_run_id)

@@ -1,0 +1,77 @@
+{
+  "workflow_raw_data": {
+    "isEmpty1": {
+      "xName": "isEmpty1",
+      "CustomTypeName": "IsEmpty",
+      "Description": "Check if the value is empty",
+      "description": "Check if the value is empty",
+      "name": "IsEmpty",
+      "IsValid": "True",
+      "TypeName": "IsEmpty",
+      "TheValue": "%memorySet1%"
+    },
+    "ifElseActivity1": {
+      "xName": "ifElseActivity1",
+      "CustomTypeName": "IfElseActivity",
+      "name": "IfElseActivity",
+      "IsValid": "True",
+      "Description": "Branch on whether value is empty",
+      "description": "Branch on whether value is empty",
+      "ifElseBranchActivity1": {
+        "xName": "ifElseBranchActivity1",
+        "CustomTypeName": "IfElseBranchActivity",
+        "name": "IfElseBranchActivity",
+        "IsValid": "True",
+        "Description": "Value is empty",
+        "description": "Value is empty",
+        "returnValue1": {
+          "xName": "returnValue1",
+          "CustomTypeName": "ReturnValue",
+          "name": "ReturnValue",
+          "IsValid": "True",
+          "TypeName": "ReturnValue",
+          "Description": "Condition: value equals True",
+          "description": "Condition: value equals True",
+          "Type": "StoredValue",
+          "UseStoredValue": "True",
+          "UseBranchWhenTimeout": "False",
+          "ConditionType": "Equals",
+          "Value": "True",
+          "Formula": "=Equals(&&&,True)"
+        },
+        "displayValue1": {
+          "xName": "displayValue1",
+          "CustomTypeName": "DisplayValue",
+          "name": "DisplayValue",
+          "IsValid": "True",
+          "Description": "Display message when value is empty",
+          "description": "Display message when value is empty",
+          "TypeName": "DisplayValue",
+          "ValueToDisplay": "Value is empty"
+        }
+      },
+      "ifElseBranchActivity2": {
+        "xName": "ifElseBranchActivity2",
+        "CustomTypeName": "IfElseBranchActivity",
+        "name": "IfElseBranchActivity",
+        "IsValid": "True",
+        "Description": "Default branch",
+        "description": "Default branch",
+        "returnValue2": {
+          "xName": "returnValue2",
+          "CustomTypeName": "ReturnValue",
+          "name": "ReturnValue",
+          "IsValid": "False",
+          "TypeName": "ReturnValue",
+          "Description": "Default branch condition",
+          "description": "Default branch condition",
+          "Type": "StoredValue",
+          "UseBranchWhenTimeout": "True",
+          "ConditionType": "",
+          "Value": "",
+          "Formula": "{x:Null}"
+        }
+      }
+    }
+  }
+}

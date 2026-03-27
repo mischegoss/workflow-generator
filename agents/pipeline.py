@@ -195,6 +195,19 @@ class WorkflowPipeline(BaseAgent):
             }
             return
 
+        # ── Stage 6b: validation failure — return early ───────────────────────────
+        # Python-stage mutations don't survive ADK's get_session() call, so flags
+        # set here aren't visible to main.py. Instead: return without writing output.
+        # main.py._run_pipeline re-validates workflow_json (which IS persisted as an
+        # output_key) after the run and builds the correction prompt from there.
+        if validation_result["status"] == "invalid":
+            print(f"  [pipeline] validation failed — returning without output for outer retry")
+            ctx.session.state["output_result"] = {
+                "status": "failed",
+                "errors": validation_result.get("errors", []),
+            }
+            return
+
         # ── Stage 7: Python — Output JSON ───────────────────────────────────
         if validation_result["status"] == "valid":
             try:

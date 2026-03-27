@@ -8,49 +8,21 @@ from tools.build_tools import (
 )
 from tools.pattern_tools import get_examples_for_control_flow
 
+# LiteLlm used instead of native Gemini() class — the native class causes
+# 400 errors on tool schema serialization (additional_properties=null ADK bug).
+# temperature=0.2: reduced creativity on the most complex assembly task.
 MODEL = LiteLlm(
     model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
     temperature=0.2,
 )
 
-_KEEP_FIELDS = {
-    "xName", "CustomTypeName", "name", "IsValid", "Description", "description",
-    "TypeName", "Counter", "exitWhileInsideWhile", "isValid", "whileSequenceActivity",
-    "ResultSet", "ResultSetName", "RowNumber", "ColumnNumber", "ColumnType",
-    "VariableName", "VariableValue", "VariableScope", "IsSaved", "IsAppend",
-    "ValueToDisplay", "FuturePast", "TimeInterval", "TimeToAdd", "DateFormat",
-    "TimeZoneName", "FirstDate", "SecondDate", "ReturnFormat", "TableName",
-    "Formula", "ConditionType", "Type", "Value", "UseBranchWhenTimeout",
-    "To", "Subject", "Body", "MessageType", "DestinationType", "DestinationNumber",
-    "TemplateNumber", "IsNowSelected", "FirstDateFormat", "SecondDateFormat",
-    "Condition", "UseStoredValue",
-}
+# Fields to keep when trimming examples for injection
+# Examples are NOT baked into the instruction string.
+# MODE 2 Step 1 calls get_examples_for_control_flow as a tool to fetch them
+# on demand. This keeps the base instruction lean and avoids bloating every
+# StructureBuilder call with large JSON blobs that caused consistent
+# output_key capture failures in ADK.
 
-def _trim(node):
-    if not isinstance(node, dict):
-        return node
-    result = {}
-    for k, v in node.items():
-        if isinstance(v, dict):
-            result[k] = _trim(v)
-        elif k in _KEEP_FIELDS:
-            result[k] = v
-    return result
-
-def _load_example(control_flow_type: str, index: int) -> str:
-    data_dir = os.getenv("DATA_DIR", "/app/data")
-    path = os.path.join(data_dir, "examples", f"example_{control_flow_type}_{index}.json")
-    if not os.path.exists(path):
-        return "{}"
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    trimmed = _trim(data.get("workflow_raw_data", {}))
-    return json.dumps(trimmed, indent=2)
-
-_EXAMPLE_WHILE_IFELSE     = _load_example("while_ifelse", 4)
-_EXAMPLE_WHILE_WITH_EMAIL = _load_example("while", 5)
-_EXAMPLE_LINEAR           = _load_example("linear", 4)
-_EXAMPLE_IFELSE           = _load_example("ifelse", 4)
 
 INSTRUCTION = f"""
 OUTPUT RULE: Output only the JSON object described below. No prose, no explanation, no markdown.
@@ -73,10 +45,25 @@ Session state inputs:
   "TSQLQuery:91pct"). Use these as context when choosing which upstream %xName% to
   wire into a field. They are guidance, not authoritative values.
 - 'pattern_match': scaffold or NO_MATCH with fallback type (from PatternMatcherAgent)
--  Entries may also include 'prerequisite_note': a warning that a required table
+- Entries may also include 'prerequisite_note': a warning that a required table
   or session provider is missing from the steps preceding this one. If present,
   add the indicated provider activity immediately before the flagged step before
   assembling the workflow structure.
+
+MANIFEST STATUS VALUES — how to treat each:
+- INTENT_MATCH   High confidence (confidence=1.0). Resolved deterministically from the
+                 step's intent field. Treat selected_activity as authoritative.
+- MATCHED        Keyword match above confidence threshold. Treat selected_activity as
+                 authoritative.
+- UNCERTAIN      Low confidence (confidence < 0.35). The retriever's best guess, but not
+                 reliable. A 'candidates' list of up to 3 alternatives is included.
+                 Action: read the step description from 'decomposition' and the candidates
+                 list. Choose the activity that best matches what the step actually does.
+                 If none of the candidates fit, use a DisplayValue placeholder with a
+                 VERIFY note explaining what activity is needed.
+- UNAVAILABLE    No candidates found at all. Use a DisplayValue placeholder with a VERIFY
+                 note. Do not invent an activity name.
+- CONTROL_FLOW   IfElse scaffold — no activity to load, handled structurally.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CORRECTION MODE — check this before doing anything else
@@ -127,8 +114,9 @@ Step 1. Call get_examples_for_control_flow with:
         - control_flow_type = pattern_match.fallback_examples[0]
         - Valid values: "Linear", "IfElse", "While", "while_ifelse", "UserGroup"
         - max_examples = 2
-Step 2. Call load_activity_template for each MATCHED activity in the activity_manifest.
-        Use the selected_activity field from each entry where status == "MATCHED".
+Step 2. Call load_activity_template for each MATCHED or INTENT_MATCH activity in the
+        activity_manifest. For UNCERTAIN entries, call load_activity_template for the
+        activity you selected after reviewing the candidates list.
         If load_activity_template returns an empty dict, treat that activity as UNAVAILABLE.
 Step 3. Call resolve_control_flow with the steps list from decomposition.
 Step 4. Call build_activity_json to assemble the final workflow dict.
@@ -143,8 +131,12 @@ PRE-OUTPUT CHECKLIST — verify all 10 items before returning
 3. No activity uses ForEachActivity. Use WhileActivity for all iteration.
 4. Every WhileActivity is preceded by GetRowsCount in activity order.
 5. No WhileActivity has a Counter attribute — Counter belongs only on ExitWhile.
+   Every WhileActivity MUST have Condition="{{x:Null}}" — this attribute is required
+   for the platform to wire the ExitWhile counter correctly. Without it the loop
+   body will not render on import.
 6. Every ExitWhile has: Counter="%<getRowsCountXName>%", exitWhileInsideWhile="True",
    isValid="True", TypeName="ExitWhile", whileSequenceActivity="<sequenceActivityXName>".
+   ExitWhile MUST be the FIRST child of SequenceActivity — before GetCellValue, Ping, IfElse, etc.
 7. Every GetCellValue RowNumber references the WhileActivity xName, NOT the ExitWhile xName.
 8. Every %varName% reference exists in decomposition.variable_contract.variables.
    If not in the contract, remove it or replace with a PLACEHOLDER_.
@@ -163,9 +155,13 @@ come from templates. AnnotationAgent handles credentials downstream.
 LOOP STRUCTURE:
 - ONLY WhileActivity for loops. ForEachActivity does NOT exist (625 real workflows confirm this).
 - Always precede WhileActivity with GetRowsCount.
+- Every WhileActivity MUST include Condition="{{x:Null}}" — required for the platform to
+  wire the ExitWhile counter. Omitting it causes the loop body to not render on import.
 - ExitWhile Counter = "%<getRowsCountXName>%"
 - ExitWhile requires: exitWhileInsideWhile="True", isValid="True",
   TypeName="ExitWhile", whileSequenceActivity="<sequenceActivityXName>"
+- ExitWhile MUST be the FIRST child inside SequenceActivity — order is always:
+  ExitWhile → GetCellValue → [other loop body activities] → IfElseActivity (if present)
 
 PRE-FILLED FIELDS — treat as authoritative:
 If a manifest entry contains a pre_filled_fields dict, those field values have been
@@ -270,9 +266,10 @@ XNAME RULES:
 - Every xName must be unique, alphanumeric, camelCase, no spaces or symbols.
 - Both uppercase Description AND lowercase description required on every activity.
 - WhileActivity carries NO Counter attribute — Counter belongs ONLY on ExitWhile.
+- WhileActivity MUST have Condition="{{x:Null}}" — always set this, every time.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GETCELLVALUE COLUMN RULES
+GETCELLVALUE COLUMN RULES — fix for Issue 1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - ColumnType is always "Name" — the serializer sets this automatically. Do NOT set it.
 - ColumnNumber MUST be the EXACT column name from the prompt or variable contract —
@@ -377,7 +374,8 @@ operator comparison. The branch supplies its own comparison value.
   DiskSpace                   => | <
   SystemUptime                > | < | <=
   TerminateWorkflow           Formula | Equals | >
-  VMPowerState                Equals | Formula               (71% UDV, n=21 — weak signal)
+  VMPowerState                Equals | Formula
+  SNUpdateRecord              Equals | Formula
   SetCellValue                Equals | Formula
   NestedJsonToTable           Formula | Equals
   GetDate                     Formula | Equals | >
@@ -435,27 +433,7 @@ CreateMemoryTable → GetRowsCount → GetDate → WhileActivity →
     DateDifference
     IfElseActivity →
       IfElseBranchActivity (condition) → ReturnValue (Type="UserDefinedValue", UseStoredValue="False") + action activity
-      IfElseBranchActivity (default)   → ReturnValue (Type="StoredValue", UseBranchWhenTimeout="True") only, no UseStoredValue
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXAMPLE A — while_ifelse structure:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{_EXAMPLE_WHILE_IFELSE}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXAMPLE B — while with post-loop email:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{_EXAMPLE_WHILE_WITH_EMAIL}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXAMPLE C — linear (no loop, no branch):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{_EXAMPLE_LINEAR}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXAMPLE D — if-else branching (no loop):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{_EXAMPLE_IFELSE}
+      IfElseBranchActivity (default)   → ReturnValue (Type="StoredValue", UseBranchWhenTimeout="True") only
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT

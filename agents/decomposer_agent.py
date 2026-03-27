@@ -129,6 +129,35 @@ VARIABLE NAMING CONVENTION — critical for downstream alignment:
   must match those xNames so %references% resolve correctly.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOOP TABLE RULE — always emit create_table for looped data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When the workflow loops over a table of items (servers, certificates, users, records, etc.),
+the workflow MUST be self-contained and importable on its own.
+
+STEP 1 — Determine the table source:
+  - If the prompt explicitly names an external source for the table (e.g. "a global variable
+    called serverList", "the table passed in from the trigger", "use the existing certData table")
+    → mark the table variable source as "external — must exist before workflow runs".
+    Do NOT emit a create_table step. The table is genuinely external.
+
+  - In all other cases — including vague descriptions like "a list of servers", "each server
+    in the table", "loop through the servers", "for each certificate" — the source is UNKNOWN.
+    Treat unknown sources as inline: emit a create_table step as step s1.
+
+STEP 2 — When emitting create_table:
+  - Add it as the FIRST step (s1) with intent="create_table" and control_flow="linear".
+  - Name the table variable after the items being looped (e.g. "serverTable", "certTable",
+    "userTable"). Use camelCase + "Table" suffix.
+  - Add the table to the variable_contract with source="created inline by CreateMemoryTable".
+  - The user can delete the CreateMemoryTable activity after import if their table comes
+    from elsewhere — but the workflow must be complete and wired correctly as generated.
+
+RATIONALE: A workflow that references %serverTable% without creating it is not importable
+without manual intervention. Every generated workflow must be testable as-is. Confirming
+the table source is the user's responsibility after review, not a reason to generate
+an incomplete workflow.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LOOP ROW ACCESS RULES — CRITICAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 When describing loop row access in the variable contract, note that GetCellValue RowNumber

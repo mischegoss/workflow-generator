@@ -27,7 +27,11 @@ EXCLUDED_REQUIRED_FIELDS = {
     "FieldsList",
     "TargetModuleName",
     "TemplateName",
-    "ColumnType"
+    "ColumnType",
+    # CreateMemoryTable grid-sizing fields — configured post-import in the platform UI.
+    # The platform accepts these as empty and lets the user define columns/rows there.
+    "ColumnNumber",
+    "RowNumber",
 }
 
 # Formula pattern: =ConditionType(&&&,Value) — no quotes on either operand
@@ -174,6 +178,38 @@ def validate_control_flow_rules(
                 f"[{path}] WhileActivity must not have Counter at its own level — "
                 "Counter belongs on ExitWhile only."
             )
+
+        # --- WhileActivity: must have a nested SequenceActivity with activities ---
+        # Failure mode 1: WhileActivity has no nested SequenceActivity at all —
+        #   StructureBuilder placed loop body activities at the top level (flat structure).
+        # Failure mode 2: SequenceActivity exists but has no activity children —
+        #   loop body was not generated.
+        # Both cause upload failure or an empty loop on the platform.
+        if type_name == "WhileActivity":
+            seq = next(
+                (v for v in node.values()
+                 if isinstance(v, dict) and v.get("CustomTypeName") == "SequenceActivity"),
+                None,
+            )
+            if seq is None:
+                errors.append(
+                    f"[{path}] WhileActivity has no nested SequenceActivity. "
+                    "All loop body activities (ExitWhile, GetCellValue, action activities) "
+                    "must be nested inside a SequenceActivity child of WhileActivity. "
+                    "Do not place them at the top level of workflow_raw_data."
+                )
+            else:
+                body_activities = [
+                    v for v in seq.values()
+                    if isinstance(v, dict) and v.get("CustomTypeName")
+                ]
+                if not body_activities:
+                    errors.append(
+                        f"[{path}] WhileActivity SequenceActivity is empty — "
+                        "no loop body activities were generated. "
+                        "Add ExitWhile, GetCellValue, and action activities "
+                        "inside the SequenceActivity."
+                    )
 
         # --- ExitWhile: Counter is required ---
         if type_name == "ExitWhile" and "Counter" not in node:

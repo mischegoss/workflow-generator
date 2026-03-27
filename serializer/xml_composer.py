@@ -3,20 +3,47 @@ import os
 import re
 import xml.etree.ElementTree as ET
 
+# Register namespaces once at module load.
+# '' = default namespace → activity tags serialize as <WhileActivity> not <ns0:WhileActivity>
+# 'x' = XAML namespace → attributes serialize as x:Name, x:Class
+# Without this, ET auto-generates ns0:/ns1: prefixes which the platform cannot resolve.
+_WORKFLOW_NS = "http://schemas.microsoft.com/winfx/2006/xaml/workflow"
+_XAML_NS     = "http://schemas.microsoft.com/winfx/2006/xaml"
+ET.register_namespace("",  _WORKFLOW_NS)
+ET.register_namespace("x", _XAML_NS)
+
+
+def _wf(tag: str) -> str:
+    """Return Clark-notation tag for the workflow namespace: {ns}Tag"""
+    return f"{{{_WORKFLOW_NS}}}{tag}"
+
+
+def _x(attr: str) -> str:
+    """Return Clark-notation attribute for the XAML namespace: {ns}attr"""
+    return f"{{{_XAML_NS}}}{attr}"
+
 
 class WorkflowXmlComposer:
     """
-    Corpus finding (609 real workflows): needs_prefix = 0.
-    No activity type in the corpus uses an xmlns namespace prefix in XOML.
-    The platform imports correctly without any prefix declarations.
+    Serialises workflow JSON to a TotalExport XOML XML string for import
+    into Resolve Actions.
 
-    namespace_registry.json is loaded at startup for reference (CLR strings
-    are valid data for future use), but ALL activities resolve to plain tags.
+    Namespace handling (confirmed from 609 real workflow exports):
+    - Activity tags use the DEFAULT workflow namespace with NO prefix.
+      <WhileActivity> not <ns0:WhileActivity>
+    - x:Name and x:Class use the 'x' XAML namespace prefix.
+    - No other namespace prefixes appear on activity tags.
+    - ET.register_namespace at module level enforces this. Child elements
+      must be created with Clark notation {ns}Tag — plain string tags
+      cause ET to emit ns0: prefixes which the platform cannot resolve,
+      resulting in empty/broken loop bodies on import.
 
-    Fix applied: removed html.escape() from compose(). ET handles attribute
-    escaping automatically when serializing — calling html.escape() first
-    caused double-escaping (&lt; → &amp;lt;), which made the stored Xoml
-    unparseable by the platform and by convert_to_xml.py validation.
+    Other fixes:
+    - WorkflowInfo emits all 12 required attributes (XomlStatus, WorkflowType,
+      WorkflowFolderId, etc.) — omitting these causes save failure on import.
+    - Objects block uses the exact 28 child tags the platform expects.
+    - html.escape() removed from compose() — ET handles attribute escaping.
+      Double-escaping (&lt; → &amp;lt;) made Xoml unparseable.
     """
 
     SKIP_FIELDS = {
@@ -53,6 +80,36 @@ class WorkflowXmlComposer:
         "IsValid":                 "True",
     }
 
+    # WorkflowInfo attributes required by the platform for a successful save.
+    # Confirmed from exported workflow exemplars — omitting any causes save failure.
+    WORKFLOW_INFO_DEFAULTS = {
+        "XomlStatus":             "0",
+        "Details":                "",
+        "WorkflowType":           "0",
+        "WorkflowFolderId":       "0",
+        "Permissions":            "",
+        "ErrorHandling":          "",
+        "CurrentRevisionNumber":  "1",
+        "WorkflowParentId":       "0",
+        "DateCreated":            "",
+        "DateCreatedUser":        "",
+        "DateModified":           "",
+        "DateModifiedUser":       "",
+    }
+
+    # Objects children required by the platform, in the order the platform expects.
+    # Wrong or missing tags cause save failures on import.
+    OBJECTS_CHILDREN = [
+        "Hosts", "ErrorHandlers", "ErrorMessages", "MessageTemplates",
+        "Sites", "Developments", "Users", "Groups", "UsersGroupsArray",
+        "Domains", "Commands", "Classifications", "Incidents", "TimeFrames",
+        "Variables", "Modules", "Conditions", "ConditionArrays",
+        "ConditionObjects", "SoapWebServices", "Triggers",
+        "TriggerConditionArrays", "LogCategory", "LogTriggerCategory",
+        "Schedules", "CustomActivities", "ActivitiesSource",
+        "ScheduleCategoriesRelations",
+    ]
+
     _namespace_registry_data: dict | None = None
     _id_lookup: dict | None = None
 
@@ -64,7 +121,7 @@ class WorkflowXmlComposer:
     def _load_namespace_registry_data(cls) -> dict:
         """
         Loads namespace_registry.json for reference only.
-        NOT used for tag prefixing — all tags are plain (no prefix).
+        NOT used for tag prefixing — all tags use the default namespace.
         """
         if cls._namespace_registry_data is not None:
             return cls._namespace_registry_data
@@ -81,10 +138,7 @@ class WorkflowXmlComposer:
         return cls._namespace_registry_data
 
     def get_clr_string(self, activity_name: str) -> str | None:
-        """
-        Returns the CLR namespace string for an activity if known.
-        For reference/tooling use only — not used in XOML serialization.
-        """
+        """Returns the CLR namespace string for an activity if known."""
         data = self._load_namespace_registry_data()
         return data.get(activity_name)
 
@@ -128,10 +182,8 @@ class WorkflowXmlComposer:
         """
         Serialises a workflow JSON dict to a TotalExport XOML XML string.
 
-        Note: Xoml is passed directly as an ET attribute — no html.escape().
+        Xoml is passed directly as an ET attribute — no html.escape().
         ET.tostring() handles all required XML attribute escaping automatically.
-        Calling html.escape() before setting the attribute causes double-escaping
-        (&lt; → &amp;lt;) which makes the Xoml unparseable by the platform.
         """
         self._load_namespace_registry_data()
 
@@ -141,26 +193,18 @@ class WorkflowXmlComposer:
         total_export = ET.Element("TotalExport", attrib={"sourceSystem": "NG"})
         workflows_elem = ET.SubElement(total_export, "Workflows")
 
-        # Pass xoml_string directly — ET escapes it correctly on serialization
-        ET.SubElement(
-            workflows_elem,
-            "WorkflowInfo",
-            attrib={
-                "Pnumber":     str(pnumber),
-                "Name":        workflow_name,
-                "Description": "",
-                "DateLic":     "",
-                "Xoml":        xoml_string,
-            },
-        )
+        workflow_info_attrib = {
+            "Pnumber":     str(pnumber),
+            "Name":        workflow_name,
+            "Description": "",
+            "DateLic":     "",
+            "Xoml":        xoml_string,
+        }
+        workflow_info_attrib.update(self.WORKFLOW_INFO_DEFAULTS)
+        ET.SubElement(workflows_elem, "WorkflowInfo", attrib=workflow_info_attrib)
 
         objects_elem = ET.SubElement(total_export, "Objects")
-        for tag in [
-            "Categories", "AlertCategories", "Modules", "Schedules2",
-            "LogCategory", "LogTriggerCategory",
-            "Schedules", "CustomActivities", "ActivitiesSource",
-            "ScheduleCategoriesRelations",
-        ]:
+        for tag in self.OBJECTS_CHILDREN:
             ET.SubElement(objects_elem, tag)
 
         ET.SubElement(total_export, "ObjectsRelations")
@@ -175,17 +219,18 @@ class WorkflowXmlComposer:
 
     def _build_xoml(self, raw_data: dict, workflow_name: str) -> str:
         """
-        Builds the inner XOML string.
-        No xmlns: prefix declarations added — corpus confirms none are needed.
+        Builds the inner XOML string using Clark-notation tags so ET
+        serializes plain <ActivityTag> elements under the default namespace,
+        not <ns0:ActivityTag> which the platform cannot resolve.
         """
-        attribs = {
-            "xmlns":   "http://schemas.microsoft.com/winfx/2006/xaml/workflow",
-            "xmlns:x": "http://schemas.microsoft.com/winfx/2006/xaml",
-            "x:Name":  "CustomWorkflow",
-            "x:Class": "WorkflowDesignerControl.CustomWorkflow",
-        }
-
-        root = ET.Element("SequentialWorkflowActivity", attrib=attribs)
+        # Root element uses Clark notation for namespace-qualified attributes
+        root = ET.Element(
+            _wf("SequentialWorkflowActivity"),
+            attrib={
+                _x("Name"):  "CustomWorkflow",
+                _x("Class"): "WorkflowDesignerControl.CustomWorkflow",
+            },
+        )
 
         for xname, activity in raw_data.items():
             if isinstance(activity, dict):
@@ -207,10 +252,12 @@ class WorkflowXmlComposer:
 
         id_lookup = self._load_id_lookup()
 
-        # Corpus-confirmed: plain tag, no namespace prefix
-        tag = custom_type
+        # Use Clark notation so ET emits <ActivityName> (default namespace)
+        # not <ns0:ActivityName> (auto-generated prefix).
+        tag = _wf(custom_type)
 
-        attribs = {"x:Name": activity.get("xName", "")}
+        # x:Name uses Clark notation for the XAML namespace attribute
+        attribs = {_x("Name"): activity.get("xName", "")}
         child_elements = []
 
         for key, value in activity.items():
@@ -246,6 +293,12 @@ class WorkflowXmlComposer:
             elif "description" not in attribs:
                 attribs["description"] = ""
 
+        if custom_type == "WhileActivity":
+            # Condition="{x:Null}" is required for the platform to wire the ExitWhile
+            # counter mechanism. Without it the loop body does not render on import.
+            if "Condition" not in attribs:
+                attribs["Condition"] = "{x:Null}"
+
         if custom_type == "GetCellValue":
             attribs["ColumnType"] = "Name"
 
@@ -261,18 +314,48 @@ class WorkflowXmlComposer:
             seq_elem = None
             other_children = []
             for child in child_elements:
-                child_tag = child.tag.split(":")[-1] if ":" in child.tag else child.tag
-                if child_tag == "SequenceActivity":
+                # Clark notation: strip namespace to get local tag name
+                child_local = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                if child_local == "SequenceActivity":
                     seq_elem = child
                 else:
                     other_children.append(child)
             if seq_elem is not None:
                 for child in other_children:
                     seq_elem.append(child)
+                # Enforce ExitWhile-first ordering inside SequenceActivity.
+                # Corpus confirms: ExitWhile must be the first child — the platform
+                # uses it to wire the loop counter before executing body activities.
+                exit_while = None
+                rest = []
+                for child in list(seq_elem):
+                    child_local = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                    if child_local == "ExitWhile":
+                        exit_while = child
+                    else:
+                        rest.append(child)
+                if exit_while is not None:
+                    seq_elem[:] = [exit_while] + rest
                 elem.append(seq_elem)
             else:
                 for child in child_elements:
                     elem.append(child)
+
+        elif custom_type == "IfElseBranchActivity":
+            # Enforce ReturnValue-first ordering inside each branch.
+            # Platform requires ReturnValue as the first child to evaluate
+            # the branch condition before executing branch body activities.
+            return_val = None
+            rest = []
+            for child in child_elements:
+                child_local = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                if child_local == "ReturnValue" and return_val is None:
+                    return_val = child
+                else:
+                    rest.append(child)
+            ordered = ([return_val] if return_val is not None else []) + rest
+            for child in ordered:
+                elem.append(child)
         else:
             for child in child_elements:
                 elem.append(child)

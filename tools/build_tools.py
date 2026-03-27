@@ -17,7 +17,7 @@ _defaults_cache: dict | None = None
 def _load_enum_values() -> dict:
     """
     Load enum_values.json once and cache.
-    Returns dict: { activity_TypeName: { field_key: [valid_values] } }
+    Returns dict: { activity_TypeName: { field_key: { "values": [...] } } }
     """
     global _enum_cache
     if _enum_cache is not None:
@@ -54,7 +54,66 @@ def _load_field_defaults() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Template loader (with enum + default seeding)
+# Template constants — Pass 3 of load_activity_template()
+#
+# These are structural / metadata fields present in every activity template
+# as "_value" placeholders. They are NOT enum fields (so Pass 1 misses them)
+# and NOT in field_defaults.json (so Pass 2 misses them). They have a single
+# correct value that never varies across activities or workflows.
+#
+# Confirmed from activity_json_syntax.json inspection:
+#   activityLicenseType_value — always "1" in every exported workflow
+#   SuccessReason_value       — WhileActivity only; always empty in corpus
+#   message_value             — ExitWhile only; always empty in corpus
+#
+# DisplayName is handled separately in Pass 3 because its correct value is
+# the activity's own TypeName, not a fixed constant.
+# ---------------------------------------------------------------------------
+
+_TEMPLATE_CONSTANTS: dict[str, str] = {
+    "activityLicenseType": "1",
+    "SuccessReason":        "",
+    "message":              "",
+    # CreateMemoryTable defaults: 1 column, 0 initial data rows.
+    # The validator requires these; the platform uses them to size the grid.
+    # StructureBuilder can override ColumnNumber if the prompt specifies more columns.
+    "ColumnNumber":         "1",
+    "RowNumber":            "1",
+}
+
+# Fields whose _value placeholder should be replaced with the activity's own
+# TypeName / CustomTypeName. Confirmed from corpus: DisplayName in every
+# exported workflow equals the activity's TypeName (e.g. "DisplayValue",
+# "GetRowsCount"). The template has a duplicate "DisplayName" key — the
+# second entry ("DisplayName_value") wins in Python's json.load(), which is
+# why it isn't caught by the existing passes.
+_TYPENAME_FIELDS: frozenset[str] = frozenset({"DisplayName"})
+
+# Fields whose _value placeholder must NOT be cleared — StructureBuilder is
+# responsible for filling them, and clearing them to "" would lose the
+# signal that they need a value.
+_PRESERVE_PLACEHOLDERS: frozenset[str] = frozenset({
+    "xName",           # activityInstanceName_value — filled by StructureBuilder
+    "Description",     # activityDesc_value — filled by StructureBuilder
+    "description",     # activityDesc_value — filled by StructureBuilder
+    "ValueToDisplay",  # functional field — StructureBuilder fills
+    "HostName",        # functional field — StructureBuilder fills
+    "Query",           # functional field — StructureBuilder fills
+    "VariableName",    # functional field — StructureBuilder fills
+    "VariableValue",   # functional field — StructureBuilder fills
+    "TableName",       # functional field — StructureBuilder fills
+    "TheValue",        # functional field — StructureBuilder fills
+    "TheValue2",       # functional field — StructureBuilder fills
+    "Subject",         # functional field — StructureBuilder fills
+    "Body",            # functional field — StructureBuilder fills
+    "To",              # functional field — StructureBuilder fills
+    "WorkflowName",    # functional field — StructureBuilder fills
+    "WorkflowID",      # functional field — StructureBuilder fills
+})
+
+
+# ---------------------------------------------------------------------------
+# Template loader (with enum + default + constant seeding)
 # ---------------------------------------------------------------------------
 
 def load_activity_template(
@@ -65,14 +124,28 @@ def load_activity_template(
     Returns the first matching template dict, or empty dict if not found.
     IMPORTANT: if empty dict is returned, treat activity as UNAVAILABLE.
 
-    After loading, two enrichment passes run:
+    After loading, three enrichment passes run in order:
 
     Pass 1 — Enum seeding (enum_values.json):
-      Replaces _value placeholder strings with the first valid enum choice.
+      Replaces _value placeholder strings in dropdown/radiobutton fields with
+      the most common corpus value. Example: MemorySet.VariableScope →
+      "Workflow" (appears in 98% of corpus instances).
 
     Pass 2 — Field defaults (field_defaults.json):
       For any CONFIG_FIELDS still holding a _value placeholder after Pass 1,
-      applies the corpus-dominant value. Enum values take priority.
+      applies the corpus-dominant value (>= 60% frequency). Enum values take
+      priority over defaults.
+
+    Pass 3 — Template constants:
+      Replaces remaining known structural _value placeholders with their
+      correct constant values. Handles three cases:
+        a) _TEMPLATE_CONSTANTS: fixed string values (activityLicenseType → "1")
+        b) _TYPENAME_FIELDS: replaced with the activity's own TypeName
+           (DisplayName → "DisplayValue" for DisplayValue activities)
+        c) Any other remaining _value string not in _PRESERVE_PLACEHOLDERS:
+           cleared to "" rather than left as a broken placeholder
+      Fields in _PRESERVE_PLACEHOLDERS are intentionally skipped — they are
+      functional fields that StructureBuilder must fill from context.
     """
     data_dir = os.getenv("DATA_DIR", "/app/data")
     path = os.path.join(data_dir, "activity_json_syntax.json")
@@ -93,11 +166,10 @@ def load_activity_template(
     if template is None:
         return {}
 
-    enum_values   = _load_enum_values()
+    enum_values    = _load_enum_values()
     field_defaults = _load_field_defaults()
 
-    # Pass 1: seed with first valid enum choice
-    # enum_values structure: { field_key: { "input_type": "...", "values": [{"value": "X", ...}] } }
+    # ── Pass 1: enum seeding ─────────────────────────────────────────────────
     if activity_name in enum_values:
         for field_key, field_info in enum_values[activity_name].items():
             if not (
@@ -110,7 +182,7 @@ def load_activity_template(
             if values_list and isinstance(values_list[0], dict):
                 template[field_key] = values_list[0]["value"]
 
-    # Pass 2: seed with corpus-dominant config defaults
+    # ── Pass 2: corpus-dominant config defaults ──────────────────────────────
     if activity_name in field_defaults:
         for field_key, default_val in field_defaults[activity_name].items():
             if (
@@ -119,6 +191,32 @@ def load_activity_template(
                 and template[field_key].endswith("_value")
             ):
                 template[field_key] = default_val
+
+    # ── Pass 3: structural constants ─────────────────────────────────────────
+    # Derive the activity's own type name for _TYPENAME_FIELDS.
+    type_name = (
+        template.get("TypeName")
+        or template.get("CustomTypeName")
+        or template.get("name")
+        or activity_name
+    )
+
+    for field_key, value in list(template.items()):
+        if not isinstance(value, str) or not value.endswith("_value"):
+            continue
+        if field_key in _PRESERVE_PLACEHOLDERS:
+            continue  # StructureBuilder fills these — do not touch
+
+        if field_key in _TEMPLATE_CONSTANTS:
+            # Case (a): known fixed constant
+            template[field_key] = _TEMPLATE_CONSTANTS[field_key]
+        elif field_key in _TYPENAME_FIELDS:
+            # Case (b): should match the activity's own type name
+            template[field_key] = type_name
+        else:
+            # Case (c): unknown structural placeholder — clear to empty string
+            # so the serializer doesn't emit broken "_value" strings into XML
+            template[field_key] = ""
 
     return template
 
@@ -223,8 +321,6 @@ def fill_scaffold_params(
             # Fix 10a: PARAM_xname_<type> → camelCase xname
             if param_key.startswith("xname_"):
                 type_part = param_key[6:]   # strip "xname_"
-                # Convert snake_case to camelCase: "readxls" → "readXls"
-                # Simple approach: capitalize after underscore, lowercase first char
                 parts = type_part.split("_")
                 camel = parts[0] + "".join(p.capitalize() for p in parts[1:])
                 return f"{camel}1"
@@ -250,7 +346,6 @@ def fill_scaffold_params(
         for key, activity in filled.items():
             if isinstance(activity, dict):
                 new_key = activity.get("xName", key)
-                # If fill produced a non-PARAM_ xName, use it as the dict key
                 if new_key and not new_key.startswith("PARAM_"):
                     renamed[new_key] = activity
                 else:
