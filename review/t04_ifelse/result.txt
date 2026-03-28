@@ -1,10 +1,13 @@
 Test ID:  t04
-Status:   PASS
-Elapsed:  73.6s
+Status:   FAIL
+Elapsed:  69.4s
 
 Notes:
-  JSON: 14189 bytes
-  XML: 10172 bytes — VALID
-  2 VERIFY note(s) for reviewer:
-    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'matchRegularExpression1'. Confirm this matches the exact table or c
-    [getRowsCount1] VERIFY: 'ResultSet' references '%matchRegularExpression1%' which is a Scalar output from MatchRegularExpression. This fi
+  Pipeline produced no output.
+  Chat response: Workflow generation failed after 2 attempts.
+
+Attempt 1: Workflow JSON validation errors:
+- [.getLength1] 'GetLength' missing 'description' (lowercase d).
+- [.regex1] 'Regex' missing 'description' (lowercase d).
+- [.booleanExpression1] 'BooleanExpression' missing 'description' (lowercase d).
+- [.ifE

@@ -1,7 +1,7 @@
 Test ID:  t07
-Status:   FAIL
-Elapsed:  77.5s
+Status:   PASS
+Elapsed:  74.3s
 
 Notes:
-  Pipeline produced no output.
-  Chat response: Workflow generation failed — no output produced and no error captured.
+  JSON: 4560 bytes
+  XML: 1324 bytes — VALID

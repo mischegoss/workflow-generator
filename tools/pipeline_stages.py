@@ -35,14 +35,12 @@ from tools.validation_tools import run_all_validators
 # CustomTypeName normalisation
 # ---------------------------------------------------------------------------
 
-# PlacerAgent sometimes appends "Activity" suffix or uses wrong display names.
-# These explicit aliases cover cases where stripping the suffix isn't enough.
 _CT_ALIASES: dict = {
-    "SetVariableActivity":   "MemorySet",
-    "SetVariable":           "MemorySet",
-    "MemorySetActivity":     "MemorySet",
+    "SetVariableActivity":      "MemorySet",
+    "SetVariable":              "MemorySet",
+    "MemorySetActivity":        "MemorySet",
     "PowerShellScriptActivity": "PowerShellScript",
-    "IfElseActivityActivity": "IfElseActivity",
+    "IfElseActivityActivity":   "IfElseActivity",
 }
 
 _valid_ct_names: set | None = None
@@ -63,7 +61,6 @@ def _load_valid_ct_names() -> set:
                     names.add(name)
     except FileNotFoundError:
         pass
-    # Always include structural container names
     names.update({
         "WhileActivity", "SequenceActivity", "IfElseActivity",
         "IfElseBranchActivity", "ParallelActivity", "UserGroup",
@@ -74,15 +71,6 @@ def _load_valid_ct_names() -> set:
 
 
 def _normalise_ct(ct: str) -> str:
-    """
-    Normalise a CustomTypeName that PlacerAgent may have mangled.
-
-    Resolution order:
-      1. Already valid — return as-is
-      2. Explicit alias map (SetVariableActivity → MemorySet etc.)
-      3. Strip "Activity" suffix if result is valid
-      4. Unknown — return as-is and let enrichment/validation surface it
-    """
     if not ct:
         return ct
     valid = _load_valid_ct_names()
@@ -306,7 +294,6 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
         if not isinstance(node, dict):
             return node
 
-        # Normalise CustomTypeName before anything else
         ct    = _normalise_ct(node.get("CustomTypeName", ""))
         xname = node.get("xName", "")
 
@@ -352,7 +339,7 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Stage 4c / 4f — Apply structural fragments  (F1-F9)
+# Stage 4c — Apply structural fragments  (F1-F9)
 # ---------------------------------------------------------------------------
 
 _STATUS_PRODUCERS: frozenset = frozenset({
@@ -382,12 +369,7 @@ def _clean_returnvalue(node: dict) -> None:
 
 
 def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
-    """
-    F6/F7/F8: apply ReturnValue defaults and tier overrides.
-    Also strips forbidden fields (confirmed RitaLab March 2026).
-    """
     _clean_returnvalue(node)
-
     node.setdefault("Type", "StoredValue")
     node.setdefault("UseBranchWhenTimeout", "True")
     node.setdefault("ConditionType", "")
@@ -433,7 +415,6 @@ def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
 
 
 def _make_returnvalue(xname: str) -> dict:
-    """Minimal ReturnValue node. Fragments set IsValid/Formula/UseStoredValue/Type."""
     return {
         "xName": xname,
         "CustomTypeName": "ReturnValue",
@@ -459,11 +440,6 @@ def _make_returnvalue(xname: str) -> dict:
 
 def _inject_returnvalue_if_missing(branch: dict, branch_key: str,
                                     branch_index: int) -> None:
-    """
-    F9: inject a ReturnValue as the first child of any IfElseBranchActivity
-    that is missing one. Confirmed platform requirement (RitaLab March 2026):
-    branches without ReturnValue import but cannot be saved in the designer.
-    """
     has_rv = any(
         isinstance(v, dict) and v.get("CustomTypeName") == "ReturnValue"
         for v in branch.values()
@@ -480,16 +456,13 @@ def _inject_returnvalue_if_missing(branch: dict, branch_key: str,
     if rv_xname in existing_xnames:
         rv_xname = f"returnValue{rv_num}b"
 
-    rv_node = _make_returnvalue(rv_xname)
-
-    # Insert as FIRST item (dicts preserve insertion order)
+    rv_node    = _make_returnvalue(rv_xname)
     new_branch = {rv_xname: rv_node}
     for k, v in branch.items():
         if k != rv_xname:
             new_branch[k] = v
     branch.clear()
     branch.update(new_branch)
-
     print(f"[fragments] F9 injected ReturnValue '{rv_xname}' into '{branch_xname}'")
 
 
@@ -527,7 +500,6 @@ def _walk_branch_body(activities: dict, preceding_ct: str | None,
 def _walk_ifelse(ifelse_node: dict, preceding_ct: str | None,
                  parent_while_xname: str | None,
                  nearest_getrowscount_xname: str | None) -> None:
-    """Walk branches. F9: inject missing ReturnValue first."""
     branch_index = 0
     for k, branch in ifelse_node.items():
         if not isinstance(branch, dict):
@@ -618,10 +590,6 @@ def _walk_sequence_as_scope(seq_node: dict,
 
 
 def _walk_top_level(raw: dict) -> None:
-    """
-    Walk top-level entries. Removes invalid top-level ReturnValue nodes.
-    (ReturnValue is only valid inside IfElseBranchActivity.)
-    """
     last_getrowscount: str | None = None
     last_ct: str | None = None
     keys_to_remove = []
@@ -659,7 +627,7 @@ def _walk_top_level(raw: dict) -> None:
 
 def apply_fragments(workflow_json: dict) -> dict:
     """
-    Apply structural invariants F1-F9. Idempotent — safe to call multiple times.
+    Apply structural invariants F1-F9. Idempotent.
 
     F1  WhileActivity.Condition = "{x:Null}"
     F2  ExitWhile: exitWhileInsideWhile, isValid, TypeName, whileSequenceActivity
@@ -667,9 +635,8 @@ def apply_fragments(workflow_json: dict) -> dict:
     F4  GetCellValue.RowNumber = %{parent WhileActivity xName}%, ColumnType="Name"
     F5  MemorySet defaults (VariableScope, IsSaved, IsAppend)
     F6  ReturnValue defaults + forbidden field removal
-    F7  ReturnValue status tier (all branches IsValid=True, UseStoredValue=True)
-    F8  ReturnValue scalar tier (condition branches UserDefinedValue,
-        catch-all else IsValid=False/Formula={x:Null})
+    F7  ReturnValue status tier
+    F8  ReturnValue scalar tier
     F9  Inject missing ReturnValue into every IfElseBranchActivity
     """
     import copy
@@ -691,6 +658,363 @@ def run_fragments(enriched_workflow: dict) -> dict:
     """
     enriched_workflow = _ensure_dict(enriched_workflow)
     return apply_fragments(enriched_workflow)
+
+
+# ---------------------------------------------------------------------------
+# Stage 4c.5 — Content scaffold  (deterministic, between fragments and Wirer)
+# ---------------------------------------------------------------------------
+#
+# Applies confirmed wiring rules from RitaLab testing (March 2026, test XMLs
+# 92001–92008). Sets fields that can be derived structurally from context —
+# i.e. from the nearest preceding table-producing activity — so WirerAgent
+# only needs to handle genuinely semantic fields (column names, values, etc.).
+#
+# CONTRACT: only sets fields that are empty/missing. Never overwrites a value
+# already placed by enrichment, fragments, or a prior scaffold pass.
+# This makes the stage safe to call multiple times (idempotent).
+#
+# Table producers and their output variable:
+#   CreateMemoryTable  → TableName field value  (e.g. "serverList")
+#   TSQLQuery          → xName                  (e.g. "tsqlQuery1")
+#   JsonToTable        → xName                  (e.g. "jsonToTable1")
+#   ResultSetFilter    → xName                  (e.g. "resultSetFilter1")
+#   GetRows            → xName
+#   NestedJsonToTable  → xName
+#
+# JSON session producers:
+#   StartJsonSession   → xName  (referenced by JsonToTable.SessionName)
+# ---------------------------------------------------------------------------
+
+# Activities that produce a table variable reachable as %xName%
+_TABLE_PRODUCERS_XNAME: frozenset = frozenset({
+    "TSQLQuery",
+    "JsonToTable",
+    "ResultSetFilter",
+    "GetRows",
+    "NestedJsonToTable",
+})
+
+# Activities that produce a table variable named by a specific field
+_TABLE_PRODUCERS_FIELD: dict = {
+    "CreateMemoryTable": "TableName",
+}
+
+# Container types — scaffold skips their own node but recurses into children
+_SCAFFOLD_CONTAINERS: frozenset = frozenset({
+    "WhileActivity", "SequenceActivity", "IfElseActivity",
+    "IfElseBranchActivity", "ParallelActivity", "UserGroup",
+    "ForEachActivity",
+})
+
+
+def _get_table_var(node: dict) -> str | None:
+    """
+    Return the bare variable name (without %) for the table this node produces,
+    or None if it is not a table producer.
+    """
+    ct = node.get("CustomTypeName", "")
+    if ct in _TABLE_PRODUCERS_XNAME:
+        return node.get("xName") or None
+    field = _TABLE_PRODUCERS_FIELD.get(ct)
+    if field:
+        val = node.get(field, "").strip().strip("%")
+        return val or None
+    return None
+
+
+def _sif(node: dict, field: str, value: str) -> None:
+    """Set field on node only if currently absent or empty (set-if-empty)."""
+    if not node.get(field):
+        node[field] = value
+
+
+def _scaffold_node(
+    node: dict,
+    nearest_table_var: str | None,
+    nearest_session_xname: str | None,
+    inside_while: bool,
+    parent_while_xname: str | None,
+) -> None:
+    """
+    Apply all confirmed scaffold rules to a single leaf activity node in-place.
+    Rules are applied with _sif (set-if-empty) so Wirer values are never clobbered.
+    """
+    ct    = node.get("CustomTypeName", "")
+    xname = node.get("xName", "")
+
+    # ── GetRowsCount ─────────────────────────────────────────────────────────
+    # ResultSet = %tableVar%  (confirmed: test_table_loop, test_json_session,
+    #                          test_resultsetfilter, test_setcellvalue)
+    if ct == "GetRowsCount":
+        if nearest_table_var:
+            _sif(node, "ResultSet", f"%{nearest_table_var}%")
+
+    # ── GetCellValue ─────────────────────────────────────────────────────────
+    # ResultSet    = %tableVar%       (confirmed: test_table_loop)
+    # ResultSetName = tableVar (bare) (confirmed: test_table_loop — no % signs)
+    # ColumnType   = "Name"           (confirmed: all table tests)
+    # RowNumber    inside While already set by F4 — only set outside While
+    elif ct == "GetCellValue":
+        if nearest_table_var:
+            _sif(node, "ResultSet",     f"%{nearest_table_var}%")
+            _sif(node, "ResultSetName", nearest_table_var)  # bare — no %
+        _sif(node, "ColumnType", "Name")
+        # RowNumber outside While: do NOT scaffold — no safe default without
+        # knowing which row the user intends. Leave for WirerAgent.
+
+    # ── GetRowsCount already updates nearest_table_var — handled in walker ──
+
+    # ── ResultSetFilter ───────────────────────────────────────────────────────
+    # VariableName = %tableVar%  (confirmed: test_resultsetfilter)
+    elif ct == "ResultSetFilter":
+        if nearest_table_var:
+            _sif(node, "VariableName", f"%{nearest_table_var}%")
+
+    # ── DeleteMemoryTableRows ─────────────────────────────────────────────────
+    # ResultSet    = %tableVar%   (confirmed: test_setcellvalue + corpus)
+    # ResultSetName = %tableVar%  (confirmed: corpus — WITH % unlike GetCellValue)
+    # RowNumber: must be integer(s) — never "All". No safe default; leave for Wirer.
+    elif ct == "DeleteMemoryTableRows":
+        if nearest_table_var:
+            _sif(node, "ResultSet",     f"%{nearest_table_var}%")
+            _sif(node, "ResultSetName", f"%{nearest_table_var}%")
+
+    # ── AddMemoryTableRow ─────────────────────────────────────────────────────
+    # ResultSet    = %tableVar%   (confirmed: corpus)
+    # ResultSetName = %tableVar%  (confirmed: corpus — WITH %)
+    # Selection    = "2"          (confirmed: corpus — end of table default)
+    # RowNumber    = ""           (confirmed: corpus — always empty)
+    elif ct == "AddMemoryTableRow":
+        if nearest_table_var:
+            _sif(node, "ResultSet",     f"%{nearest_table_var}%")
+            _sif(node, "ResultSetName", f"%{nearest_table_var}%")
+        _sif(node, "Selection",  "2")
+        _sif(node, "RowNumber",  "")
+
+    # ── SetCellValue ──────────────────────────────────────────────────────────
+    # VariableName = %tableVar%  (confirmed: corpus)
+    # ColumnType   = "Name"      (confirmed: corpus dominant pattern)
+    # RowNumber: must be %var% — no safe default without knowing which var.
+    elif ct == "SetCellValue":
+        if nearest_table_var:
+            _sif(node, "VariableName", f"%{nearest_table_var}%")
+        _sif(node, "ColumnType", "Name")
+
+    # ── JsonToTable ───────────────────────────────────────────────────────────
+    # SessionName = literal xName of StartJsonSession (NO % signs — confirmed)
+    # KeyPath: dot-notation — semantic, leave for Wirer
+    elif ct == "JsonToTable":
+        if nearest_session_xname:
+            _sif(node, "SessionName", nearest_session_xname)  # no % signs
+
+    # ── StartJsonSession ──────────────────────────────────────────────────────
+    # StartSession = "True"  (confirmed: test_json_session)
+    elif ct == "StartJsonSession":
+        _sif(node, "StartSession", "True")
+
+    # ── ReplaceString ─────────────────────────────────────────────────────────
+    # ReplaceOriginalVariable = "False"  (confirmed: test_replacestring)
+    # SourceString: semantic — leave for Wirer
+    elif ct == "ReplaceString":
+        _sif(node, "ReplaceOriginalVariable", "False")
+        _sif(node, "IsMatchCase",   "False")
+        _sif(node, "IsRegex",       "False")
+        _sif(node, "RemoveSpaces",  "False")
+        _sif(node, "RemoveNewLines","False")
+        _sif(node, "RemoveTabs",    "False")
+
+    # ── MultiMemorySet ────────────────────────────────────────────────────────
+    # variableScope = "Workflow"  (confirmed: test_multimemoryset)
+    # IsGlobal      = "False"     (confirmed: test_multimemoryset)
+    elif ct == "MultiMemorySet":
+        _sif(node, "variableScope", "Workflow")
+        _sif(node, "IsGlobal",      "False")
+
+    # ── TSQLQuery ─────────────────────────────────────────────────────────────
+    # SiteId = "-1", SiteName = "", isUserAuthenticate = "False"
+    # when using a variable-based connection string (corpus dominant pattern).
+    # ConnectionStringTextBox / ConnectionString left to user — environment-specific.
+    elif ct == "TSQLQuery":
+        _sif(node, "SiteId",              "-1")
+        _sif(node, "SiteName",            "")
+        _sif(node, "isUserAuthenticate",  "False")
+        _sif(node, "UserName",            "")
+        _sif(node, "Password",            "")
+
+
+def _scaffold_walk(
+    nodes: dict,
+    nearest_table_var: str | None,
+    nearest_session_xname: str | None,
+    inside_while: bool,
+    parent_while_xname: str | None,
+) -> tuple[str | None, str | None]:
+    """
+    Walk an ordered dict of activity nodes, applying scaffold rules and
+    tracking nearest table producer / session producer as we go.
+
+    Returns updated (nearest_table_var, nearest_session_xname) for the
+    caller's scope — callers that need to propagate state upward use this.
+    """
+    for xname, node in nodes.items():
+        if not isinstance(node, dict):
+            continue
+        ct = node.get("CustomTypeName", "")
+        if not ct:
+            continue
+
+        if ct in _SCAFFOLD_CONTAINERS:
+            # Recurse into container children, carrying current context
+            if ct == "WhileActivity":
+                # Find the SequenceActivity child and recurse
+                for child_key, child_val in node.items():
+                    if isinstance(child_val, dict) and \
+                       child_val.get("CustomTypeName") == "SequenceActivity":
+                        nearest_table_var, nearest_session_xname = _scaffold_walk(
+                            child_val,
+                            nearest_table_var,
+                            nearest_session_xname,
+                            inside_while=True,
+                            parent_while_xname=xname,
+                        )
+                        break
+            elif ct == "IfElseActivity":
+                for child_key, child_val in node.items():
+                    if isinstance(child_val, dict) and \
+                       child_val.get("CustomTypeName") == "IfElseBranchActivity":
+                        _scaffold_walk(
+                            child_val,
+                            nearest_table_var,
+                            nearest_session_xname,
+                            inside_while,
+                            parent_while_xname,
+                        )
+            elif ct in ("SequenceActivity", "UserGroup"):
+                nearest_table_var, nearest_session_xname = _scaffold_walk(
+                    node,
+                    nearest_table_var,
+                    nearest_session_xname,
+                    inside_while,
+                    parent_while_xname,
+                )
+            else:
+                # ParallelActivity, ForEachActivity, IfElseBranchActivity
+                _scaffold_walk(
+                    node,
+                    nearest_table_var,
+                    nearest_session_xname,
+                    inside_while,
+                    parent_while_xname,
+                )
+            # After recursing into container, update table tracker if container
+            # is itself a table producer (e.g. ForEachActivity iterating a table)
+            tv = _get_table_var(node)
+            if tv:
+                nearest_table_var = tv
+        else:
+            # Leaf activity — apply scaffold rules first, then update trackers
+            _scaffold_node(
+                node,
+                nearest_table_var,
+                nearest_session_xname,
+                inside_while,
+                parent_while_xname,
+            )
+            # Update session tracker before table tracker (JsonToTable needs session)
+            if ct == "StartJsonSession":
+                nearest_session_xname = xname
+            # Update table tracker
+            tv = _get_table_var(node)
+            if tv:
+                nearest_table_var = tv
+
+    return nearest_table_var, nearest_session_xname
+
+
+def apply_content_scaffold(workflow_json: dict) -> dict:
+    """
+    Apply deterministic semantic wiring rules (Stage 4c.5).
+
+    Rules confirmed by RitaLab testing March 2026 (test XMLs 92001-92008):
+
+    S1   GetRowsCount.ResultSet              = %nearestTableVar%
+    S2   GetCellValue.ResultSet              = %nearestTableVar%
+    S3   GetCellValue.ResultSetName          = nearestTableVar  (bare, no %)
+    S4   GetCellValue.ColumnType             = "Name"
+    S5   ResultSetFilter.VariableName        = %nearestTableVar%
+    S6   DeleteMemoryTableRows.ResultSet     = %nearestTableVar%
+    S7   DeleteMemoryTableRows.ResultSetName = %nearestTableVar%  (WITH %)
+    S8   AddMemoryTableRow.ResultSet         = %nearestTableVar%
+    S9   AddMemoryTableRow.ResultSetName     = %nearestTableVar%  (WITH %)
+    S10  AddMemoryTableRow.Selection         = "2"  (end of table)
+    S11  AddMemoryTableRow.RowNumber         = ""   (always empty)
+    S12  SetCellValue.VariableName           = %nearestTableVar%
+    S13  SetCellValue.ColumnType             = "Name"
+    S14  JsonToTable.SessionName             = nearestSessionXName  (no %)
+    S15  StartJsonSession.StartSession       = "True"
+    S16  ReplaceString.ReplaceOriginalVariable = "False"
+    S17  ReplaceString boolean flags         = "False" (IsMatchCase etc.)
+    S18  MultiMemorySet.variableScope        = "Workflow"
+    S19  MultiMemorySet.IsGlobal             = "False"
+    S20  TSQLQuery.SiteId                    = "-1"
+    S21  TSQLQuery.SiteName                  = ""
+    S22  TSQLQuery.isUserAuthenticate        = "False"
+
+    NOT scaffolded (left for WirerAgent — genuinely semantic):
+      - GetCellValue.ColumnNumber      (which column to read)
+      - GetCellValue.RowNumber outside While (which row — no safe default)
+      - SetCellValue.ColNumber         (which column to write)
+      - SetCellValue.NewValue          (value to write)
+      - SetCellValue.RowNumber         (which row — must be %var% ref, but which var?)
+      - DeleteMemoryTableRows.RowNumber (which rows — integer list, user-specified)
+      - JsonToTable.KeyPath            (dot-notation path into JSON)
+      - StartJsonSession.JsonString    (the JSON payload)
+      - TSQLQuery.Query                (SQL query)
+      - TSQLQuery.ConnectionStringTextBox / ConnectionString  (environment-specific)
+      - MultiMemorySet.variableProperties  (the variable assignments)
+      - DisplayValue.ValueToDisplay    (the message string)
+      - MemorySet.VariableName/VariableValue  (semantic)
+    """
+    import copy
+    result = copy.deepcopy(workflow_json)
+    raw    = result.get("workflow_raw_data", result)
+
+    if not isinstance(raw, dict):
+        print("[scaffold] Warning: workflow_raw_data is not a dict — skipping")
+        return result
+
+    _scaffold_walk(
+        raw,
+        nearest_table_var=None,
+        nearest_session_xname=None,
+        inside_while=False,
+        parent_while_xname=None,
+    )
+
+    print(f"[scaffold] Applied S1-S22 to workflow ({len(raw)} top-level activities)")
+    return result
+
+
+def run_content_scaffold(fragmented_workflow: dict) -> dict:
+    """
+    Stage 4c.5: deterministic semantic wiring scaffold.
+    Runs after run_fragments() and before WirerAgent.
+
+    Call site in agents/pipeline.py (insert after Stage 4c block):
+
+        # ── Stage 4c.5: Python — Content scaffold ─────────────────────────
+        try:
+            scaffolded_workflow = run_content_scaffold(fragmented_workflow)
+            ctx.session.state["enriched_workflow"] = scaffolded_workflow
+            print(f"  [pipeline] scaffold ok")
+        except Exception as e:
+            print(f"  [pipeline] scaffold failed (non-fatal): {e}")
+            scaffolded_workflow = fragmented_workflow  # fall through to Wirer
+
+    Same block in CorrectionPipeline._run() after the fragments block.
+    """
+    fragmented_workflow = _ensure_dict(fragmented_workflow)
+    return apply_content_scaffold(fragmented_workflow)
 
 
 # ---------------------------------------------------------------------------

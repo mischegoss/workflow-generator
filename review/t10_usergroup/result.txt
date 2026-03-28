@@ -1,13 +1,12 @@
 Test ID:  t10
 Status:   FAIL
-Elapsed:  85.7s
+Elapsed:  78.2s
 
 Notes:
   Pipeline produced no output.
   Chat response: Workflow generation failed after 2 attempts.
 
-Attempt 1: Model returned empty response mid-pipeline. Retrying with fresh session.
-
-Attempt 2: Model returned empty response mid-pipeline. Retrying with fresh session.
-
-Try breaking the workflow into smaller pieces or simplifying the prompt.
+Attempt 1: Workflow JSON validation errors:
+- [.sendRequest1] 'SendRequest' missing 'Description' (uppercase D).
+- [.ifElseActivity1.ifElseBranchActivity1.displayValue1] 'DisplayValue' missing 'Description' (uppercase D).
+- [.ifElseActivity1.ifElseBranch

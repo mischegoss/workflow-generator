@@ -1,16 +1,7 @@
 Test ID:  t08
 Status:   PASS
-Elapsed:  127.1s
+Elapsed:  123.9s
 
 Notes:
-  JSON: 34781 bytes
-  XML: 22156 bytes — VALID
-  8 VERIFY note(s) for reviewer:
-    [createMemoryTable1] VERIFY: 'TableName' is set to the literal value 'errorDataTable'. Confirm this matches the exact table or column name us
-    [createMemoryTable1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
-    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'splitText1'. Confirm this matches the exact table or column name us
-    [getRowsCount1] VERIFY: 'ResultSet' references '%splitText1%' which is a Scalar output from Split. This field expects a DataTable variab
-    [getCellValue1] VERIFY: 'ResultSetName' is set to the literal value 'splitText1'. Confirm this matches the exact table or column name us
-    [getCellValue1] VERIFY: 'ColumnNumber' is set to the literal value 'Line'. Confirm this matches the exact table or column name used at r
-    [getCellValue1] VERIFY: 'ResultSet' references '%splitText1%' which is a Scalar output from Split. This field expects a DataTable variab
-    [addRowToMemoryTable1_VERIFY] VERIFY: This is a placeholder. Replace with the 'AddRowToMemoryTable' activity.
+  JSON: 17801 bytes
+  XML: 1322 bytes — VALID

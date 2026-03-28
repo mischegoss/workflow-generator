@@ -9,6 +9,13 @@ Retry logic:
 
 The correction pipeline fix prevents DecomposerAgent from receiving the
 CORRECTION REQUIRED error list and trying to decompose it as a workflow.
+
+CORRECTION MESSAGE DESIGN:
+  The correction message sent to WirerAgent includes the full workflow_json
+  from attempt 1, so WirerAgent can fix specific fields in place rather than
+  regenerating the workflow from scratch. This prevents the truncation failure
+  mode where WirerAgent returned a partial workflow (2-4 activities) instead
+  of the complete one.
 """
 
 import argparse
@@ -184,6 +191,11 @@ async def _run_correction_pipeline(
     from attempt 1 (both persist as output_key values). WirerAgent receives
     the CORRECTION REQUIRED prompt as its user message.
 
+    KEY CHANGE: The correction message now embeds the full workflow_json from
+    attempt 1. This gives WirerAgent the complete workflow to fix in place,
+    preventing the truncation failure mode where it regenerated only 2-4
+    activities from scratch instead of returning the full corrected workflow.
+
     Returns (output_file: pathlib.Path | None, session_state: dict).
     """
     app_name  = f"wf_corr_{run_id}"
@@ -193,27 +205,41 @@ async def _run_correction_pipeline(
     pipeline = build_correction_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
-    # Pre-load persisted values from attempt 1 as initial session state.
-    # Must be passed to create_session(), NOT set on session.state after creation —
-    # ADK reads ctx.session.state from the session service, not the local object,
-    # so mutations after create_session() are not visible inside the pipeline.
-    initial_state = {
-        "prompt":          original_prompt,
-        "decomposition":   _ensure_dict(prior_state.get("decomposition", {})),
-        "placed_skeleton": _ensure_dict(prior_state.get("placed_skeleton", {})),
-    }
-
     session = await runner.session_service.create_session(
         app_name=app_name,
         user_id=user_id,
-        state=initial_state,
     )
+
+    # Pre-load persisted values from attempt 1
+    session.state["prompt"]          = original_prompt
+    session.state["decomposition"]   = prior_state.get("decomposition", {})
+    session.state["placed_skeleton"] = prior_state.get("placed_skeleton", {})
+
+    # Embed the full workflow_json from attempt 1 in the correction message.
+    # WirerAgent's enriched_workflow input (set by pipeline stages 4b-4c.5)
+    # will be the freshly re-enriched skeleton, but the correction message
+    # also shows Wirer exactly what it produced before and what was wrong,
+    # so it can make targeted fixes rather than regenerating from scratch.
+    prior_workflow_json = _ensure_dict(prior_state.get("workflow_json", {}))
+    prior_wf_str = ""
+    if prior_workflow_json:
+        try:
+            prior_wf_str = (
+                "\n\nHere is the workflow JSON from the previous attempt "
+                "(the one that contained the errors listed above). "
+                "Fix the specific errors in this workflow and return the COMPLETE "
+                "corrected workflow_raw_data — do NOT omit any activities:\n\n"
+                + json.dumps(prior_workflow_json, indent=2)
+            )
+        except Exception:
+            prior_wf_str = ""
 
     correction_message = (
         f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "
         f"that prevented it from being imported. Fix ALL of the following errors. "
         f"Do not reproduce any of these errors:\n\n"
-        f"{error_summary}\n\n"
+        f"{error_summary}"
+        f"{prior_wf_str}\n\n"
         f"Original workflow request: {original_prompt}"
     )
 

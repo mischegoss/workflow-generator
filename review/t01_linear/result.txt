@@ -1,14 +1,10 @@
 Test ID:  t01
-Status:   FAIL
-Elapsed:  63.2s
+Status:   PASS
+Elapsed:  36.4s
 
 Notes:
-  Pipeline produced no output.
-  Chat response: Workflow generation failed after 2 attempts.
-
-Attempt 1: Workflow JSON validation errors:
-- [.convertToPlainText1] 'ConvertToPlainText' missing required field 'Value' (Table Variable)
-
-Attempt 2: No output produced.
-
-Try breaking the workflow into smaller pieces or simplifying the prompt.
+  JSON: 7265 bytes
+  XML: 5531 bytes — VALID
+  2 VERIFY note(s) for reviewer:
+    [getCellValue1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [getCellValue1] VERIFY: 'ResultSet' references '%convertJsonToTable1%' which is a Scalar output from ConvertJsonToTable. This field expe

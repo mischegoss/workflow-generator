@@ -1,10 +1,7 @@
 Test ID:  t09
 Status:   PASS
-Elapsed:  74.7s
+Elapsed:  37.6s
 
 Notes:
-  JSON: 12026 bytes
-  XML: 8795 bytes — VALID
-  2 VERIFY note(s) for reviewer:
-    [getRowsCount1] VERIFY: 'ResultSetName' is set to the literal value 'renameColumn1'. Confirm this matches the exact table or column name
-    [getRowsCount1] VERIFY: 'ResultSet' references '%renameColumn1%' which is a Scalar output from DisplayValue. This field expects a DataTa
+  JSON: 3200 bytes
+  XML: 3597 bytes — VALID

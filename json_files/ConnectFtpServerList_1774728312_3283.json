@@ -1,0 +1,157 @@
+{
+  "name": "ConnectFtpServerList_1774728312_3283",
+  "pnumber": "62900",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "xName": "getRoot",
+    "Description": "Connects to an FTP server, lists files, filters for files only, sorts by size descending, downloads the largest file, and then deletes it from the FTP server.",
+    "Activities": [
+      {
+        "xName": "connectToFtp1",
+        "Description": "Connect to the specified FTP server.",
+        "DisplayName": "Connect To Ftp",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.FTP.ConnectToFtp",
+        "ActivityInfo": {
+          "Host": "%ftpHost%",
+          "Port": "21",
+          "UserName": "%ftpUser%",
+          "Password": "%ftpPassword%",
+          "UseSsl": "False",
+          "Timeout": "10000",
+          "UsePassive": "True",
+          "description": "Connect to the specified FTP server."
+        }
+      },
+      {
+        "xName": "createMemoryTable1",
+        "Description": "Create a memory table to store the list of FTP files.",
+        "DisplayName": "Create Memory Table",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.CreateMemoryTable",
+        "ActivityInfo": {
+          "TableName": "ftpFileList",
+          "TableAsString": "",
+          "description": "Create a memory table to store the list of FTP files."
+        }
+      },
+      {
+        "xName": "ftpListDirectory1",
+        "Description": "List all files and directories in the specified remote path.",
+        "DisplayName": "List Directory",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.FTP.ListDirectory",
+        "ActivityInfo": {
+          "Connection": "%connectToFtp1%",
+          "Path": "%ftpRemotePath%",
+          "ResultSet": "%ftpFileList%",
+          "description": "List all files and directories in the specified remote path."
+        }
+      },
+      {
+        "xName": "createMemoryTable2",
+        "Description": "Create a memory table to store the filtered list of files.",
+        "DisplayName": "Create Memory Table",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.CreateMemoryTable",
+        "ActivityInfo": {
+          "TableName": "filteredFileList",
+          "TableAsString": "",
+          "description": "Create a memory table to store the filtered list of files."
+        }
+      },
+      {
+        "xName": "filterTable1",
+        "Description": "Filter the list to include only files, excluding directories.",
+        "DisplayName": "Filter Table",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.FilterTable",
+        "ActivityInfo": {
+          "ResultSet": "%ftpFileList%",
+          "FilterStatement": "IsDirectory Equals False",
+          "FilteredResultSet": "%filteredFileList%",
+          "description": "Filter the list to include only files, excluding directories."
+        }
+      },
+      {
+        "xName": "createMemoryTable3",
+        "Description": "Create a memory table to store the sorted list of files.",
+        "DisplayName": "Create Memory Table",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.CreateMemoryTable",
+        "ActivityInfo": {
+          "TableName": "sortedFileList",
+          "TableAsString": "",
+          "description": "Create a memory table to store the sorted list of files."
+        }
+      },
+      {
+        "xName": "sortTable1",
+        "Description": "Sort the file list by size in descending order to find the largest.",
+        "DisplayName": "Sort Table",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.SortTable",
+        "ActivityInfo": {
+          "ResultSetName": "%filteredFileList%",
+          "SortStatement": "Size DESC",
+          "SortedResultSetName": "%sortedFileList%",
+          "description": "Sort the file list by size in descending order to find the largest."
+        }
+      },
+      {
+        "xName": "getCellValue1",
+        "Description": "Get the name of the largest file from the top of the sorted list.",
+        "DisplayName": "Get Cell Value",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.Tables.GetCellValue",
+        "ActivityInfo": {
+          "ResultSet": "%sortedFileList%",
+          "RowNumber": "0",
+          "ColumnName": "Name",
+          "description": "Get the name of the largest file from the top of the sorted list."
+        }
+      },
+      {
+        "xName": "downloadFile1",
+        "Description": "Download the largest file from the FTP server.",
+        "DisplayName": "Download File",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.FTP.DownloadFile",
+        "ActivityInfo": {
+          "Connection": "%connectToFtp1%",
+          "RemoteFile": "%{ftpRemotePath}/%{getCellValue1}%",
+          "LocalFile": "%localDownloadPath%",
+          "description": "Download the largest file from the FTP server."
+        }
+      },
+      {
+        "xName": "deleteFile1",
+        "Description": "Delete the largest file from the FTP server after download.",
+        "DisplayName": "Delete File",
+        "CustomTypeName": "Logicim.RoboSuite.Activities.FTP.DeleteFile",
+        "ActivityInfo": {
+          "Connection": "%connectToFtp1%",
+          "Path": "%{ftpRemotePath}/%{getCellValue1}%",
+          "description": "Delete the largest file from the FTP server after download."
+        }
+      }
+    ],
+    "MemoryVariables": [
+      {
+        "xName": "ftpHost",
+        "Description": "The hostname or IP address of the FTP server."
+      },
+      {
+        "xName": "ftpUser",
+        "Description": "The username for FTP authentication."
+      },
+      {
+        "xName": "ftpPassword",
+        "Description": "The password for FTP authentication."
+      },
+      {
+        "xName": "ftpRemotePath",
+        "Description": "The remote directory on the FTP server to list files from."
+      },
+      {
+        "xName": "localDownloadPath",
+        "Description": "The local file path where the largest file will be downloaded."
+      }
+    ]
+  },
+  "placeholder_summary": [],
+  "pipeline_notes": [],
+  "errors": []
+}
