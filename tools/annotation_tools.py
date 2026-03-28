@@ -46,8 +46,8 @@ UNCONFIRMED_NAMESPACE_ACTIVITIES = set()
 
 TABLE_STRUCTURE_FIELDS = {
     "ColumnNumber",
-    "ResultSetName",
     "TableName",
+    # ResultSetName holds an xName reference to an upstream activity — not a user-defined name
 }
 
 # Fields that MUST receive a DataTable variable (not a scalar)

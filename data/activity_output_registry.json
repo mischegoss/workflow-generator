@@ -1,16 +1,16 @@
 [
   {
-    "activityName": "AD Is Account Disabled",
+    "activityName": "ADIsAccountDisabled",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specific account in the Active Directory is disabled. True/False"
   },
   {
-    "activityName": "AD Is Account Locked",
+    "activityName": "ADIsAccountLocked",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specific account in the Active Directory is locked. True/False"
   },
   {
-    "activityName": "AD User Exists",
+    "activityName": "ADUserExists",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specific user account exists in the Active Directory. True/False"
   },
@@ -20,7 +20,7 @@
     "outputDescription": "Checks if a phrase exists within a text. True/False"
   },
   {
-    "activityName": "File Checksum Comparison",
+    "activityName": "FileChecksumComparison",
     "outputType": "Boolean",
     "outputDescription": "Compares two files and determines whether they are identical or not. True/False."
   },
@@ -30,7 +30,7 @@
     "outputDescription": "Checks whether a specified file exists or not. True/False"
   },
   {
-    "activityName": "File Writable",
+    "activityName": "FileWritable",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specific file is writable or not. True/False"
   },
@@ -45,22 +45,22 @@
     "outputDescription": "Checks whether or not the email that triggered the workflow is HTML-formatted. True/False"
   },
   {
-    "activityName": "Is Empty",
+    "activityName": "IsEmpty",
     "outputType": "Boolean",
     "outputDescription": "Checks if a variable's value is empty. True if the variable is empty; false if not."
   },
   {
-    "activityName": "Is Numeric",
+    "activityName": "IsNumeric",
     "outputType": "Boolean",
     "outputDescription": "Checks if a text or variable's value contains a valid numeric value. True if the text is numeric; false if not."
   },
   {
-    "activityName": "AD LDAP Query",
+    "activityName": "ADLDAPQuery",
     "outputType": "DataTable",
     "outputDescription": "Queries the Active Directory using an LDAP Query. ResultSet."
   },
   {
-    "activityName": "BMC Helix Remedyforce Get Record",
+    "activityName": "BMCHelixRemedyforceGetRecord",
     "outputType": "DataTable",
     "outputDescription": "Returns a list of BMC Helix Remedyforce records that match the specified criteria. A ResultSet of the matching records."
   },
@@ -75,32 +75,32 @@
     "outputDescription": "Returns a list of TrueSight events that match the specified criteria. A ResultSet of the matching events."
   },
   {
-    "activityName": "Convert Text To Table",
+    "activityName": "ConvertTextToTable",
     "outputType": "DataTable",
     "outputDescription": "Converts a text variable into a table according to column/row delimiters, and returns the table. The text."
   },
   {
-    "activityName": "Convert to DB Statement",
+    "activityName": "ConvertToDBStatement",
     "outputType": "DataTable",
     "outputDescription": "Converts a table into a DB2/Oracle/MySQL/TSQL INSERT statement. The INSERT statement."
   },
   {
-    "activityName": "Create Memory Table",
+    "activityName": "CreateMemoryTable",
     "outputType": "DataTable",
     "outputDescription": "Creates a DataTable. IMPORTANT: reference by TableName field value, not xName. Use %TableName% not %xName%."
   },
   {
-    "activityName": "DB2 Query",
+    "activityName": "DB2Query",
     "outputType": "DataTable",
     "outputDescription": "Executes a query on a DB2 database and returns a table. A ResultSet. :::note To use DB2 activities, you need to download the latest version of the Data Server Driver Package from the [IBM website](htt"
   },
   {
-    "activityName": "ESM Get Alert",
+    "activityName": "ESMGetAlert",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of McAfee ESM alerts according to the selected time frame and criteria. A ResultSet of all matching alerts."
   },
   {
-    "activityName": "ESM Get Event",
+    "activityName": "ESMGetEvent",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of McAfee ESM events according to the selected time frame and criteria. A ResultSet of all matching events."
   },
@@ -110,7 +110,7 @@
     "outputDescription": "If there is more than one CPU on the target machine, a table is returned. The selected machine's CPU usage/availability value."
   },
   {
-    "activityName": "Get Interfaces Status",
+    "activityName": "GetInterfacesStatus",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a ResultSet of the Cisco session's related interfaces and their status (up/down). A list of interfaces and their statuses."
   },
@@ -120,32 +120,32 @@
     "outputDescription": "Returns a table of all events according to the specified event type. A ResultSet of the filtered result."
   },
   {
-    "activityName": "HP ArcSight Get Case",
+    "activityName": "HPArcsightGetCase",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of HP ArcSight cases according to the selected time frame and criteria. A ResultSet of all matching cases."
   },
   {
-    "activityName": "HP ArcSight Get Event",
+    "activityName": "HPArcsightGetEvent",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of HP ArcSight events according to the specific case ID and the selected time frame and criteria. A ResultSet of all matching events."
   },
   {
-    "activityName": "HPOM Get Alert",
+    "activityName": "HPOMGetAlert",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of alerts according to the selected criteria. A ResultSet of all matching alerts."
   },
   {
-    "activityName": "HPOM Get Annotations",
+    "activityName": "HPOMGetAnnotations",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of all annotations of a specified alert in HPOM. A ResultSet of all annotations"
   },
   {
-    "activityName": "HPSM Query Entry",
+    "activityName": "HPSMQueryEntry",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of HP Service Manager entries according to the selected criteria. A ResultSet of all matching entries."
   },
   {
-    "activityName": "HTTP Request",
+    "activityName": "HTTPRequest",
     "outputType": "DataTable",
     "outputDescription": "Returns response as a DataTable. Columns: Status Code, Body, Request. Use GetCellValue to extract body."
   },
@@ -155,32 +155,32 @@
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this hash malicious. The last scan date, the amount of engines that scanned the hash, an"
   },
   {
-    "activityName": "HyperV Info",
+    "activityName": "HyperVInfo",
     "outputType": "DataTable",
     "outputDescription": "Retrieves information about a virtual server. A table with the requested information."
   },
   {
-    "activityName": "HyperV List",
+    "activityName": "HyperVList",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of all virtual servers. A table with the requested list."
   },
   {
-    "activityName": "IBMTO Get Alert",
+    "activityName": "IBMTOGetAlert",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of IBM Tivoli Omnibus alerts according to the selected criteria. A ResultSet or json message of all matching records."
   },
   {
-    "activityName": "JSON Get Key Paths",
+    "activityName": "JsonGetKeyPaths",
     "outputType": "DataTable",
     "outputDescription": "Returns the paths of all instances of a key found in the JSON session. The output contains a memory table with a pair of columns: the key path and the key's parent's path. Each instance of the key tha"
   },
   {
-    "activityName": "JSON to Table",
+    "activityName": "JsonToTable",
     "outputType": "DataTable",
     "outputDescription": "Returns a memory table of all values under the specified key path. A table where each value under the specified key is a separate column. Note that object values are kept as a monolithic value."
   },
   {
-    "activityName": "Jira Get Issue",
+    "activityName": "JiraGetIssue",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of Jira issues according to the selected criteria. A ResultSet of all matching issues."
   },
@@ -190,37 +190,37 @@
     "outputDescription": "Lists all files and folders under a specified folder, according to predefined time criteria. A ResultSet (table) of the files and folders which reside in the specified folder and match the predefined "
   },
   {
-    "activityName": "Match Regular Expression",
+    "activityName": "MatchRegularExpression",
     "outputType": "DataTable",
     "outputDescription": "Returns all matches between a Regular Expression and a given text. A table of the matching phrases."
   },
   {
-    "activityName": "MySQL Query",
+    "activityName": "MySQLQuery",
     "outputType": "DataTable",
     "outputDescription": "Executes a SELECT query on a MySQL database and returns a table. A ResultSet. :::note To use MySQL activities, you need to install [MySQL Connector Net 6.4.4](http://www.mysql.com/downloads/connector/"
   },
   {
-    "activityName": "Oracle Query",
+    "activityName": "OracleQuery",
     "outputType": "DataTable",
     "outputDescription": "Executes an Oracle SELECT query on an Oracle database and returns a table. A ResultSet (table). :::note To use Oracle activities, you need to install the full administrator package of [Oracle Client]("
   },
   {
-    "activityName": "Ping Latency",
+    "activityName": "PingLatency",
     "outputType": "DataTable",
     "outputDescription": "Retrieves the elapsed time passing between sending a ping command and retrieving an answer. A table with the RoundTrip time and Time to live, or a single value."
   },
   {
-    "activityName": "QRadar Get Event Details",
+    "activityName": "QRadarGetEventDetails",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of QRadar events/flows according to the selected criteria. A ResultSet of all matching events/flows."
   },
   {
-    "activityName": "QRadar Get Offense",
+    "activityName": "QRadarGetOffense",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of QRadar offenses according to the selected criteria. A ResultSet of all the matching offenses."
   },
   {
-    "activityName": "QRadar Get Offense Events",
+    "activityName": "QRadarGetOffenseEvents",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of QRadar events/flows that are connected to the specified offense. A ResultSet of all the connected events/flows to the specified offense."
   },
@@ -230,22 +230,22 @@
     "outputDescription": "Reads an Excel file and returns all data in it. A ResultSet of the file's content. :::note This activity supports Excel 2003, Excel 2007, Excel 2010 and Excel 2014 files. ::: :::note In case of a dupl"
   },
   {
-    "activityName": "Read File",
+    "activityName": "ReadFile",
     "outputType": "DataTable",
     "outputDescription": "To refer to the file content as plain text, use the Convert to Plain Text activity, or the shortcut `%ReadFileActivityNamePlain%`. A ResultSet of the file's content."
   },
   {
-    "activityName": "Remove Empty Rows And Columns From Table",
+    "activityName": "RemoveEmptyRowsAndColumnsFromTable",
     "outputType": "DataTable",
     "outputDescription": "Returns cleaned DataTable. Reference as %xName%."
   },
   {
-    "activityName": "SN Get Record",
+    "activityName": "SNGetRecord",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of ServiceNow records according to the selected criteria. A resultSet or JSON message of all matching records."
   },
   {
-    "activityName": "Self Service Response",
+    "activityName": "SelfServiceResponse",
     "outputType": "DataTable",
     "outputDescription": "This can be plain text, a variable, a table, or combination. Success/Failure"
   },
@@ -260,27 +260,27 @@
     "outputDescription": "Retrieves a list of SolarWinds NPM nodes according to the selected criteria. A result set of all matching nodes."
   },
   {
-    "activityName": "Splunk Get Alert",
+    "activityName": "SplunkGetAlert",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of Splunk alerts according to the selected criteria. A result set or json message of all matching alerts."
   },
   {
-    "activityName": "Splunk Get Alert Events",
+    "activityName": "SplunkGetAlertEvents",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of Splunk events associated to a specific alert. A result set or json message of all events associated to entered alert."
   },
   {
-    "activityName": "Splunk Get Events",
+    "activityName": "SplunkGetEvents",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of Splunk events according to the selected criteria. A result set or json message of all matching events."
   },
   {
-    "activityName": "Splunk Get Report",
+    "activityName": "SplunkGetReport",
     "outputType": "DataTable",
     "outputDescription": "Note that only a single report can be chosen per activity. A result set or json message of the report output."
   },
   {
-    "activityName": "Sub String by Text",
+    "activityName": "SubStringByText",
     "outputType": "DataTable",
     "outputDescription": "Returns a table or text value of the searched text between a starting and ending point. The table or text value."
   },
@@ -290,12 +290,12 @@
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this file malicious. The last scan date, the amount of engines that scanned the file, an"
   },
   {
-    "activityName": "TSQL Query",
+    "activityName": "TSQLQuery",
     "outputType": "DataTable",
     "outputDescription": "Executes an SQL query on a Microsoft database and returns a table. A resultSet."
   },
   {
-    "activityName": "URL Check",
+    "activityName": "URLCheck",
     "outputType": "DataTable",
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this URL to be malicious. The last scan date, the amount of engines that scanned the URL"
   },
@@ -310,7 +310,7 @@
     "outputDescription": "Explores and queries the management classes, objects, and properties of a WMI (Windows Management Instrumentation). The ResultSet of the WMI query."
   },
   {
-    "activityName": "Write CSV",
+    "activityName": "WriteCSV",
     "outputType": "DataTable",
     "outputDescription": "Produces a CSV file out of a table. Success/Failure"
   },
@@ -320,17 +320,17 @@
     "outputDescription": "Produces an Excel file out of a table. Success/Failure :::note The file is saved in Excel 2010 format. :::"
   },
   {
-    "activityName": "XML Elements to Table",
+    "activityName": "XMLElementstoTable",
     "outputType": "DataTable",
     "outputDescription": "Converts a specific table with its attributes within the specified XML to a table variable. A table containing the selected element/elements and attributes (if selected)."
   },
   {
-    "activityName": "XML to Table",
+    "activityName": "XMLtoTable",
     "outputType": "DataTable",
     "outputDescription": "Converts a specific table within the XML to a table. The table."
   },
   {
-    "activityName": "Display Value",
+    "activityName": "DisplayValue",
     "outputType": "None",
     "outputDescription": "Control activity. Logs a value. Produces no output variable."
   },
@@ -340,37 +340,37 @@
     "outputDescription": "Retrieves the last date in which a selected machine logged in to the Active Directory. Date (by the default operating system's regional setting format)."
   },
   {
-    "activityName": "AD Get Property",
+    "activityName": "ADGetProperty",
     "outputType": "Scalar",
     "outputDescription": "Queries the Active Directory for a specific property value in a selected user/ computer account. The selected property's value."
   },
   {
-    "activityName": "AD List Group",
+    "activityName": "ADListGroup",
     "outputType": "Scalar",
     "outputDescription": "Lists the content of a specific group in the Active Directory \u2013 users, other groups and OUs. List"
   },
   {
-    "activityName": "AD List OU",
+    "activityName": "ADListOU",
     "outputType": "Scalar",
     "outputDescription": "Lists the content of a specific organizational unit in the Active Directory \u2013 users, computers, other OUs, and groups. List"
   },
   {
-    "activityName": "AD List User Groups",
+    "activityName": "ADListUserGroups",
     "outputType": "Scalar",
     "outputDescription": "Lists the groups of which the selected user is a member. List."
   },
   {
-    "activityName": "AD Move Account",
+    "activityName": "ADMoveAccount",
     "outputType": "Scalar",
     "outputDescription": "Moves the selected user account from one OU to another. List"
   },
   {
-    "activityName": "AD Search Account",
+    "activityName": "ADSearchAccount",
     "outputType": "Scalar",
     "outputDescription": "Searches for a specific account's location in the Active Directory's hierarchy. The path of the account."
   },
   {
-    "activityName": "AD Search User Logon Name",
+    "activityName": "ADSearchUserLogonName",
     "outputType": "Scalar",
     "outputDescription": "Searches for users\u2019 logon names according to predefined criteria. A list of logon names which match the search criteria."
   },
@@ -380,12 +380,12 @@
     "outputDescription": "Retrieves the last date on which a specific user logged in to the Active Directory. The last login date."
   },
   {
-    "activityName": "AWS Attach Network Interface",
+    "activityName": "AWSAttachNetworkInterface",
     "outputType": "Scalar",
     "outputDescription": "Attaches a network interface to an Amazon Web Service instance. The network interface's attachment ID."
   },
   {
-    "activityName": "AWS Attach Volume",
+    "activityName": "AWSAttachVolume",
     "outputType": "Scalar",
     "outputDescription": "Attaches an existing volume to an Amazon Web Service instance. An attachment notice."
   },
@@ -395,22 +395,22 @@
     "outputDescription": "Copies an Amazon Web Service image from a specified region. The ID of the new image."
   },
   {
-    "activityName": "AWS Copy Snapshot",
+    "activityName": "AWSCopySnapshot",
     "outputType": "Scalar",
     "outputDescription": "Copies an Amazon Web Service snapshot of the same region or another one. The ID of the new snapshot."
   },
   {
-    "activityName": "AWS Create Image",
+    "activityName": "AWSCreateImage",
     "outputType": "Scalar",
     "outputDescription": "Create a new Amazon Web Service image based on an existing instance. The ID of the new image."
   },
   {
-    "activityName": "AWS Create Snapshot",
+    "activityName": "AWSCreateSnapshot",
     "outputType": "Scalar",
     "outputDescription": "Creates a new Amazon Web Service snapshot based on an existing volume. The volume snapshot status."
   },
   {
-    "activityName": "AWS Create Volume",
+    "activityName": "AWSCreateVolume",
     "outputType": "Scalar",
     "outputDescription": "Creates a new Amazon Web Service volume. The ID of the new volume."
   },
@@ -420,7 +420,7 @@
     "outputDescription": "The command result as it was returned from Amazon EC2."
   },
   {
-    "activityName": "AWS Launch Instance",
+    "activityName": "AWSLaunchInstance",
     "outputType": "Scalar",
     "outputDescription": "Launches a new Amazon Web Service instance. The ID of the new instance created."
   },
@@ -430,12 +430,12 @@
     "outputDescription": "Returns the absolute value of a specified number. The function's result."
   },
   {
-    "activityName": "Advanced Communicate",
+    "activityName": "AdvancedCommunicate",
     "outputType": "Scalar",
     "outputDescription": "Advanced Communicate Activity is similar to Communicate Activity, only each setting parameter of the Activity may also be a Variable. * `%communicate.username%`: the name of the user who took responsi"
   },
   {
-    "activityName": "BMC Helix Remedyforce Create Record",
+    "activityName": "BMCHelixRemedyforceCreateRecord",
     "outputType": "Scalar",
     "outputDescription": "Creates a new record in BMC Helix Remedyforce based on defined properties. The record ID."
   },
@@ -455,17 +455,17 @@
     "outputDescription": "Returns the smallest integer that is greater than or equal to a specified number. The function's result."
   },
   {
-    "activityName": "Cherwell Create Journal",
+    "activityName": "CherwellCreateJournal",
     "outputType": "Scalar",
     "outputDescription": "Adds a journal note to a specific Cherwell record. Note added/failure."
   },
   {
-    "activityName": "Cherwell Create Record",
+    "activityName": "CherwellCreateRecord",
     "outputType": "Scalar",
     "outputDescription": "Creates a new record in Cherwell. The ID of the new record."
   },
   {
-    "activityName": "Cherwell Download Attachment",
+    "activityName": "CherwellDownloadAttachment",
     "outputType": "Scalar",
     "outputDescription": "Downloads an attachment to an existing Cherwell record. Downloaded attachment."
   },
@@ -475,7 +475,7 @@
     "outputDescription": "Retrieves a list of attachments according to the selected Cherwell form. Attachment list."
   },
   {
-    "activityName": "Cherwell Upload Attachment",
+    "activityName": "CherwellUploadAttachment",
     "outputType": "Scalar",
     "outputDescription": "Uploads an attachment to an existing Cherwell record. Uploaded attachment."
   },
@@ -485,37 +485,37 @@
     "outputDescription": "Increases the value of a counter (represented by the activity instance name) by 1. The counter's previous value in addition to the value \"1\"."
   },
   {
-    "activityName": "Display XML Session",
+    "activityName": "DisplayXMLSession",
     "outputType": "Scalar",
     "outputDescription": "Displays the selected XML session. The XML session."
   },
   {
-    "activityName": "Extract Line from Text",
+    "activityName": "ExtractLineFromText",
     "outputType": "Scalar",
     "outputDescription": "Extracts a line from a text, according to its location or a matching keyword. The text of the extracted line."
   },
   {
-    "activityName": "File Accessed Date",
+    "activityName": "FileAccessedDate",
     "outputType": "Scalar",
     "outputDescription": "Returns the date on which the file was last accessed. The file's access date"
   },
   {
-    "activityName": "File Count",
+    "activityName": "FileCount",
     "outputType": "Scalar",
     "outputDescription": "Counts the number of files in a folder. The number of files."
   },
   {
-    "activityName": "File Created Date",
+    "activityName": "FileCreatedDate",
     "outputType": "Scalar",
     "outputDescription": "Returns the date on which the file was created. The file's creation date."
   },
   {
-    "activityName": "File Hash",
+    "activityName": "FileHash",
     "outputType": "Scalar",
     "outputDescription": "Produces a 128-bit (16-byte) hash value. The hash value."
   },
   {
-    "activityName": "File Modified Date",
+    "activityName": "FileModifiedDate",
     "outputType": "Scalar",
     "outputDescription": "Returns the date on which the file was last modified. The file's modification date."
   },
@@ -525,7 +525,7 @@
     "outputDescription": "Returns the greatest integer that is less than or equal to the specified number. The function's result."
   },
   {
-    "activityName": "Function Calculator",
+    "activityName": "FunctionCalculator",
     "outputType": "Scalar",
     "outputDescription": "The Function Calculator performs various calculations on variables. The calculation's result. :::note The activity supports the following functions: Abs, Ceiling, Floor, Max, Min, Pow, Round, Sgn, Sqr"
   },
@@ -535,17 +535,17 @@
     "outputDescription": "Generates a strong password. The generated password can be used in another activity with %activity instance name.password%."
   },
   {
-    "activityName": "Get Cell Value",
+    "activityName": "GetCellValue",
     "outputType": "Scalar",
     "outputDescription": "Returns the value of a single cell as a scalar value. Reference as %xName%."
   },
   {
-    "activityName": "Get Column Name",
+    "activityName": "GetColumnName",
     "outputType": "Scalar",
     "outputDescription": "Returns the name of a column as a scalar value. Reference as %xName%."
   },
   {
-    "activityName": "Get Columns Count",
+    "activityName": "GetColumnsCount",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of columns in a table as a scalar value. Reference as %xName%."
   },
@@ -555,7 +555,7 @@
     "outputDescription": "Returns the current disk space value (usage/availability) of a machine. The selected machine's disk space usage/availability value."
   },
   {
-    "activityName": "Get External Internet IP Address",
+    "activityName": "GetExternalInternetIPAddress",
     "outputType": "Scalar",
     "outputDescription": "Returns the external IP address of the VAR::Resolve Actions Dev server. The IP address."
   },
@@ -590,7 +590,7 @@
     "outputDescription": "Returns the size of a specified folder. The folder size (in MB)."
   },
   {
-    "activityName": "Get Incident Open Duration",
+    "activityName": "GetIncidentOpenDuration",
     "outputType": "Scalar",
     "outputDescription": "This can be used, for example, to trigger a workflow only when an incident is open for more than a specified number of minutes. The number of minutes for which an incident is open."
   },
@@ -615,7 +615,7 @@
     "outputDescription": "Retrieves a file name without its extension. The file name (e.g., in case `%FileName%=log.txt` the retrieved value would be `log`)."
   },
   {
-    "activityName": "Get Open Incidents",
+    "activityName": "GetOpenIncidents",
     "outputType": "Scalar",
     "outputDescription": "Returns the list of the currently open incidents in Resolve Actions, according to predefined criteria. The list of open incidents."
   },
@@ -640,7 +640,7 @@
     "outputDescription": "Returns a list of process IDs and process owners. The list of processes."
   },
   {
-    "activityName": "Get Rows Count",
+    "activityName": "GetRowsCount",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of rows in a table as a scalar value. Reference as %xName%. Use in ExitWhile Counter field."
   },
@@ -655,32 +655,32 @@
     "outputDescription": "Returns the volume list of a specified machine. The volume list."
   },
   {
-    "activityName": "HPOM Add Annotation",
+    "activityName": "HPOMAddAnnotation",
     "outputType": "Scalar",
     "outputDescription": "Adds an annotation to an existing open alert in HPOM. The ID of the new annotation"
   },
   {
-    "activityName": "HPOM Create Alert",
+    "activityName": "HPOMCreateAlert",
     "outputType": "Scalar",
     "outputDescription": "Creates a new alert in HPOM. The ID of the new alert."
   },
   {
-    "activityName": "HPSM New Entry",
+    "activityName": "HPSMNewEntry",
     "outputType": "Scalar",
     "outputDescription": "Creates a new HP Service Manager entry. The ID of the new entry."
   },
   {
-    "activityName": "HTTP Request",
+    "activityName": "HTTPRequest",
     "outputType": "Scalar",
     "outputDescription": "Sends an HTTP request (including headers). The request's result."
   },
   {
-    "activityName": "HyperV Calc Host Rating",
+    "activityName": "HyperVCalcHostRating",
     "outputType": "Scalar",
     "outputDescription": "Calculates the placement rating for one or more hosts managed by SCVMM on which you might want to deploy a specific virtual machine. The host's rating."
   },
   {
-    "activityName": "IBMTO Create Alert",
+    "activityName": "IBMTOCreateAlert",
     "outputType": "Scalar",
     "outputDescription": "Creates a new IBM Tivoli Omnibus alert. The alert's Serial ID."
   },
@@ -695,22 +695,22 @@
     "outputDescription": "The search begins at the last character of the text. The location of the phrase."
   },
   {
-    "activityName": "Incident Counter",
+    "activityName": "IncidentCounter",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of currently open incidents, according to the selected criteria and time duration. The number of open incidents."
   },
   {
-    "activityName": "Incident History Report",
+    "activityName": "IncidentHistoryReport",
     "outputType": "Scalar",
     "outputDescription": "Creates a log containing the incident history according to a specified filter. The incident report."
   },
   {
-    "activityName": "Index Of",
+    "activityName": "IndexOf",
     "outputType": "Scalar",
     "outputDescription": "Returns the location of a phrase within a text. The index of the text / 'Text was not found'."
   },
   {
-    "activityName": "Jira Create Issue",
+    "activityName": "JiraCreateIssue",
     "outputType": "Scalar",
     "outputDescription": "Creates a new Jira issue. The ID of the new issue."
   },
@@ -725,32 +725,32 @@
     "outputDescription": "Extracts characters from the left side of a text. The extracted text."
   },
   {
-    "activityName": "Left Trim",
+    "activityName": "LeftTrim",
     "outputType": "Scalar",
     "outputDescription": "Removes the leading blank spaces from a text. The trimmed text."
   },
   {
-    "activityName": "Load Remote File",
+    "activityName": "LoadRemoteFile",
     "outputType": "Scalar",
     "outputDescription": "The default maximum file size is 10 MB. A variable of the file's content in base64."
   },
   {
-    "activityName": "Lower Case",
+    "activityName": "LowerCase",
     "outputType": "Scalar",
     "outputDescription": "Switches all characters in a text to lowercase. The new text."
   },
   {
-    "activityName": "MQ Counter",
+    "activityName": "MQCounter",
     "outputType": "Scalar",
     "outputDescription": "Returns the amount of messages in a queue. The number of messages."
   },
   {
-    "activityName": "MQ Get All Messages",
+    "activityName": "MQGetAllMessages",
     "outputType": "Scalar",
     "outputDescription": "Returns a list containing all messages in a queue. The list of messages."
   },
   {
-    "activityName": "MQ Peek",
+    "activityName": "MQPeek",
     "outputType": "Scalar",
     "outputDescription": "Returns the first message in a queue. The first message in the queue."
   },
@@ -765,7 +765,7 @@
     "outputDescription": "Returns the lower of two numbers. The function's result."
   },
   {
-    "activityName": "Performance Monitor",
+    "activityName": "PerformanceMonitor",
     "outputType": "Scalar",
     "outputDescription": "If you wish to choose a different category, please copy the metric name and insert it into the Category field. The requested counter."
   },
@@ -780,7 +780,7 @@
     "outputDescription": "Returns a specified number raised to the specified power. The function's result."
   },
   {
-    "activityName": "Process Counter",
+    "activityName": "ProcessCounter",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of active instances of a specified process in the operating system. The list of processes."
   },
@@ -795,27 +795,27 @@
     "outputDescription": "Queries a selected entry in the registry according to a selected registry key and a path. The value stored in the specified path."
   },
   {
-    "activityName": "Random Number Generator",
+    "activityName": "RandomNumberGenerator",
     "outputType": "Scalar",
     "outputDescription": "Generates a random number within a specified range. the function's result"
   },
   {
-    "activityName": "Read PDF",
+    "activityName": "ReadPDF",
     "outputType": "Scalar",
     "outputDescription": "Reads a PDF file and returns its content. The content of the PDF file in XML format."
   },
   {
-    "activityName": "Replace Paragraph",
+    "activityName": "ReplaceParagraph",
     "outputType": "Scalar",
     "outputDescription": "Replaces one paragraph with other text. The new paragraph."
   },
   {
-    "activityName": "Replace String",
+    "activityName": "ReplaceString",
     "outputType": "Scalar",
     "outputDescription": "Replaces all occurrences of a phrase with another. The new text."
   },
   {
-    "activityName": "Replace String Advanced",
+    "activityName": "ReplaceStringAdvanced",
     "outputType": "Scalar",
     "outputDescription": "Returns a new text in which all occurrences of a specified phrase are replaced with another phrase. The new text."
   },
@@ -830,7 +830,7 @@
     "outputDescription": "Extracts characters from the right side of a text. The extracted text."
   },
   {
-    "activityName": "Right Trim",
+    "activityName": "RightTrim",
     "outputType": "Scalar",
     "outputDescription": "Removes the trailing blank spaces from a text. The trimmed text."
   },
@@ -840,7 +840,7 @@
     "outputDescription": "Rounds a decimal value to the nearest integral value. The integral value."
   },
   {
-    "activityName": "SN Create Record",
+    "activityName": "SNCreateRecord",
     "outputType": "Scalar",
     "outputDescription": "Creates a new ServiceNow record. The ID of the new record."
   },
@@ -855,27 +855,27 @@
     "outputDescription": "Retrieves the value of an SNMP Object ID of a specified device. The SNMP object value."
   },
   {
-    "activityName": "SNMP Send Trap",
+    "activityName": "SNMPSendTrap",
     "outputType": "Scalar",
     "outputDescription": "Sends an SNMP trap containing a specific SNMP object assigned with a value. The SNMP object value."
   },
   {
-    "activityName": "Salesforce Create Record",
+    "activityName": "SalesforceCreateRecord",
     "outputType": "Scalar",
     "outputDescription": "Creates a new record in Salesforce. A record in Salesforce."
   },
   {
-    "activityName": "Salesforce Get Record",
+    "activityName": "SalesforceGetRecord",
     "outputType": "Scalar",
     "outputDescription": "Gets an existing record from Salesforce. A record from Salesforce."
   },
   {
-    "activityName": "Salesforce Update Record",
+    "activityName": "SalesforceUpdateRecord",
     "outputType": "Scalar",
     "outputDescription": "Updates an existing record in Salesforce. An updated record in Salesforce."
   },
   {
-    "activityName": "Send SSH Password",
+    "activityName": "SendSSHPassword",
     "outputType": "Scalar",
     "outputDescription": "The activity follows the Start SSH Session activity, and is followed by the Send SSH Command and Terminate SSH Session activities. Prompt Session"
   },
@@ -900,12 +900,12 @@
     "outputDescription": "Starts a specified process. The new process's ID."
   },
   {
-    "activityName": "Sub String",
+    "activityName": "SubString",
     "outputType": "Scalar",
     "outputDescription": "Extracts a phrase from a text according to its index and number of characters. The phrase."
   },
   {
-    "activityName": "Sum Cells",
+    "activityName": "SumCells",
     "outputType": "Scalar",
     "outputDescription": "Returns the numeric sum of cells as a scalar value. Reference as %xName%."
   },
@@ -920,7 +920,7 @@
     "outputDescription": "Removes both leading and trailing blank spaces from a text. The new text, without spaces."
   },
   {
-    "activityName": "Trim by String",
+    "activityName": "TrimbyString",
     "outputType": "Scalar",
     "outputDescription": "Removes characters from the beginning or end of a text. The trimmed text."
   },
@@ -930,7 +930,7 @@
     "outputDescription": "Calculates the integral part of a specified decimal number. The function's result."
   },
   {
-    "activityName": "Upper Case",
+    "activityName": "UpperCase",
     "outputType": "Scalar",
     "outputDescription": "Capitalizes all characters in a text. The new text."
   },
@@ -940,17 +940,17 @@
     "outputDescription": "Retrieves a Virtual Machine's IP addresses. The Virtual Machine's IP address."
   },
   {
-    "activityName": "VM Info",
+    "activityName": "VMInfo",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a Virtual Machine's info. The Virtual Machine's info."
   },
   {
-    "activityName": "VM List",
+    "activityName": "VMList",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a list of Virtual Machines on the entire vCenter or a specific host. A list of Virtual Machines."
   },
   {
-    "activityName": "VM List Snapshot",
+    "activityName": "VMListSnapshot",
     "outputType": "Scalar",
     "outputDescription": "Lists all snapshots of a Virtual Machine. The list of snapshots of the selected Virtual Machine"
   },
@@ -960,17 +960,17 @@
     "outputDescription": "Lists the templates in the vCenter. The list of templates in the selected vCenter."
   },
   {
-    "activityName": "VM Power State",
+    "activityName": "VMPowerState",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the current power state of a Virtual Machine. The Virtual Machine's power state (On/Off)"
   },
   {
-    "activityName": "VM Snapshot Info",
+    "activityName": "VMSnapshotInfo",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the information of a Virtual Machine's selected snapshot. The snapshot's information."
   },
   {
-    "activityName": "Workflow Counter",
+    "activityName": "WorkflowCounter",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of currently active instances of the selected Workflow. The number of instances."
   },
@@ -985,97 +985,97 @@
     "outputDescription": "Extracts a selected compressed file. The extracted file."
   },
   {
-    "activityName": "AD Add to Group",
+    "activityName": "ADAddtoGroup",
     "outputType": "Status",
     "outputDescription": "Adds a user or a device to a group in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Copy User",
+    "activityName": "ADCopyUser",
     "outputType": "Status",
     "outputDescription": "Copies an Active Directory user account and sets its properties. Success (account copied) /Failure."
   },
   {
-    "activityName": "AD Create Account",
+    "activityName": "ADCreateAccount",
     "outputType": "Status",
     "outputDescription": "Creates a new account in the Active Directory. Success (account created) /Failure"
   },
   {
-    "activityName": "AD Create Group",
+    "activityName": "ADCreateGroup",
     "outputType": "Status",
     "outputDescription": "Creates a new group in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Delete Account",
+    "activityName": "ADDeleteAccount",
     "outputType": "Status",
     "outputDescription": "Deletes a user account from the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Delete Group",
+    "activityName": "ADDeleteGroup",
     "outputType": "Status",
     "outputDescription": "Deletes a group from the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Disable Account",
+    "activityName": "ADDisableAccount",
     "outputType": "Status",
     "outputDescription": "Disables an account in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Enable Account",
+    "activityName": "ADEnableAccount",
     "outputType": "Status",
     "outputDescription": "Enables a disabled account in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Group Exists",
+    "activityName": "ADGroupExists",
     "outputType": "Status",
     "outputDescription": "Checks whether a specific group exists in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Remove From Group",
+    "activityName": "ADRemoveFromGroup",
     "outputType": "Status",
     "outputDescription": "Removes a user or computer account from the selected group. Success/Failure"
   },
   {
-    "activityName": "AD Rename Account",
+    "activityName": "ADRenameAccount",
     "outputType": "Status",
     "outputDescription": "Renames a selected account in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AD Set Password Properties",
+    "activityName": "ADSetPasswordProperties",
     "outputType": "Status",
     "outputDescription": "Changes a user's password attributes. Success/Failure"
   },
   {
-    "activityName": "AD Set Property",
+    "activityName": "ADSetProperty",
     "outputType": "Status",
     "outputDescription": "Changes a user/computer account's attribute, including creating custom properties. Success/Failure"
   },
   {
-    "activityName": "AD Unlock Account",
+    "activityName": "ADUnlockAccount",
     "outputType": "Status",
     "outputDescription": "Unlocks a selected account in the Active Directory. Success/Failure"
   },
   {
-    "activityName": "AWS Delete Snapshot",
+    "activityName": "AWSDeleteSnapshot",
     "outputType": "Status",
     "outputDescription": "Deletes an existing Amazon Web Service snapshot. Success/Failure"
   },
   {
-    "activityName": "AWS Delete Volume",
+    "activityName": "AWSDeleteVolume",
     "outputType": "Status",
     "outputDescription": "Deletes an existing Amazon Web Service volume from an instance. Success/Failure"
   },
   {
-    "activityName": "AWS Deregister Image",
+    "activityName": "AWSDeregisterImage",
     "outputType": "Status",
     "outputDescription": "Deregisters an existing Amazon Web Service image. Success/Failure"
   },
   {
-    "activityName": "AWS Detach Network Interface",
+    "activityName": "AWSDetachNetworkInterface",
     "outputType": "Status",
     "outputDescription": "Detaches a network interface from an Amazon Web Service instance. Success/Failure"
   },
   {
-    "activityName": "AWS Detach Volume",
+    "activityName": "AWSDetachVolume",
     "outputType": "Status",
     "outputDescription": "Detaches a volume from an Amazon Web Service instance. Success/Failure"
   },
@@ -1110,12 +1110,12 @@
     "outputDescription": "Adds a new node in the specified Xpath. Success/Failure."
   },
   {
-    "activityName": "Azure AD Users Synchronization",
+    "activityName": "AzureADUsersSynchronization",
     "outputType": "Status",
     "outputDescription": "The activity imports Groups' and Users' information from Azure AD into Actions. Success / Failure."
   },
   {
-    "activityName": "BMC Helix Remedyforce Update Record",
+    "activityName": "BMCHelixRemedyforceUpdateRecord",
     "outputType": "Status",
     "outputDescription": "Updates a record in BMC Helix Remedyforce based on defined properties. Success/Failure."
   },
@@ -1130,32 +1130,32 @@
     "outputDescription": "Updates an event in BMC TrueSight Operations Management based on defined properties. Success/Failure."
   },
   {
-    "activityName": "CAS Acknowledge Alert",
+    "activityName": "CASAcknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Acknowledges an existing alarm in the CA Spectrum console. Success/Failure"
   },
   {
-    "activityName": "CAS Cancel Maintenance Mode",
+    "activityName": "CASCancelMaintenanceMode",
     "outputType": "Status",
     "outputDescription": "Cancels the maintenance mode of a CA Spectrum model. Success/Failure"
   },
   {
-    "activityName": "CAS Clear Alert",
+    "activityName": "CASClearAlert",
     "outputType": "Status",
     "outputDescription": "Clears an existing alarm from CA Spectrum. Success/Failure"
   },
   {
-    "activityName": "CAS Set Maintenance Mode",
+    "activityName": "CASSetMaintenanceMode",
     "outputType": "Status",
     "outputDescription": "Puts the CA Spectrum model in maintenance mode. Success/Failure"
   },
   {
-    "activityName": "CAS Unacknowledge Alert",
+    "activityName": "CASUnacknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Unacknowledges an alarm in the CA Spectrum console. Success/Failure"
   },
   {
-    "activityName": "Cherwell Get Record",
+    "activityName": "CherwellGetRecord",
     "outputType": "Status",
     "outputDescription": "Retrieves a list of Cherwell records based on the selected criteria. Success/Failure"
   },
@@ -1170,22 +1170,22 @@
     "outputDescription": "Copies the contents of a specified folder from a source location to a destination location. Success/Failure"
   },
   {
-    "activityName": "Create Virtual Directory",
+    "activityName": "CreateVirtualDirectory",
     "outputType": "Status",
     "outputDescription": "Creates a Virtual Directory on an IIS website. Success/Failure"
   },
   {
-    "activityName": "Create Windows Event Log",
+    "activityName": "CreateWindowsEventLog",
     "outputType": "Status",
     "outputDescription": "Creates an entry in the selected Windows event log. Success/Failure"
   },
   {
-    "activityName": "Delete File",
+    "activityName": "DeleteFile",
     "outputType": "Status",
     "outputDescription": "Deletes a file in a specified location. Success/Failure"
   },
   {
-    "activityName": "Delete Folder",
+    "activityName": "DeleteFolder",
     "outputType": "Status",
     "outputDescription": "Deletes a folder (and all the files and subfolders that reside in it) in a specified location. Success/Failure"
   },
@@ -1205,7 +1205,7 @@
     "outputDescription": "The file can then be used by any of the read file activities. Success/Failure"
   },
   {
-    "activityName": "Edit Virtual Directory",
+    "activityName": "EditVirtualDirectory",
     "outputType": "Status",
     "outputDescription": "Edits a Virtual Directory on an IIS website. Success/Failure"
   },
@@ -1220,7 +1220,7 @@
     "outputDescription": "Changes a specified XML's value. Success/Failure."
   },
   {
-    "activityName": "Enable Privileged Commands",
+    "activityName": "EnablePrivilegedCommands",
     "outputType": "Status",
     "outputDescription": "Sends an \"ena\" command with its password. Success/Failure."
   },
@@ -1230,72 +1230,72 @@
     "outputDescription": "Downloads a file from a website. Success/Failure :::note The activity is not a download manager; therefore, network connectivity problems may cause the activity to fail. :::"
   },
   {
-    "activityName": "Get Header Value",
+    "activityName": "GetHeaderValue",
     "outputType": "Status",
     "outputDescription": "Gets the value of the specified header. Success/Failure"
   },
   {
-    "activityName": "HP ArcSight Delete Case",
+    "activityName": "HPArcsightDeleteCase",
     "outputType": "Status",
     "outputDescription": "Deletes a case from HP ArcSight. Success/Failure"
   },
   {
-    "activityName": "HPOM Acknowledge Alert",
+    "activityName": "HPOMAcknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Acknowledges an existing open alert in HPOM. Success/Failure :::note Before the alert is acknowledged, it is owned by the user set in the module's configuration. :::"
   },
   {
-    "activityName": "HPOM Delete Annotation",
+    "activityName": "HPOMDeleteAnnotation",
     "outputType": "Status",
     "outputDescription": "Removes an annotation from an existing open alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPOM Delete Custom Attribute",
+    "activityName": "HPOMDeleteCustomAttribute",
     "outputType": "Status",
     "outputDescription": "Removes an attribute from an existing open alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPOM Own Alert",
+    "activityName": "HPOMOwnAlert",
     "outputType": "Status",
     "outputDescription": "Owns an existing open alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPOM Set Custom Attribute",
+    "activityName": "HPOMSetCustomAttribute",
     "outputType": "Status",
     "outputDescription": "Creates or sets a custom attribute to an existing alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPOM Unacknowledge Alert",
+    "activityName": "HPOMUnacknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Unacknowledges a closed alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPOM Update Alert",
+    "activityName": "HPOMUpdateAlert",
     "outputType": "Status",
     "outputDescription": "Updates an existing alert in HPOM. Success/Failure."
   },
   {
-    "activityName": "HPOM Update Annotation",
+    "activityName": "HPOMUpdateAnnotation",
     "outputType": "Status",
     "outputDescription": "Updates an existing annotation of a specific alert in HPOM. Success/Failure"
   },
   {
-    "activityName": "HPSM Update Entry",
+    "activityName": "HPSMUpdateEntry",
     "outputType": "Status",
     "outputDescription": "Updates an existing HP Service Manager entry. Success/Failure."
   },
   {
-    "activityName": "HyperV Add Disk",
+    "activityName": "HyperVAddDisk",
     "outputType": "Status",
     "outputDescription": "Adds a disk to a virtual machine. Success/Failure"
   },
   {
-    "activityName": "HyperV Expand Disk Size",
+    "activityName": "HyperVExpandDiskSize",
     "outputType": "Status",
     "outputDescription": "Expands the disk size on the virtual server. Success/Failure"
   },
   {
-    "activityName": "HyperV Modify Memory",
+    "activityName": "HyperVModifyMemory",
     "outputType": "Status",
     "outputDescription": "Modifies the memory of a virtual server. Success/Failure"
   },
@@ -1305,12 +1305,12 @@
     "outputDescription": "Refreshes the state of a virtual server. Success/Failure"
   },
   {
-    "activityName": "HyperV Static MAC",
+    "activityName": "HyperVStaticMac",
     "outputType": "Status",
     "outputDescription": "Sets a static MAC address on a virtual server. Success/Failure"
   },
   {
-    "activityName": "IBMTO Update Alert",
+    "activityName": "IBMTOUpdateAlert",
     "outputType": "Status",
     "outputDescription": "Updates an existing IBM Tivoli Omnibus alert. Success/Failure."
   },
@@ -1330,7 +1330,7 @@
     "outputDescription": "Stops the Internet Information Server (IIS). Success/Failure"
   },
   {
-    "activityName": "Jira Update Issue",
+    "activityName": "JiraUpdateIssue",
     "outputType": "Status",
     "outputDescription": "Updates an existing Jira issue. Success/Failure."
   },
@@ -1340,7 +1340,7 @@
     "outputDescription": "Terminates all active instances of a specified process. Success/Failure"
   },
   {
-    "activityName": "Lock Executor",
+    "activityName": "LockExecutor",
     "outputType": "Status",
     "outputDescription": "Locks an executor to be exclusively used by the activities of the running workflow in case multiple executor components are set up on the same cluster. Success/Failure"
   },
@@ -1350,32 +1350,32 @@
     "outputDescription": "Cuts a file from a source location and pastes it into the destination location. Success/Failure"
   },
   {
-    "activityName": "QRadar Add Offense Note",
+    "activityName": "QRadarAddOffenseNote",
     "outputType": "Status",
     "outputDescription": "Adds a note to an existing offense. Success/Failure"
   },
   {
-    "activityName": "QRadar Assign Offense",
+    "activityName": "QRadarAssignOffense",
     "outputType": "Status",
     "outputDescription": "Assigns an offense to a specified user. Success/Failure"
   },
   {
-    "activityName": "SN Delete Record",
+    "activityName": "SNDeleteRecord",
     "outputType": "Status",
     "outputDescription": "Deletes an existing record from ServiceNow. Success/Failure."
   },
   {
-    "activityName": "SN Update Record",
+    "activityName": "SNUpdateRecord",
     "outputType": "Status",
     "outputDescription": "Updates an existing record in ServiceNow. Success/Failure"
   },
   {
-    "activityName": "Save XML Session",
+    "activityName": "SaveXMLSession",
     "outputType": "Status",
     "outputDescription": "Saves the XML session to a file. Success/Failure"
   },
   {
-    "activityName": "Send SSH Command",
+    "activityName": "SendSSHCommand",
     "outputType": "Status",
     "outputDescription": "Sends a single SSH protocol command to an open session. Success/Failure"
   },
@@ -1390,12 +1390,12 @@
     "outputDescription": "Puts the selected workstation into standby mode. Success/Failure"
   },
   {
-    "activityName": "Set Service Startup Type",
+    "activityName": "SetServiceStartupType",
     "outputType": "Status",
     "outputDescription": "Determines the service's startup type (Manual/Automatic/ Disabled). Success/Failure"
   },
   {
-    "activityName": "Single SSH Command",
+    "activityName": "SingleSSHCommand",
     "outputType": "Status",
     "outputDescription": ":::note \"Single SSH Command\" opens an SSH session, executes the command and terminates the session. Success/Failure"
   },
@@ -1425,148 +1425,253 @@
     "outputDescription": "Unacknowledges an active alert in SolarWinds. Success/Failure."
   },
   {
-    "activityName": "Splunk Create Event",
+    "activityName": "SplunkCreateEvent",
     "outputType": "Status",
     "outputDescription": "Creates a new event in Splunk according to the event data entered. Success/Failure"
   },
   {
-    "activityName": "Stop Workflow",
+    "activityName": "StopWorkflow",
     "outputType": "Status",
     "outputDescription": "Terminates all instances of a specified workflow. Success/Failure"
   },
   {
-    "activityName": "URL Check",
+    "activityName": "URLCheck",
     "outputType": "Status",
     "outputDescription": "Checks the availability of a URL based on a return code or an existence of a specific phrase. Success/Failure"
   },
   {
-    "activityName": "Unshare Folder",
+    "activityName": "UnshareFolder",
     "outputType": "Status",
     "outputDescription": "Removes the specified folder share. Success/Failure"
   },
   {
-    "activityName": "User Authentication",
+    "activityName": "UserAuthentication",
     "outputType": "Status",
     "outputDescription": "Validates a user's access to a target machine. Success/Failure"
   },
   {
-    "activityName": "VM Change Vlan",
+    "activityName": "VMChangeVlan",
     "outputType": "Status",
     "outputDescription": "Changes the VLAN of a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Create Configuration Spec",
+    "activityName": "VMCreateConfigurationSpec",
     "outputType": "Status",
     "outputDescription": "Creates a Virtual Machine customization specification file that can be used when cloning a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Create Snapshot",
+    "activityName": "VMCreateSnapshot",
     "outputType": "Status",
     "outputDescription": "Snapshots a Virtual Machine's state. Success/Failure"
   },
   {
-    "activityName": "VM Create from Template",
+    "activityName": "VMCreateFromTemplate",
     "outputType": "Status",
     "outputDescription": "Creates a Virtual Machine from a template. Success/Failure"
   },
   {
-    "activityName": "VM Current Snapshot",
+    "activityName": "VMCurrentSnapshot",
     "outputType": "Status",
     "outputDescription": "Retrieves the name of the Virtual Machine's current snapshot. Success/Failure"
   },
   {
-    "activityName": "VM Delete All Snapshots",
+    "activityName": "VMDeleteAllSnapshots",
     "outputType": "Status",
     "outputDescription": "Deletes all snapshots of a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Delete Configuration Spec",
+    "activityName": "VMDeleteConfigurationSpec",
     "outputType": "Status",
     "outputDescription": "Deletes a Virtual Machine's customization specification. Success/Failure"
   },
   {
-    "activityName": "VM Exists",
+    "activityName": "VMExists",
     "outputType": "Status",
     "outputDescription": "Checks whether or not a specific Virtual Machine exists. Success/Failure"
   },
   {
-    "activityName": "VM Folder Create",
+    "activityName": "VMFolderCreate",
     "outputType": "Status",
     "outputDescription": "Creates a Virtual Machine folder on a vCenter. Success/Failure"
   },
   {
-    "activityName": "VM Host Enter Maintenance Mode",
+    "activityName": "VMHostEnterMaintenanceMode",
     "outputType": "Status",
     "outputDescription": "Puts the Virtual Machine's host into maintenance mode. Success/Failure"
   },
   {
-    "activityName": "VM Host Exit Maintenance Mode",
+    "activityName": "VMHostExitMaintenanceMode",
     "outputType": "Status",
     "outputDescription": "Terminates the host's maintenance mode. Success/Failure"
   },
   {
-    "activityName": "VM Mark Template",
+    "activityName": "VMMarkTemplate",
     "outputType": "Status",
     "outputDescription": "Converts a Virtual Machine to a template. Success/Failure"
   },
   {
-    "activityName": "VM Modify CPU",
+    "activityName": "VMModifyCPU",
     "outputType": "Status",
     "outputDescription": "Modifies the count of CPUs on a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Modify Memory",
+    "activityName": "VMModifyMemory",
     "outputType": "Status",
     "outputDescription": "Modifies the Virtual Machine's available memory. Success/Failure"
   },
   {
-    "activityName": "VM Mount ISO",
+    "activityName": "VMMountISO",
     "outputType": "Status",
     "outputDescription": "Mounts an ISO image file on a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Power CLI",
+    "activityName": "VMPowerCLI",
     "outputType": "Status",
     "outputDescription": "Allows executing any PowerCLI command on the vCenter or ESX. Success/Failure"
   },
   {
-    "activityName": "VM Rename Snapshot",
+    "activityName": "VMRenameSnapshot",
     "outputType": "Status",
     "outputDescription": "Renames a snapshot of a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Resize Disk",
+    "activityName": "VMResizeDisk",
     "outputType": "Status",
     "outputDescription": "Resizes a Virtual Machine's disk. Success/Failure"
   },
   {
-    "activityName": "VM Revert to Current Snapshot",
+    "activityName": "VMReverttoCurrentSnapshot",
     "outputType": "Status",
     "outputDescription": "Reverts to the current snapshot of a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Revert to Snapshot",
+    "activityName": "VMReverttoSnapshot",
     "outputType": "Status",
     "outputDescription": "Reverts to a snapshot of a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "VM Standby",
+    "activityName": "VMStandby",
     "outputType": "Status",
     "outputDescription": "Puts a Virtual Machine in standby mode. Success/Failure"
   },
   {
-    "activityName": "VM Unmark Template",
+    "activityName": "VMUnmarkTemplate",
     "outputType": "Status",
     "outputDescription": "Converts a template to a Virtual Machine. Success/Failure"
   },
   {
-    "activityName": "XCH Set Mailbox",
+    "activityName": "XCHSetMailbox",
     "outputType": "Status",
     "outputDescription": "Success/Failure. :::note A \"Success\" output might be returned although the actual PowerShell operation returned a warning. :::"
   },
   {
-    "activityName": "XML Delete Node by XPath",
+    "activityName": "XMLDeleteNodebyXpath",
     "outputType": "Status",
     "outputDescription": "Deletes an XML node according to its path. Success/Failure"
+  },
+  {
+    "activityName": "MemorySet",
+    "outputType": "None",
+    "outputDescription": "Stores value, produces no output variable"
+  },
+  {
+    "activityName": "ResultSetFilter",
+    "outputType": "DataTable",
+    "outputDescription": "Returns filtered ResultSet"
+  },
+  {
+    "activityName": "MultiMemorySet",
+    "outputType": "None",
+    "outputDescription": "Stores multiple values, no output"
+  },
+  {
+    "activityName": "RunWorkflow",
+    "outputType": "None",
+    "outputDescription": "Executes child workflow, no return"
+  },
+  {
+    "activityName": "TSQLStatement",
+    "outputType": "None",
+    "outputDescription": "Executes INSERT/UPDATE, no ResultSet"
+  },
+  {
+    "activityName": "GetDate",
+    "outputType": "Scalar",
+    "outputDescription": "Returns date string"
+  },
+  {
+    "activityName": "SendEmail",
+    "outputType": "None",
+    "outputDescription": "Sends email, no output variable"
+  },
+  {
+    "activityName": "PowerShellScript",
+    "outputType": "Status",
+    "outputDescription": "Returns Success/Failure"
+  },
+  {
+    "activityName": "PowerShell",
+    "outputType": "Status",
+    "outputDescription": "Returns Success/Failure"
+  },
+  {
+    "activityName": "DateDifference",
+    "outputType": "Scalar",
+    "outputDescription": "Returns numeric difference"
+  },
+  {
+    "activityName": "ConvertToHTMLTable",
+    "outputType": "Scalar",
+    "outputDescription": "Returns HTML string"
+  },
+  {
+    "activityName": "MemoryTableUnion",
+    "outputType": "DataTable",
+    "outputDescription": "Returns merged ResultSet"
+  },
+  {
+    "activityName": "DeleteMemoryTableRows",
+    "outputType": "DataTable",
+    "outputDescription": "Returns modified ResultSet"
+  },
+  {
+    "activityName": "AddMemoryTableRow",
+    "outputType": "DataTable",
+    "outputDescription": "Returns modified ResultSet"
+  },
+  {
+    "activityName": "SetCellValue",
+    "outputType": "None",
+    "outputDescription": "Modifies table in place, no output"
+  },
+  {
+    "activityName": "GoTo",
+    "outputType": "None",
+    "outputDescription": "Flow control, no output"
+  },
+  {
+    "activityName": "Wait",
+    "outputType": "None",
+    "outputDescription": "Pauses execution, no output"
+  },
+  {
+    "activityName": "TerminateWorkflow",
+    "outputType": "None",
+    "outputDescription": "Stops execution, no output"
+  },
+  {
+    "activityName": "MemoryClean",
+    "outputType": "None",
+    "outputDescription": "Clears variable, no output"
+  },
+  {
+    "activityName": "StartJsonSession",
+    "outputType": "None",
+    "outputDescription": "Opens session, no output variable"
+  },
+  {
+    "activityName": "ConvertPasswordToPlaintext",
+    "outputType": "Scalar",
+    "outputDescription": "Returns plaintext string"
   }
 ]

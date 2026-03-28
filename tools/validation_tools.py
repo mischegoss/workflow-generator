@@ -6,7 +6,7 @@ from typing import Annotated
 _controls_index: dict | None = None
 
 VALID_CONDITION_TYPES = {
-    "", "Equals", "Contains", "Not Contains", "Not Equals",
+    "", "Equals", "Equal", "Contains", "Not Contains", "Not Equals",
     "Formula", ">", "<", ">=", "<="
 }
 
@@ -157,6 +157,9 @@ def validate_control_flow_rules(
     Enforces platform-specific control flow rules confirmed from real workflow exports.
 
     Rules enforced:
+    - ReturnValue must only appear inside IfElseBranchActivity (confirmed RitaLab March 2026:
+      ReturnValue at top level or inside WhileActivity causes 'Template is not a member of
+      Network' compilation error on import)
     - WhileActivity must not carry Counter (belongs on ExitWhile)
     - ExitWhile must have Counter
     - ForEachOutputVariableName must not start with 'forEach'
@@ -171,6 +174,20 @@ def validate_control_flow_rules(
 
     def check_node(node: dict, parent_type: str = "", path: str = ""):
         type_name = node.get("CustomTypeName", "")
+
+        # --- ReturnValue: must only appear inside IfElseBranchActivity ---
+        # Confirmed RitaLab March 2026: ReturnValue at top level or inside
+        # WhileActivity/SequenceActivity directly causes "Activity compilation error:
+        # 'Template' is not a member of 'Network'" on import.
+        # Linear workflows and UserGroup workflows do not use ReturnValue.
+        if type_name == "ReturnValue" and parent_type not in (
+            "IfElseBranchActivity", "ReturnValue"
+        ):
+            errors.append(
+                f"[{path}] ReturnValue is only valid inside IfElseBranchActivity. "
+                f"Found inside '{parent_type or 'workflow_raw_data'}'. "
+                "Remove it — linear workflows and UserGroup workflows do not use ReturnValue."
+            )
 
         # --- WhileActivity: Counter must NOT be at this level ---
         if type_name == "WhileActivity" and "Counter" in node:
@@ -330,10 +347,8 @@ def run_all_validators(
     all_errors.extend(r4.get("errors", []))
 
     return {
-        
         "status": "valid" if not all_errors else "invalid",
         "errors": all_errors,
         "verify_notes": all_verify_notes,
         "detail": results,
     }
-    

@@ -10,7 +10,8 @@ ARCHITECTURE — micro-agent design:
   Stage 3  PY    run_retrieval       → session state: activity_manifest
   Stage 4a LLM   PlacerAgent         → session state: placed_skeleton
   Stage 4b PY    run_enrichment      → session state: enriched_workflow
-  Stage 4c LLM   WirerAgent          → session state: workflow_json
+  Stage 4c PY    run_fragments       → session state: enriched_workflow (overwritten)
+  Stage 4d LLM   WirerAgent          → session state: workflow_json
   Stage 5  PY    run_annotation      → session state: annotation_result
   Stage 6  PY    run_validation      → session state: validation_result
   Stage 7  PY    run_output          → json_files/<n>.json
@@ -19,7 +20,7 @@ RETRY ARCHITECTURE:
   On validation failure, main.py calls build_correction_pipeline() instead of
   build_pipeline(). CorrectionPipeline skips DecomposerAgent and PlacerAgent
   entirely — both decomposition and placed_skeleton persist as output_key
-  values and are reused from attempt 1's session state. Stages 3 and 4b are
+  values and are reused from attempt 1's session state. Stages 3 and 4b/4c are
   re-run deterministically (same inputs = same outputs). WirerAgent then
   receives the CORRECTION REQUIRED prompt as its user message.
 
@@ -60,6 +61,7 @@ from tools.pipeline_stages import (
     run_pattern_match,
     run_retrieval,
     run_enrichment,
+    run_fragments,
     run_annotation,
     run_validation,
 )
@@ -265,7 +267,21 @@ class WorkflowPipeline(BaseAgent):
             }
             return
 
-        # ── Stage 4c: LLM — Wire semantic fields only ─────────────────────────
+        # ── Stage 4c: Python — Apply structural fragments (F1-F8) ─────────────
+        try:
+            fragmented_workflow = run_fragments(enriched_workflow)
+            ctx.session.state["enriched_workflow"] = fragmented_workflow
+            print(f"  [pipeline] fragments ok — "
+                  f"{len(fragmented_workflow.get('workflow_raw_data', {}))} activities")
+        except Exception as e:
+            print(f"  [pipeline] fragments failed: {e}")
+            ctx.session.state["output_result"] = {
+                "status": "failed",
+                "errors": [f"Fragment application failed: {e}"],
+            }
+            return
+
+        # ── Stage 4d: LLM — Wire semantic fields only ─────────────────────────
         async for event in self.wirer.run_async(ctx):
             yield event
 
@@ -355,6 +371,14 @@ class CorrectionPipeline(BaseAgent):
                 "errors": [f"Correction enrichment failed: {e}"],
             }
             return
+
+        # Re-apply fragments (deterministic — same inputs = same output)
+        try:
+            fragmented_workflow = run_fragments(enriched_workflow)
+            ctx.session.state["enriched_workflow"] = fragmented_workflow
+            print(f"  [correction] fragments ok")
+        except Exception as e:
+            print(f"  [correction] fragments failed (non-fatal): {e}")
 
         # WirerAgent receives CORRECTION REQUIRED prompt as user message
         async for event in self.wirer.run_async(ctx):

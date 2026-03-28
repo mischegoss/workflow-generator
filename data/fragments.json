@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "description": "Structural invariants extracted from 609 corpus workflows. Applied deterministically by apply_fragments() in pipeline_stages.py before WirerAgent.",
+  "fragments": [
+    {
+      "id": "F1",
+      "name": "WhileActivity condition",
+      "activity": "WhileActivity",
+      "trigger": "always",
+      "fields": {
+        "Condition": "{x:Null}"
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "609/609 while loops in corpus use Condition={x:Null}",
+      "notes": "WhileActivity iterates until ExitWhile fires — Condition is always null."
+    },
+    {
+      "id": "F2",
+      "name": "ExitWhile invariants",
+      "activity": "ExitWhile",
+      "trigger": "always",
+      "fields": {
+        "exitWhileInsideWhile": "True",
+        "isValid": "True",
+        "TypeName": "ExitWhile",
+        "whileSequenceActivity": "<parent SequenceActivity xName>"
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "No exceptions found across 609 workflows",
+      "notes": "whileSequenceActivity is resolved from traversal context, not a static value."
+    },
+    {
+      "id": "F3",
+      "name": "ExitWhile counter wiring",
+      "activity": "ExitWhile",
+      "trigger": "GetRowsCount precedes parent WhileActivity in same scope",
+      "fields": {
+        "Counter": "%<nearest preceding GetRowsCount xName>%"
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "Counter always references a GetRowsCount xName — confirmed across all while workflows",
+      "notes": "Resolved from traversal context. Multiple WhileActivities each wire to their own nearest GetRowsCount."
+    },
+    {
+      "id": "F4",
+      "name": "GetCellValue row number wiring",
+      "activity": "GetCellValue",
+      "trigger": "activity is inside a WhileActivity body",
+      "fields": {
+        "RowNumber": "%<parent WhileActivity xName>%",
+        "ColumnType": "Name"
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "188 corpus uses of WhileActivity xName as RowNumber vs 83 uses of ExitWhile xName",
+      "notes": "Known active bug: pipeline was generating %exitWhile1% instead of %whileActivity1%. This fragment fixes it permanently."
+    },
+    {
+      "id": "F5",
+      "name": "MemorySet defaults",
+      "activity": "MemorySet",
+      "trigger": "always",
+      "fields": {
+        "VariableScope": "Workflow",
+        "IsSaved": "False",
+        "IsAppend": "False"
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "Dominant in 98%+ of corpus MemorySet instances",
+      "notes": "setdefault used — WirerAgent can override for the rare Global scope case."
+    },
+    {
+      "id": "F6",
+      "name": "ReturnValue default branch",
+      "activity": "ReturnValue",
+      "trigger": "always (baseline defaults)",
+      "fields": {
+        "Type": "StoredValue",
+        "UseBranchWhenTimeout": "True",
+        "ConditionType": "",
+        "Value": ""
+      },
+      "requires_step2_registry": false,
+      "corpus_evidence": "1,239 ReturnValue instances in mined_ifelse_conditions.json use these defaults",
+      "notes": "Applied first. F7/F8 override Type/UseStoredValue when context warrants."
+    },
+    {
+      "id": "F7",
+      "name": "ReturnValue status tier",
+      "activity": "ReturnValue",
+      "trigger": "preceding activity before IfElseActivity is a Status producer",
+      "fields": {
+        "Type": "StoredValue",
+        "UseStoredValue": "True"
+      },
+      "requires_step2_registry": true,
+      "status_producers": ["Ping", "ServiceStatus", "FileExist", "FTPFileExists", "ADUserExists", "PowerShellScript", "PowerShell"],
+      "corpus_evidence": "Known active bug: Ping workflows generating UserDefinedValue instead of StoredValue",
+      "notes": "Overrides F6 when IfElse is checking a boolean/status result. Requires Step 2 registry for full accuracy but status_producers list covers common cases."
+    },
+    {
+      "id": "F8",
+      "name": "ReturnValue numeric tier",
+      "activity": "ReturnValue",
+      "trigger": "preceding activity before IfElseActivity is a Scalar producer",
+      "fields": {
+        "Type": "UserDefinedValue",
+        "UseStoredValue": "False"
+      },
+      "requires_step2_registry": true,
+      "scalar_producers": ["GetRowsCount", "DateDifference", "FunctionCalculator", "GetCellValue", "GetCellValueAdvanced", "GetDate", "Contains", "IsEmpty", "InStr", "Len"],
+      "corpus_evidence": "Scalar-checking IfElse branches consistently use UserDefinedValue type",
+      "notes": "Overrides F6 when IfElse is comparing a numeric or string value."
+    }
+  ]
+}

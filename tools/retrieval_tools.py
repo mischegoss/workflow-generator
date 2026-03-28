@@ -95,8 +95,8 @@ INTENT_TO_ACTIVITY: dict[str, str] = {
     "date_difference":     "DateDifference",
     "create_table":        "CreateMemoryTable",
     "query_servicenow":    "SNGetRecord",
+    "loop":                "WhileActivity",
     # "branch"  -> CONTROL_FLOW via control_flow="ifelse"
-    # "loop"    -> activities inside the loop need normal retrieval
     # "other"   -> keyword matching
 }
 
