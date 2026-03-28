@@ -193,15 +193,21 @@ async def _run_correction_pipeline(
     pipeline = build_correction_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
+    # Pre-load persisted values from attempt 1 as initial session state.
+    # Must be passed to create_session(), NOT set on session.state after creation —
+    # ADK reads ctx.session.state from the session service, not the local object,
+    # so mutations after create_session() are not visible inside the pipeline.
+    initial_state = {
+        "prompt":          original_prompt,
+        "decomposition":   _ensure_dict(prior_state.get("decomposition", {})),
+        "placed_skeleton": _ensure_dict(prior_state.get("placed_skeleton", {})),
+    }
+
     session = await runner.session_service.create_session(
         app_name=app_name,
         user_id=user_id,
+        state=initial_state,
     )
-
-    # Pre-load persisted values from attempt 1
-    session.state["prompt"]          = original_prompt
-    session.state["decomposition"]   = prior_state.get("decomposition", {})
-    session.state["placed_skeleton"] = prior_state.get("placed_skeleton", {})
 
     correction_message = (
         f"CORRECTION REQUIRED — The previous attempt produced a workflow with errors "

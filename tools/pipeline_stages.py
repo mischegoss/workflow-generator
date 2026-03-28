@@ -12,6 +12,8 @@ run_output() lives in output_tools.py.
 
 import json
 import os
+import re as _re
+import csv
 from typing import Any
 
 from tools.pattern_tools import (
@@ -30,14 +32,76 @@ from tools.validation_tools import run_all_validators
 
 
 # ---------------------------------------------------------------------------
+# CustomTypeName normalisation
+# ---------------------------------------------------------------------------
+
+# PlacerAgent sometimes appends "Activity" suffix or uses wrong display names.
+# These explicit aliases cover cases where stripping the suffix isn't enough.
+_CT_ALIASES: dict = {
+    "SetVariableActivity":   "MemorySet",
+    "SetVariable":           "MemorySet",
+    "MemorySetActivity":     "MemorySet",
+    "PowerShellScriptActivity": "PowerShellScript",
+    "IfElseActivityActivity": "IfElseActivity",
+}
+
+_valid_ct_names: set | None = None
+
+
+def _load_valid_ct_names() -> set:
+    global _valid_ct_names
+    if _valid_ct_names is not None:
+        return _valid_ct_names
+    data_dir = os.getenv("DATA_DIR", "data")
+    path = os.path.join(data_dir, "activity_list.txt")
+    names = set()
+    try:
+        with open(path, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f, delimiter="\t"):
+                name = row.get("name", "").strip()
+                if name:
+                    names.add(name)
+    except FileNotFoundError:
+        pass
+    # Always include structural container names
+    names.update({
+        "WhileActivity", "SequenceActivity", "IfElseActivity",
+        "IfElseBranchActivity", "ParallelActivity", "UserGroup",
+        "ForEachActivity", "ExitWhile", "ReturnValue",
+    })
+    _valid_ct_names = names
+    return _valid_ct_names
+
+
+def _normalise_ct(ct: str) -> str:
+    """
+    Normalise a CustomTypeName that PlacerAgent may have mangled.
+
+    Resolution order:
+      1. Already valid — return as-is
+      2. Explicit alias map (SetVariableActivity → MemorySet etc.)
+      3. Strip "Activity" suffix if result is valid
+      4. Unknown — return as-is and let enrichment/validation surface it
+    """
+    if not ct:
+        return ct
+    valid = _load_valid_ct_names()
+    if ct in valid:
+        return ct
+    if ct in _CT_ALIASES:
+        return _CT_ALIASES[ct]
+    if ct.endswith("Activity"):
+        stripped = ct[:-8]
+        if stripped in valid:
+            return stripped
+    return ct
+
+
+# ---------------------------------------------------------------------------
 # Wiring map helpers
 # ---------------------------------------------------------------------------
 
 def _load_wiring_map() -> list:
-    """
-    Load wiring_map.json once and cache.
-    Handles both a bare list and a {"wiring": [...]} dict wrapper.
-    """
     if not hasattr(_load_wiring_map, "_cache"):
         data_dir = os.getenv("DATA_DIR", "data")
         path = os.path.join(data_dir, "wiring_map.json")
@@ -57,14 +121,6 @@ def _load_wiring_map() -> list:
 
 
 def _build_wiring_lookup(wiring_entries: list) -> dict:
-    """
-    Build a nested lookup from a flat list of wiring entries.
-
-    Structure:
-      { source_activity: { target_activity: { field: {"pct": N, "authoritative": bool} } } }
-
-    First-write-wins: authoritative entries are prepended in wiring_map.json.
-    """
     lookup: dict = {}
     for entry in wiring_entries:
         src   = entry.get("source_activity", "")
@@ -85,10 +141,6 @@ def _build_wiring_lookup(wiring_entries: list) -> dict:
 # ---------------------------------------------------------------------------
 
 def _load_dependency_graph() -> dict:
-    """
-    Load dependency_graph.json once and cache.
-    Returns dict: { consumer_type: { required_inputs: [...] } }
-    """
     if not hasattr(_load_dependency_graph, "_cache"):
         data_dir = os.getenv("DATA_DIR", "data")
         path = os.path.join(data_dir, "dependency_graph.json")
@@ -104,39 +156,22 @@ def _load_dependency_graph() -> dict:
 
 
 def _check_manifest_dependencies(manifest: list, dep_graph: dict) -> list:
-    """
-    Walks the manifest in order and checks whether each activity's required
-    table and session inputs are satisfied by a preceding activity.
-
-    Returns list of warning dicts:
-      { step_id, activity, field, dependency_type, expected_providers, note }
-
-    Only flags:
-    - dep_type "table" or "session" (string deps are too noisy to flag)
-    - Where none of the expected providers appear earlier in the manifest
-    - Where the activity appears in the dependency graph
-    """
     warnings = []
     seen_types: set = set()
-
     for entry in manifest:
         activity_type = entry.get("selected_activity", "")
         step_id       = entry.get("step_id", "")
-
         if not activity_type or entry.get("status") == "UNAVAILABLE":
             seen_types.add(activity_type)
             continue
-
         if activity_type in dep_graph:
             for dep in dep_graph[activity_type].get("required_inputs", []):
                 dep_type  = dep.get("dependency_type", "")
                 providers = dep.get("provided_by", [])
                 field     = dep.get("field", "")
                 note      = dep.get("notes", "")
-
                 if dep_type not in ("table", "session"):
                     continue
-
                 if not any(p in seen_types for p in providers):
                     warnings.append({
                         "step_id":            step_id,
@@ -146,22 +181,15 @@ def _check_manifest_dependencies(manifest: list, dep_graph: dict) -> list:
                         "expected_providers": providers[:3],
                         "note":               note,
                     })
-
         seen_types.add(activity_type)
-
     return warnings
 
 
 # ---------------------------------------------------------------------------
-# Stage 2 — Pattern match  (replaces PatternMatcherAgent)
+# Stage 2 — Pattern match
 # ---------------------------------------------------------------------------
 
 def run_pattern_match(decomposition: dict) -> dict:
-    """
-    Replaces PatternMatcherAgent.
-    match_pattern takes only decomposition (loads library internally).
-    decomposition passed to score_pattern_match so fallback_examples is set correctly.
-    """
     decomposition = _ensure_dict(decomposition)
     candidates    = match_pattern(decomposition)
     result        = score_pattern_match(candidates, decomposition)
@@ -169,25 +197,10 @@ def run_pattern_match(decomposition: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Stage 3 — Retrieve activities  (replaces ActivityRetrieverAgent)
+# Stage 3 — Retrieve activities
 # ---------------------------------------------------------------------------
 
 def run_retrieval(decomposition: dict) -> list:
-    """
-    Replaces ActivityRetrieverAgent.
-
-    Three enrichments applied after manifest assembly:
-
-    1. Confidence + candidates passthrough (retrieval_tools): entries with
-       status="UNCERTAIN" include confidence score and top-3 candidates so
-       StructureBuilder can exercise judgment on low-confidence selections.
-
-    2. Wiring hints (wiring_map.json): corpus-derived hints attached as
-       _wire_hint_<field> keys in pre_filled_fields.
-
-    3. Dependency warnings (dependency_graph.json): checks manifest order
-       for missing table/session prerequisites.
-    """
     decomposition  = _ensure_dict(decomposition)
     load_activity_list()
 
@@ -202,61 +215,48 @@ def run_retrieval(decomposition: dict) -> list:
     for s in manifest:
         activity_type = s.get("selected_activity") or ""
         status        = s["status"]
-
         entry: dict = {
             "step_id":           s["step_id"],
             "selected_activity": activity_type,
             "status":            status,
             "frequency_tier":    s.get("frequency_tier", "medium"),
         }
-
         if "confidence" in s:
             entry["confidence"] = s["confidence"]
-
         if status == "UNCERTAIN" and s.get("candidates"):
             entry["candidates"] = [
                 {"activity_name": c["activity_name"],
                  "combined_score": c.get("combined_score", 0.0)}
                 for c in s["candidates"][:3]
             ]
-
         trimmed.append(entry)
 
-    # Enrichment 1: wiring hints from wiring_map
     for i in range(1, len(trimmed)):
         prev     = trimmed[i - 1]
         curr     = trimmed[i]
         src_type = prev["selected_activity"]
         tgt_type = curr["selected_activity"]
-
         if not src_type or not tgt_type:
             continue
-
         tgt_wirings = wiring_lookup.get(src_type, {}).get(tgt_type, {})
         if not tgt_wirings:
             continue
-
         wiring_hints = {}
         for field, info in tgt_wirings.items():
             pct  = info.get("pct", 0)
             auth = info.get("authoritative", False)
-
             if auth:
                 continue
-
             if pct >= 80:
                 wiring_hints[f"_wire_hint_{field}"] = f"{src_type}:{pct}pct"
-
         if wiring_hints:
             curr["pre_filled_fields"] = wiring_hints
 
-    # Enrichment 2: dependency warnings
     dep_warnings = _check_manifest_dependencies(trimmed, dep_graph)
     if dep_warnings:
         warn_by_step: dict = {}
         for w in dep_warnings:
             warn_by_step.setdefault(w["step_id"], []).append(w)
-
         for entry in trimmed:
             sid = entry["step_id"]
             if sid in warn_by_step:
@@ -271,7 +271,6 @@ def run_retrieval(decomposition: dict) -> list:
                     f"a preceding activity for: {'; '.join(missing)}. "
                     f"Add the appropriate source activity before this step."
                 )
-
         print(f"[pipeline_stages] Dependency check: {len(dep_warnings)} missing "
               f"prerequisite(s) flagged in {len(warn_by_step)} step(s)")
 
@@ -279,15 +278,16 @@ def run_retrieval(decomposition: dict) -> list:
 
 
 # ---------------------------------------------------------------------------
-# Stage 4b — Enrich  (Python, deterministic — between Placer and Wirer)
+# Stage 4b — Enrich
 # ---------------------------------------------------------------------------
 
 def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
     """
     For every activity in the placed skeleton:
-      1. Load its full template from activity_json_syntax.json
-      2. Merge template fields as base (non-destructive — xName/CustomTypeName win)
-      3. Apply any pre_filled_fields from the manifest entry (authoritative)
+      1. Normalise CustomTypeName (fixes PlacerAgent "Activity" suffix hallucination)
+      2. Load its full template from activity_json_syntax.json
+      3. Merge template fields as base (non-destructive — xName/CustomTypeName win)
+      4. Apply any pre_filled_fields from the manifest entry (authoritative)
     """
     from tools.build_tools import load_activity_template
     from tools.annotation_tools import _ensure_dict
@@ -306,8 +306,15 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
         if not isinstance(node, dict):
             return node
 
-        ct = node.get("CustomTypeName", "")
+        # Normalise CustomTypeName before anything else
+        ct    = _normalise_ct(node.get("CustomTypeName", ""))
         xname = node.get("xName", "")
+
+        if ct != node.get("CustomTypeName", ""):
+            print(f"[enrichment] normalised CustomTypeName "
+                  f"'{node['CustomTypeName']}' → '{ct}'")
+            node = dict(node)
+            node["CustomTypeName"] = ct
 
         if ct:
             template = load_activity_template(ct)
@@ -317,7 +324,6 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
                     if v is not None and v != ""
                 }}
                 merged["xName"] = xname or merged.get("xName", "")
-
                 for field, value in manifest_lookup.get(ct, {}).items():
                     if not field.startswith("_wire_hint_"):
                         merged[field] = value
@@ -346,21 +352,15 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Stage 4c — Apply structural fragments  (between run_enrichment and WirerAgent)
+# Stage 4c / 4f — Apply structural fragments  (F1-F9)
 # ---------------------------------------------------------------------------
 
-# Status producers: activities whose output is a boolean/status value.
-# For IfElse checking a status producer, ALL branches get IsValid=True,
-# UseStoredValue=True. Both branches are explicit predefined-value branches
-# (Success/Failure). WirerAgent fills Value. No catch-all else.
 _STATUS_PRODUCERS: frozenset = frozenset({
     "Ping", "ServiceStatus", "FileExist", "FTPFileExists",
     "ADUserExists", "PowerShellScript", "PowerShell",
     "ADIsAccountDisabled", "ADIsAccountLocked",
 })
 
-# Scalar producers: activities whose output is a string or number.
-# Condition branches get UserDefinedValue. Catch-all else gets IsValid=False.
 _SCALAR_PRODUCERS: frozenset = frozenset({
     "GetRowsCount", "DateDifference", "FunctionCalculator",
     "GetCellValue", "GetCellValueAdvanced", "GetDate", "Contains",
@@ -368,8 +368,6 @@ _SCALAR_PRODUCERS: frozenset = frozenset({
     "GetLength", "SubStringByText", "Trim", "Replace",
 })
 
-# Fields confirmed invalid on ReturnValue — cause malformed/uneditable activity
-# in the designer. Confirmed by RitaLab testing March 2026.
 _RETURNVALUE_FORBIDDEN_FIELDS: frozenset = frozenset({
     "visible", "disabled", "isFavorite", "isJsonValid",
     "readPermission", "writePermission", "modulePermissions",
@@ -379,29 +377,17 @@ _RETURNVALUE_FORBIDDEN_FIELDS: frozenset = frozenset({
 
 
 def _clean_returnvalue(node: dict) -> None:
-    """Remove fields the platform does not accept on ReturnValue. Mutates in place."""
     for field in _RETURNVALUE_FORBIDDEN_FIELDS:
         node.pop(field, None)
 
 
 def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
     """
-    Apply F6 (defaults) then F7 or F8 based on preceding activity type.
-    Also strips forbidden fields confirmed from RitaLab testing.
-    Mutates node in place.
-
-    Status producers (F7): ALL branches IsValid=True, UseStoredValue=True.
-      Both branches are explicit predefined-value branches. WirerAgent fills Value.
-
-    Scalar producers (F8): condition branches UserDefinedValue/IsValid=True,
-      catch-all else IsValid=False/Formula={x:Null}.
-
-    No producer context (F6): condition branches StoredValue/IsValid=True,
-      catch-all else IsValid=False/Formula={x:Null}.
+    F6/F7/F8: apply ReturnValue defaults and tier overrides.
+    Also strips forbidden fields (confirmed RitaLab March 2026).
     """
     _clean_returnvalue(node)
 
-    # F6 — baseline defaults
     node.setdefault("Type", "StoredValue")
     node.setdefault("UseBranchWhenTimeout", "True")
     node.setdefault("ConditionType", "")
@@ -422,14 +408,11 @@ def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
     has_condition = bool(node.get("ConditionType", ""))
 
     if preceding_ct in _STATUS_PRODUCERS:
-        # F7: all branches explicit, IsValid=True, UseStoredValue=True
         node["Type"] = "StoredValue"
         node["UseStoredValue"] = "True"
         node["IsValid"] = "True"
         node.setdefault("Formula", "")
-
     elif preceding_ct in _SCALAR_PRODUCERS:
-        # F8: condition branches UserDefinedValue; else catch-all
         if has_condition:
             node["Type"] = "UserDefinedValue"
             node["UseStoredValue"] = "False"
@@ -439,9 +422,7 @@ def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
             node["IsValid"] = "False"
             node["Formula"] = "{x:Null}"
             node.pop("UseStoredValue", None)
-
     else:
-        # F6 only
         if has_condition:
             node.setdefault("IsValid", "True")
             node.setdefault("Formula", "")
@@ -451,19 +432,77 @@ def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
             node.pop("UseStoredValue", None)
 
 
+def _make_returnvalue(xname: str) -> dict:
+    """Minimal ReturnValue node. Fragments set IsValid/Formula/UseStoredValue/Type."""
+    return {
+        "xName": xname,
+        "CustomTypeName": "ReturnValue",
+        "Formula": "",
+        "ConditionNumber": "0",
+        "Value": "",
+        "ConditionType": "",
+        "Description": "",
+        "description": "",
+        "Type": "StoredValue",
+        "RecoveryMethodSelection": "{x:Null}",
+        "ConditionName": "",
+        "UseCustomeCondition": "False",
+        "UseBranchWhenTimeout": "True",
+        "DisplayName": "Return Value",
+        "TypeName": "ReturnValue",
+        "Disabled": "False",
+        "ClusterID": "{x:Null}",
+        "ClusterName": "{x:Null}",
+        "name": "ReturnValue",
+    }
+
+
+def _inject_returnvalue_if_missing(branch: dict, branch_key: str,
+                                    branch_index: int) -> None:
+    """
+    F9: inject a ReturnValue as the first child of any IfElseBranchActivity
+    that is missing one. Confirmed platform requirement (RitaLab March 2026):
+    branches without ReturnValue import but cannot be saved in the designer.
+    """
+    has_rv = any(
+        isinstance(v, dict) and v.get("CustomTypeName") == "ReturnValue"
+        for v in branch.values()
+    )
+    if has_rv:
+        return
+
+    branch_xname = branch.get("xName", f"ifElseBranchActivity{branch_index + 1}")
+    m = _re.search(r'(\d+)$', branch_xname)
+    rv_num   = m.group(1) if m else str(branch_index + 1)
+    rv_xname = f"returnValue{rv_num}"
+
+    existing_xnames = {v.get("xName", "") for v in branch.values() if isinstance(v, dict)}
+    if rv_xname in existing_xnames:
+        rv_xname = f"returnValue{rv_num}b"
+
+    rv_node = _make_returnvalue(rv_xname)
+
+    # Insert as FIRST item (dicts preserve insertion order)
+    new_branch = {rv_xname: rv_node}
+    for k, v in branch.items():
+        if k != rv_xname:
+            new_branch[k] = v
+    branch.clear()
+    branch.update(new_branch)
+
+    print(f"[fragments] F9 injected ReturnValue '{rv_xname}' into '{branch_xname}'")
+
+
 def _walk_branch_body(activities: dict, preceding_ct: str | None,
                       parent_while_xname: str | None,
                       nearest_getrowscount_xname: str | None) -> None:
-    """Walk children of an IfElseBranchActivity. Applies F4, F5, F6/F7/F8, recurses."""
     last_ct = preceding_ct
-
     for xname, node in activities.items():
         if not isinstance(node, dict):
             continue
         ct = node.get("CustomTypeName", "")
         if not ct:
             continue
-
         if ct == "ReturnValue":
             _apply_returnvalue_fragment(node, preceding_ct)
         elif ct == "GetCellValue" and parent_while_xname:
@@ -478,7 +517,6 @@ def _walk_branch_body(activities: dict, preceding_ct: str | None,
             _walk_while(node, xname, nearest_getrowscount_xname)
         elif ct == "IfElseActivity":
             _walk_ifelse(node, last_ct, parent_while_xname, nearest_getrowscount_xname)
-
         if ct not in ("ReturnValue", "ExitWhile", "IfElseActivity",
                       "IfElseBranchActivity", "SequenceActivity"):
             last_ct = ct
@@ -489,31 +527,32 @@ def _walk_branch_body(activities: dict, preceding_ct: str | None,
 def _walk_ifelse(ifelse_node: dict, preceding_ct: str | None,
                  parent_while_xname: str | None,
                  nearest_getrowscount_xname: str | None) -> None:
-    """Walk an IfElseActivity's branches. preceding_ct determines ReturnValue tier."""
+    """Walk branches. F9: inject missing ReturnValue first."""
+    branch_index = 0
     for k, branch in ifelse_node.items():
         if not isinstance(branch, dict):
             continue
         if branch.get("CustomTypeName") != "IfElseBranchActivity":
             continue
+        _inject_returnvalue_if_missing(branch, k, branch_index)
         _walk_branch_body(branch, preceding_ct, parent_while_xname, nearest_getrowscount_xname)
+        branch_index += 1
 
 
 def _walk_while(while_node: dict, while_xname: str,
                 nearest_getrowscount_xname: str | None) -> None:
-    """Walk a WhileActivity's SequenceActivity body. Applies F2, F3, F4, F5, recurses."""
     seq_xname: str | None = None
     seq_node: dict | None = None
     for k, v in while_node.items():
         if isinstance(v, dict) and v.get("CustomTypeName") == "SequenceActivity":
             seq_xname = k
-            seq_node = v
+            seq_node  = v
             break
-
     if seq_node is None:
         return
 
     last_ct: str | None = None
-    local_getrowscount = nearest_getrowscount_xname
+    local_getrowscount  = nearest_getrowscount_xname
 
     for xname, node in seq_node.items():
         if not isinstance(node, dict):
@@ -521,7 +560,6 @@ def _walk_while(while_node: dict, while_xname: str,
         ct = node.get("CustomTypeName", "")
         if not ct:
             continue
-
         if ct == "ExitWhile":
             node["exitWhileInsideWhile"] = "True"
             node["isValid"] = "True"
@@ -544,7 +582,6 @@ def _walk_while(while_node: dict, while_xname: str,
             _walk_ifelse(node, last_ct, while_xname, local_getrowscount)
         elif ct == "ReturnValue":
             _apply_returnvalue_fragment(node, last_ct)
-
         if ct == "GetRowsCount":
             local_getrowscount = xname
         if ct not in ("ExitWhile", "ReturnValue", "SequenceActivity",
@@ -554,17 +591,14 @@ def _walk_while(while_node: dict, while_xname: str,
 
 def _walk_sequence_as_scope(seq_node: dict,
                              nearest_getrowscount_xname: str | None) -> None:
-    """Walk a top-level SequenceActivity (e.g. inside ParallelActivity)."""
     local_getrowscount = nearest_getrowscount_xname
     last_ct: str | None = None
-
     for xname, node in seq_node.items():
         if not isinstance(node, dict):
             continue
         ct = node.get("CustomTypeName", "")
         if not ct:
             continue
-
         if ct == "WhileActivity":
             node["Condition"] = "{x:Null}"
             _walk_while(node, xname, local_getrowscount)
@@ -576,7 +610,6 @@ def _walk_sequence_as_scope(seq_node: dict,
             _walk_ifelse(node, last_ct, None, local_getrowscount)
         elif ct == "ReturnValue":
             _apply_returnvalue_fragment(node, last_ct)
-
         if ct == "GetRowsCount":
             local_getrowscount = xname
         if ct not in ("ReturnValue", "IfElseActivity", "IfElseBranchActivity",
@@ -586,11 +619,8 @@ def _walk_sequence_as_scope(seq_node: dict,
 
 def _walk_top_level(raw: dict) -> None:
     """
-    Walk top-level workflow_raw_data entries.
-
-    ReturnValue at the top level is invalid — only valid inside
-    IfElseBranchActivity. Top-level ReturnValue nodes are removed here.
-    The validator also flags them as errors.
+    Walk top-level entries. Removes invalid top-level ReturnValue nodes.
+    (ReturnValue is only valid inside IfElseBranchActivity.)
     """
     last_getrowscount: str | None = None
     last_ct: str | None = None
@@ -602,11 +632,9 @@ def _walk_top_level(raw: dict) -> None:
         ct = node.get("CustomTypeName", "")
         if not ct:
             continue
-
         if ct == "ReturnValue":
             keys_to_remove.append(xname)
             continue
-
         if ct == "WhileActivity":
             node["Condition"] = "{x:Null}"
             _walk_while(node, xname, last_getrowscount)
@@ -618,7 +646,6 @@ def _walk_top_level(raw: dict) -> None:
             _walk_ifelse(node, last_ct, None, last_getrowscount)
         elif ct == "SequenceActivity":
             _walk_sequence_as_scope(node, last_getrowscount)
-
         if ct == "GetRowsCount":
             last_getrowscount = xname
         if ct not in ("IfElseActivity", "IfElseBranchActivity",
@@ -632,70 +659,54 @@ def _walk_top_level(raw: dict) -> None:
 
 def apply_fragments(workflow_json: dict) -> dict:
     """
-    Apply all structural invariants (F1-F8) to the workflow.
+    Apply structural invariants F1-F9. Idempotent — safe to call multiple times.
 
-    Runs AFTER run_enrichment(), BEFORE WirerAgent.
-    Deep-copies input and returns the modified copy.
-
-    Fragment summary:
-      F1  WhileActivity.Condition = "{x:Null}"
-      F2  ExitWhile: exitWhileInsideWhile, isValid, TypeName, whileSequenceActivity
-      F3  ExitWhile.Counter = %{nearest GetRowsCount xName}%
-      F4  GetCellValue.RowNumber = %{parent WhileActivity xName}%, ColumnType="Name"
-      F5  MemorySet: VariableScope="Workflow", IsSaved="False", IsAppend="False"
-      F6  ReturnValue defaults + forbidden field removal
-      F7  ReturnValue status tier — all branches IsValid=True, UseStoredValue=True
-      F8  ReturnValue scalar tier — condition branches UserDefinedValue,
-          catch-all else IsValid=False/Formula={x:Null}
-
-    Platform rules enforced (confirmed RitaLab March 2026):
-      - ReturnValue only valid inside IfElseBranchActivity — top-level removed
-      - ReturnValue forbidden fields stripped (visible, disabled, isFavorite, etc.)
-      - Else branch: IsValid=False, Formula={x:Null}, no UseStoredValue
-      - Status producer branches: all IsValid=True, UseStoredValue=True
+    F1  WhileActivity.Condition = "{x:Null}"
+    F2  ExitWhile: exitWhileInsideWhile, isValid, TypeName, whileSequenceActivity
+    F3  ExitWhile.Counter = %{nearest GetRowsCount xName}%
+    F4  GetCellValue.RowNumber = %{parent WhileActivity xName}%, ColumnType="Name"
+    F5  MemorySet defaults (VariableScope, IsSaved, IsAppend)
+    F6  ReturnValue defaults + forbidden field removal
+    F7  ReturnValue status tier (all branches IsValid=True, UseStoredValue=True)
+    F8  ReturnValue scalar tier (condition branches UserDefinedValue,
+        catch-all else IsValid=False/Formula={x:Null})
+    F9  Inject missing ReturnValue into every IfElseBranchActivity
     """
     import copy
     result = copy.deepcopy(workflow_json)
-    raw = result.get("workflow_raw_data", result)
-
+    raw    = result.get("workflow_raw_data", result)
     if not isinstance(raw, dict):
         print("[fragments] Warning: workflow_raw_data is not a dict — skipping")
         return result
-
     _walk_top_level(raw)
-    print(f"[fragments] Applied F1-F8 to {len(raw)} top-level activities")
+    print(f"[fragments] Applied F1-F9 to {len(raw)} top-level activities")
     return result
 
 
 def run_fragments(enriched_workflow: dict) -> dict:
     """
-    Stage 4c (deterministic): applies structural fragment rules F1-F8.
-    Slots between run_enrichment() and WirerAgent.
-    Overwrites enriched_workflow in session state so WirerAgent reads the
-    fragment-enforced version without any instruction changes required.
+    Stage 4c / 4f: applies F1-F9. Called twice in the pipeline:
+      4c — before WirerAgent (structural context)
+      4f — after merge of WirerAgent output (enforce invariants on final JSON)
     """
     enriched_workflow = _ensure_dict(enriched_workflow)
     return apply_fragments(enriched_workflow)
 
 
 # ---------------------------------------------------------------------------
-# Stage 5 — Annotate  (replaces AnnotationAgent)
+# Stage 5 — Annotate
 # ---------------------------------------------------------------------------
 
 def run_annotation(workflow_json: dict, activity_manifest: Any) -> dict:
-    """Replaces AnnotationAgent — direct 4-function chain."""
     workflow_json = _ensure_dict(workflow_json)
-
     if isinstance(activity_manifest, list):
         manifest_dict = {"steps": activity_manifest}
     else:
         manifest_dict = _ensure_dict(activity_manifest)
-
     result  = inject_unavailable_stubs(workflow_json, manifest_dict)
     result  = annotate_placeholders(result)
     result  = add_verify_notes(result)
     summary = collect_placeholder_summary(result)
-
     return {
         "annotated_workflow_json": result,
         "placeholder_summary":     summary,
@@ -703,28 +714,19 @@ def run_annotation(workflow_json: dict, activity_manifest: Any) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Stage 6 — Validate  (replaces ValidationAgent)
+# Stage 6 — Validate
 # ---------------------------------------------------------------------------
 
 def run_validation(annotation_result: dict) -> dict:
-    """
-    Replaces ValidationAgent — single run_all_validators() call.
-
-    verify_notes derived from placeholder_summary (kind == "verify"),
-    not from val_result which does not carry this key.
-    """
     annotation_result   = _ensure_dict(annotation_result)
     workflow_json       = annotation_result.get("annotated_workflow_json", {})
     placeholder_summary = annotation_result.get("placeholder_summary", [])
-
     val_result = run_all_validators(workflow_json)
-
     verify_notes = [
         item["message"]
         for item in placeholder_summary
         if item.get("kind") == "verify"
     ]
-
     return {
         "status":              val_result["status"],
         "workflow_json":       workflow_json if val_result["status"] == "valid" else None,

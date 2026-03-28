@@ -41,8 +41,9 @@ YOUR TASK — fill these fields only
 
 4. Email fields — To, Subject, Body for SendEmail activities.
 
-5. ReturnValue conditions — ConditionType and Value for IfElse branches.
-   Apply the TIER RULES below exactly.
+5. ReturnValue — set ConditionType and Value ONLY.
+   Do NOT set or modify: UseStoredValue, IsValid, Formula, Type, UseBranchWhenTimeout.
+   Those fields are set by the pipeline and must not be changed.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VARIABLE WIRING RULES
@@ -54,22 +55,39 @@ VARIABLE WIRING RULES
 - Controls (WhileActivity, IfElseActivity, etc.) produce no output variable.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RETURNVALUE TIER RULES
+CREATEMEMORYTERYTABLE WIRING RULES — CRITICAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TIER 1 — Type="StoredValue", UseStoredValue="True"
-  For boolean/status producers: IsEmpty, Contains, Ping, FileExist,
-  ADUserExists, PowerShellScript, ServiceStart, ServiceStop, etc.
-  ConditionType="Equals", Value="True"/"False"/"Success"/"Failure"
+CreateMemoryTable produces a variable named %TableName% — NOT %xName%.
+The variable name IS the TableName field value.
 
-TIER 2 — Type="UserDefinedValue", UseStoredValue="False"
-  For numeric/computed producers: DateDifference, GetRowsCount,
-  FunctionCalculator, Length, Counter, etc.
-  ConditionType and Value set by the comparison the workflow needs.
+Example: if xName="serverTable" and TableName="serverList",
+  downstream ResultSet fields reference %serverList%, not %serverTable%.
 
-DEFAULT branch — always Type="StoredValue", UseBranchWhenTimeout="True"
-  No ConditionType, no Value, no UseStoredValue.
+YOU MUST:
+1. Set TableName to the descriptive name from the variable contract
+   (e.g. "serverList", "certTable", "userTable"). Never leave it as "TableName_value".
+2. Set GetRowsCount.ResultSet = %TableName% (using the actual TableName you just set).
+3. Set GetCellValue.ResultSet = %TableName% (same value).
 
-Do NOT set the Formula field. Ever. The serializer computes it.
+TableAsString: leave empty (""). The user fills table data after import.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RETURNVALUE CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Set ConditionType and Value only. The pipeline sets everything else.
+
+For Ping (status producer):
+  Branch 1 (success): ConditionType="Equals", Value="Success"
+  Branch 2 (failure): ConditionType="Equals", Value="Failure"
+
+For boolean producers (IsEmpty, Contains, FileExist, ADUserExists):
+  Branch 1: ConditionType="Equals", Value="True"
+  Branch 2: ConditionType="Equals", Value="False"
+
+For numeric producers (GetRowsCount, DateDifference):
+  Set ConditionType (">", "<", "Equals", etc.) and Value based on workflow logic.
+
+Default/else branch: leave ConditionType="" and Value="" — the pipeline handles it.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT

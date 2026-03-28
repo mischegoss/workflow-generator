@@ -37,12 +37,39 @@ If pattern_match.match_status == "NO_MATCH":
   Build the skeleton yourself from the manifest.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CUSTOMTYPENAME RULE — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CustomTypeName MUST be copied EXACTLY from activity_manifest[step].selected_activity.
+Do NOT add any suffix, prefix, or modification.
+
+CORRECT:   "CustomTypeName": "Ping"
+WRONG:     "CustomTypeName": "PingActivity"
+
+CORRECT:   "CustomTypeName": "CreateMemoryTable"
+WRONG:     "CustomTypeName": "CreateMemoryTableActivity"
+
+CORRECT:   "CustomTypeName": "DisplayValue"
+WRONG:     "CustomTypeName": "DisplayValueActivity"
+
+CORRECT:   "CustomTypeName": "MemorySet"
+WRONG:     "CustomTypeName": "SetVariableActivity"
+
+CORRECT:   "CustomTypeName": "ExitWhile"
+WRONG:     "CustomTypeName": "ExitWhileActivity"
+
+The structural container activities also use exact names with no suffix:
+  WhileActivity, SequenceActivity, IfElseActivity, IfElseBranchActivity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 STRUCTURAL RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Assign every activity a unique camelCase xName matching the variable contract.
 - ExitWhile is always FIRST inside SequenceActivity.
 - GetRowsCount always precedes WhileActivity.
 - IfElseBranchActivity1 = condition branch. IfElseBranchActivity2 = default.
+- Every IfElseBranchActivity must contain a ReturnValue as its FIRST child,
+  followed by the action activities for that branch (DisplayValue, SendEmail, etc.).
+  Do NOT leave branches with only a ReturnValue — include at least one action activity.
 - UNAVAILABLE activities in the manifest become DisplayValue placeholders.
 - Do NOT add any terminate/exit activity at the end.
 
@@ -53,10 +80,10 @@ OUTPUT FORMAT
   "workflow_raw_data": {
     "<xName>": {
       "xName": "<xName>",
-      "CustomTypeName": "<ActivityType>",
+      "CustomTypeName": "<exact value from activity_manifest.selected_activity>",
       "<nested_xName>": {
         "xName": "<nested_xName>",
-        "CustomTypeName": "<ActivityType>"
+        "CustomTypeName": "<exact value from activity_manifest.selected_activity>"
       }
     }
   },
