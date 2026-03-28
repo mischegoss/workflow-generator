@@ -4,6 +4,7 @@ import re
 from typing import Annotated
 
 _controls_index: dict | None = None
+_enum_values: dict | None = None
 
 VALID_CONDITION_TYPES = {
     "", "Equals", "Equal", "Contains", "Not Contains", "Not Equals",
@@ -72,6 +73,24 @@ def _load_controls_index() -> dict:
     return _controls_index
 
 
+def _load_enum_values() -> dict:
+    """
+    Load enum_values.json once and cache.
+    Returns dict: { activityName: { fieldKey: { values: [...] } } }
+    """
+    global _enum_values
+    if _enum_values is not None:
+        return _enum_values
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "enum_values.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            _enum_values = json.load(f)
+    except FileNotFoundError:
+        _enum_values = {}
+    return _enum_values
+
+
 def validate_xname_uniqueness(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
@@ -107,12 +126,23 @@ def validate_activity_schema(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
     """
-    Checks required fields per activities_controls.json.
-    Skips EXCLUDED_REQUIRED_FIELDS (propertiesControl blobs and UI-configured fields).
-    If activity not in index, adds a VERIFY note instead of failing.
+    Checks required fields and enum values per activities_controls.json
+    and enum_values.json.
+
+    Required field checks:
+      Skips EXCLUDED_REQUIRED_FIELDS (propertiesControl blobs and UI-configured fields).
+      If activity not in index, adds a VERIFY note instead of failing.
+
+    Enum value checks:
+      For fields that have known allowed values in enum_values.json, flags any value
+      that is not in the allowed list and is not a variable reference (not starting
+      with %). Only fires when enum_values.json has a non-empty values list for that
+      field — entries with zero observations are still used for validation because
+      they represent manually confirmed platform values (Step 5).
     """
     workflow_json = _ensure_dict(workflow_json)
     controls_index = _load_controls_index()
+    enum_values = _load_enum_values()
     errors = []
     verify_notes = []
 
@@ -122,15 +152,42 @@ def validate_activity_schema(
         if type_name and type_name not in CONTAINER_TYPES:
             if type_name in controls_index:
                 for control in controls_index[type_name]:
+                    field_key = control["fieldKey"]
+
+                    # --- Required field check ---
                     if (
                         control.get("required")
-                        and control["fieldKey"] not in node
-                        and control["fieldKey"] not in EXCLUDED_REQUIRED_FIELDS
+                        and field_key not in node
+                        and field_key not in EXCLUDED_REQUIRED_FIELDS
                     ):
                         errors.append(
                             f"[{path}] '{type_name}' missing required field "
-                            f"'{control['fieldKey']}' ({control['fieldName']})"
+                            f"'{field_key}' ({control['fieldName']})"
                         )
+
+                    # --- Enum value check ---
+                    # Only fire when the field is present with a non-variable, non-null value
+                    if field_key in node:
+                        val = str(node[field_key])
+                        if val and not val.startswith("%") and val not in ("{x:Null}", ""):
+                            enum_entry = (
+                                enum_values
+                                .get(type_name, {})
+                                .get(field_key, {})
+                            )
+                            # Extract allowed values — skip annotation-only dict entries
+                            allowed = [
+                                str(v["value"])
+                                for v in enum_entry.get("values", [])
+                                if isinstance(v, dict) and "value" in v and "note" not in v
+                            ]
+                            if allowed and val not in allowed:
+                                errors.append(
+                                    f"[{path}] '{type_name}.{field_key}' = '{val}' "
+                                    f"is not a valid option. "
+                                    f"Allowed: {allowed[:6]}"
+                                    + (" ..." if len(allowed) > 6 else "")
+                                )
             else:
                 if type_name:
                     verify_notes.append(
@@ -197,11 +254,6 @@ def validate_control_flow_rules(
             )
 
         # --- WhileActivity: must have a nested SequenceActivity with activities ---
-        # Failure mode 1: WhileActivity has no nested SequenceActivity at all —
-        #   StructureBuilder placed loop body activities at the top level (flat structure).
-        # Failure mode 2: SequenceActivity exists but has no activity children —
-        #   loop body was not generated.
-        # Both cause upload failure or an empty loop on the platform.
         if type_name == "WhileActivity":
             seq = next(
                 (v for v in node.values()
@@ -252,8 +304,6 @@ def validate_control_flow_rules(
                     f"Confirmed values: {sorted(VALID_CONDITION_TYPES)}."
                 )
 
-            # Formula format check — safety net for serializer
-            # If ConditionType is set and IsValid is True, Formula must be well-formed
             formula = node.get("Formula", "")
             is_valid = node.get("IsValid", "True")
             if (

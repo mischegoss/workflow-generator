@@ -60,7 +60,8 @@ OUTPUT FORMAT
       "step_id": "s1",
       "description": "one sentence description of what this step does",
       "intent": "<value from INTENT ENUM below>",
-      "control_flow": "<value from CONTROL FLOW ENUM below>"
+      "control_flow": "<value from CONTROL FLOW ENUM below>",
+      "zone": "<value from ZONE ENUM below>"
     }
   ],
   "variable_contract": {
@@ -89,6 +90,70 @@ linear | ifelse | while | usergroup
 CRITICAL: "foreach" and "parallel" are NOT valid values and must never appear in output.
 ForEachActivity does not exist in the Resolve Actions platform (confirmed across 625 real
 exported workflows). All iteration uses WhileActivity only — map any loop intent to "while".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ZONE ENUM — use ONLY these exact values, no others, no variations
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+linear | pre_container | container | container_body | post_container
+
+ZONE DEFINITIONS — assign the zone that describes where this step executes:
+
+  linear         — flat workflow with no loops or branches; ALL steps get this zone.
+                   Use when the entire workflow control_flow is "linear".
+
+  pre_container  — runs before the loop or branch begins.
+                   Examples: CreateMemoryTable, GetRowsCount, GetDate, initial MemorySet.
+                   These activities appear at the top level BEFORE the WhileActivity or
+                   IfElseActivity.
+
+  container      — the loop or branch control structure itself.
+                   Assign this to the step that IS the WhileActivity or IfElseActivity.
+                   There is exactly one container step per loop/branch.
+
+  container_body — executes inside each loop iteration or inside a branch.
+                   Examples: GetCellValue, Ping, DisplayValue, SendEmail inside a loop.
+                   ExitWhile also gets container_body (it lives inside the SequenceActivity).
+
+  post_container — runs after the loop or branch completes.
+                   Examples: send a summary email, write results to a file, a final
+                   DisplayValue that summarises what happened after the loop finishes.
+
+ZONE RULES:
+  - A "linear" workflow has NO containers — every step is zone="linear".
+  - A "while" or "while_ifelse" workflow has pre_container, container, container_body,
+    and optionally post_container steps.
+  - An "ifelse" workflow: the activity that produces the value being tested (e.g. Ping)
+    is pre_container; the IfElseActivity itself is container; the ReturnValue and action
+    activities inside each branch are container_body.
+  - A "usergroup" workflow: activities INSIDE the UserGroup are container_body;
+    activities OUTSIDE are pre_container or post_container.
+  - ExitWhile always gets zone="container_body".
+  - The step with intent="loop" gets zone="container" (it IS the WhileActivity).
+  - The step with intent="branch" gets zone="container" (it IS the IfElseActivity).
+  - Every step must have exactly one zone value — null is not permitted.
+
+ZONE EXAMPLES:
+
+  Flat linear workflow (GetDate → MemorySet → DisplayValue):
+    s1 GetDate        zone="linear"
+    s2 MemorySet      zone="linear"
+    s3 DisplayValue   zone="linear"
+
+  While loop workflow:
+    s1 CreateMemoryTable  zone="pre_container"
+    s2 GetRowsCount       zone="pre_container"
+    s3 WhileActivity      zone="container"
+    s4 ExitWhile          zone="container_body"
+    s5 GetCellValue       zone="container_body"
+    s6 Ping               zone="container_body"
+    s7 DisplayValue       zone="container_body"
+    s8 SendEmail          zone="post_container"
+
+  IfElse workflow:
+    s1 Ping               zone="pre_container"
+    s2 IfElseActivity     zone="container"
+    s3 DisplayValue(ok)   zone="container_body"
+    s4 DisplayValue(fail) zone="container_body"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 STEP COUNT CONSTRAINT
@@ -145,7 +210,8 @@ STEP 1 — Determine the table source:
     Treat unknown sources as inline: emit a create_table step as step s1.
 
 STEP 2 — When emitting create_table:
-  - Add it as the FIRST step (s1) with intent="create_table" and control_flow="linear".
+  - Add it as the FIRST step (s1) with intent="create_table", control_flow="linear",
+    and zone="pre_container".
   - Name the table variable after the items being looped (e.g. "serverTable", "certTable",
     "userTable"). Use camelCase + "Table" suffix.
   - Add the table to the variable_contract with source="created inline by CreateMemoryTable".

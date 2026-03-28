@@ -1,4 +1,10 @@
 {
+  "AddDate": {
+    "IntervalType": "Days"
+  },
+  "Contains": {
+    "CaseSensitive": "False"
+  },
   "CreateMemoryTable": {
     "isEmptyGrid": "0"
   },
@@ -15,6 +21,9 @@
   "GetWindowEventLogs": {
     "FilterType": "Error"
   },
+  "HTTPRequest": {
+    "RequestType": "Get"
+  },
   "JiraGenericCommand": {
     "Method": "POST"
   },
@@ -25,6 +34,12 @@
     "IsAppend": "False",
     "IsSaved": "False",
     "VariableScope": "Workflow"
+  },
+  "PowerShellScript": {
+    "IsLocal": "True"
+  },
+  "ResultSetFilter": {
+    "MatchType": "Contains"
   },
   "SendEmail": {
     "Channel": "0",
@@ -45,8 +60,14 @@
   "SetCellValue": {
     "ColumnType": "Name"
   },
+  "SingleSSHCommand": {
+    "Port": "22"
+  },
   "Split": {
     "SelectionType": "1"
+  },
+  "TSQLQuery": {
+    "ConnectionType": "SQLServer"
   },
   "WriteFile": {
     "IsAppend": "True"

@@ -144,11 +144,100 @@
       "input_type": "dropdown",
       "total_observations": 6,
       "values_excluded_noise": 2,
+      "note": "updated Step 5 with full value list",
       "values": [
+        {
+          "value": "Days",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Hours",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Minutes",
+          "count": 0,
+          "pct": 0
+        },
         {
           "value": "Seconds",
           "count": 3,
           "pct": 50
+        },
+        {
+          "value": "Months",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Years",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    },
+    "SourceFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
         }
       ]
     }
@@ -510,6 +599,69 @@
           "pct": 2
         }
       ]
+    },
+    "DateFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
+        }
+      ]
     }
   },
   "GetIncidentTicketID": {
@@ -608,6 +760,29 @@
           "value": "TLS12",
           "count": 149,
           "pct": 100
+        }
+      ]
+    },
+    "ContentType": {
+      "input_type": "autocomplete",
+      "total_observations": 3,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5",
+      "values": [
+        {
+          "value": "application/json",
+          "count": 1,
+          "pct": 33
+        },
+        {
+          "value": "application/x-www-form-urlencoded",
+          "count": 2,
+          "pct": 67
+        },
+        {
+          "value": "text/plain",
+          "count": 0,
+          "pct": 0
         }
       ]
     }
@@ -1383,6 +1558,360 @@
           "value": "Super Fast",
           "count": 7,
           "pct": 100
+        }
+      ]
+    }
+  },
+  "DateDifference": {
+    "ReturnFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5",
+      "values": [
+        {
+          "value": "Days",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Hours",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Minutes",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Seconds",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Months",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Years",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    },
+    "FirstDateFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    },
+    "SecondDateFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    }
+  },
+  "FormatDate": {
+    "SourceFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    },
+    "TargetFormat": {
+      "input_type": "autocomplete",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5. MM/dd/yyyy HH:mm is authoritative per platform rules",
+      "values": [
+        {
+          "value": "MM/dd/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "MM/dd/yyyy HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyy-MM-dd HH:mm:ss",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "dd/MM/yyyy HH:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "M/d/yyyy H:mm",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMdd",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "yyyyMMddHHmmss",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    }
+  },
+  "Contains": {
+    "CaseSensitive": {
+      "input_type": "radiobutton",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5",
+      "values": [
+        {
+          "value": "False",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "True",
+          "count": 0,
+          "pct": 0
+        }
+      ]
+    }
+  },
+  "ResultSetFilter": {
+    "MatchType": {
+      "input_type": "dropdown",
+      "total_observations": 0,
+      "values_excluded_noise": 0,
+      "note": "manually added Step 5",
+      "values": [
+        {
+          "value": "Contains",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Equals",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Not Contains",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Not Equals",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Starts With",
+          "count": 0,
+          "pct": 0
+        },
+        {
+          "value": "Ends With",
+          "count": 0,
+          "pct": 0
         }
       ]
     }
