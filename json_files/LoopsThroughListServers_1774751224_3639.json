@@ -1,0 +1,247 @@
+{
+  "name": "LoopsThroughListServers_1774751224_3639",
+  "pnumber": "54057",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "xName": "Loop_through_servers_and_ping_them",
+    "Description": "This workflow iterates through a list of servers from a memory table, pings each server, and logs whether the ping was successful or not.",
+    "description": "This workflow iterates through a list of servers from a memory table, pings each server, and logs whether the ping was successful or not.",
+    "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Workflow, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "Version": "1.0",
+    "Category": "General",
+    "CreatedBy": "user",
+    "ModifiedBy": "user",
+    "LastModified": "2024-07-16T13:28:43.119213Z",
+    "HelpLink": "",
+    "Logic": {
+      "xName": "Logic",
+      "Description": "Main container for the workflow's activities.",
+      "description": "Main container for the workflow's activities.",
+      "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.Logic, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Activities": [
+        {
+          "xName": "createMemoryTable1",
+          "Parent": "Logic",
+          "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.CreateMemoryTable, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "DisplayName": "Create Table",
+          "Description": "Create a memory table named 'serverTable' with a column 'server' to store the list of server hostnames or IP addresses.",
+          "Color": "White",
+          "ErrorHandling": {
+            "MaxRetryAttempts": 0,
+            "RetryInterval": 1,
+            "ThrowError": true,
+            "ExecuteElse": false
+          },
+          "TableName": "serverTable",
+          "TableAsString": "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<xs:schema id=\"NewDataSet\" xmlns=\"\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:msdata=\"urn:schemas-microsoft-com:xml-msdata\">\r\n  <xs:element name=\"NewDataSet\" msdata:IsDataSet=\"true\" msdata:MainDataTable=\"serverTable\" msdata:UseCurrentLocale=\"true\">\r\n    <xs:complexType>\r\n      <xs:choice minOccurs=\"0\" maxOccurs=\"unbounded\">\r\n        <xs:element name=\"serverTable\">\r\n          <xs:complexType>\r\n            <xs:sequence>\r\n              <xs:element name=\"server\" type=\"xs:string\" minOccurs=\"0\" />\r\n            </xs:sequence>\r\n          </xs:complexType>\r\n        </xs:element>\r\n      </xs:choice>\r\n    </xs:complexType>\r\n  </xs:element>\r\n</xs:schema>",
+          "Columns": [
+            {
+              "name": "server",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "xName": "getRowsCount1",
+          "Parent": "Logic",
+          "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.GetRowsCount, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "DisplayName": "Get Rows Count",
+          "Description": "Get the total number of rows (servers) in the 'serverTable' to control the loop.",
+          "Color": "White",
+          "ErrorHandling": {
+            "MaxRetryAttempts": 0,
+            "RetryInterval": 1,
+            "ThrowError": true,
+            "ExecuteElse": false
+          },
+          "ResultSet": "%serverTable%"
+        },
+        {
+          "xName": "whileActivity1",
+          "Parent": "Logic",
+          "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.WhileActivity, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "DisplayName": "While",
+          "Description": "Loop through each server in the 'serverTable' until all servers have been processed.",
+          "Color": "White",
+          "ErrorHandling": {
+            "MaxRetryAttempts": 0,
+            "RetryInterval": 1,
+            "ThrowError": true,
+            "ExecuteElse": false
+          },
+          "Activities": [
+            {
+              "xName": "getCellValue1",
+              "Parent": "whileActivity1",
+              "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.GetCellValue, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "DisplayName": "Get Cell Value",
+              "Description": "Get the server hostname or IP address from the 'server' column of the current row in 'serverTable'.",
+              "Color": "White",
+              "ErrorHandling": {
+                "MaxRetryAttempts": 0,
+                "RetryInterval": 1,
+                "ThrowError": true,
+                "ExecuteElse": false
+              },
+              "ResultSet": "%serverTable%",
+              "ColumnName": "server",
+              "RowNumber": "%whileActivity1%"
+            },
+            {
+              "xName": "ping1",
+              "Parent": "whileActivity1",
+              "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.Ping, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "DisplayName": "Ping",
+              "Description": "Ping the current server to check its network reachability.",
+              "Color": "White",
+              "ErrorHandling": {
+                "MaxRetryAttempts": 0,
+                "RetryInterval": 1,
+                "ThrowError": true,
+                "ExecuteElse": false
+              },
+              "HostName": "%getCellValue1%",
+              "Timeout": "1000"
+            },
+            {
+              "xName": "ifElseActivity1",
+              "Parent": "whileActivity1",
+              "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.IfElseActivity, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "DisplayName": "If...Else",
+              "Description": "Branch based on whether the ping to the server was successful or not.",
+              "Color": "White",
+              "ErrorHandling": {
+                "MaxRetryAttempts": 0,
+                "RetryInterval": 1,
+                "ThrowError": true,
+                "ExecuteElse": false
+              },
+              "UseFirstMatchingBranch": true,
+              "Branches": [
+                {
+                  "xName": "ifElseBranchActivity1",
+                  "Parent": "ifElseActivity1",
+                  "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.IfElseBranchActivity, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "DisplayName": "If",
+                  "Description": "Branch for successful ping.",
+                  "Color": "White",
+                  "ErrorHandling": {
+                    "MaxRetryAttempts": 0,
+                    "RetryInterval": 1,
+                    "ThrowError": true,
+                    "ExecuteElse": false
+                  },
+                  "Activities": [
+                    {
+                      "xName": "displayValue1",
+                      "Parent": "ifElseBranchActivity1",
+                      "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.DisplayValue, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "DisplayName": "Display Value",
+                      "Description": "Display a success message in the logs indicating the server was successfully pinged.",
+                      "Color": "White",
+                      "ErrorHandling": {
+                        "MaxRetryAttempts": 0,
+                        "RetryInterval": 1,
+                        "ThrowError": true,
+                        "ExecuteElse": false
+                      },
+                      "ValueToDisplay": "Successfully pinged server: %getCellValue1%"
+                    }
+                  ],
+                  "ReturnValue": {
+                    "Type": "Text",
+                    "ConditionType": "Equals",
+                    "Value": "Success",
+                    "UseStoredValue": false,
+                    "StoredValue": "",
+                    "Formula": "",
+                    "IsValid": true,
+                    "UseBranchWhenTimeout": false
+                  }
+                },
+                {
+                  "xName": "ifElseBranchActivity2",
+                  "Parent": "ifElseActivity1",
+                  "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.IfElseBranchActivity, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "DisplayName": "Else If",
+                  "Description": "Branch for failed ping.",
+                  "Color": "White",
+                  "ErrorHandling": {
+                    "MaxRetryAttempts": 0,
+                    "RetryInterval": 1,
+                    "ThrowError": true,
+                    "ExecuteElse": false
+                  },
+                  "Activities": [
+                    {
+                      "xName": "displayValue2",
+                      "Parent": "ifElseBranchActivity2",
+                      "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.DisplayValue, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "DisplayName": "Display Value",
+                      "Description": "Display a failure message in the logs, including the server name and the ping result, if the ping failed.",
+                      "Color": "White",
+                      "ErrorHandling": {
+                        "MaxRetryAttempts": 0,
+                        "RetryInterval": 1,
+                        "ThrowError": true,
+                        "ExecuteElse": false
+                      },
+                      "ValueToDisplay": "Failed to ping server: %getCellValue1%. Result: %ping1%"
+                    }
+                  ],
+                  "ReturnValue": {
+                    "Type": "Text",
+                    "ConditionType": "Equals",
+                    "Value": "Failure",
+                    "UseStoredValue": false,
+                    "StoredValue": "",
+                    "Formula": "",
+                    "IsValid": true,
+                    "UseBranchWhenTimeout": false
+                  }
+                }
+              ],
+              "Expression": "%ping1%"
+            },
+            {
+              "xName": "exitWhile1",
+              "Parent": "whileActivity1",
+              "CustomTypeName": "Xpertdoc.SmartFlows.Core.Workflows.Activities.ExitWhile, Xpertdoc.SmartFlows.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "DisplayName": "Exit While",
+              "Description": "Control the loop iteration, moving to the next server or exiting if all servers are processed.",
+              "Color": "White",
+              "ErrorHandling": {
+                "MaxRetryAttempts": 0,
+                "RetryInterval": 1,
+                "ThrowError": true,
+                "ExecuteElse": false
+              },
+              "Counter": "%getRowsCount1%"
+            }
+          ]
+        }
+      ]
+    },
+    "Parameters": {
+      "AllowCustomization": true,
+      "Parameters": []
+    },
+    "Variables": [],
+    "Messages": [],
+    "Properties": {
+      "Output": "",
+      "Rethrow": false,
+      "AbortOnError": false,
+      "Description": "",
+      "Name": "Loop_through_servers_and_ping_them"
+    },
+    "ExecutionType": "Activity",
+    "Id": "00000000-0000-0000-0000-000000000000",
+    "ProjectIdentifier": "",
+    "ProjectId": "00000000-0000-0000-0000-000000000000"
+  },
+  "placeholder_summary": [],
+  "pipeline_notes": [],
+  "errors": []
+}

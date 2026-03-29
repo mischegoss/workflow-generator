@@ -406,7 +406,10 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
         seq_xname   = make_xname("SequenceActivity")
         exit_xname  = make_xname("ExitWhile")
 
-        # ExitWhile is always the first child of SequenceActivity
+        # ExitWhile is always the first child of SequenceActivity.
+        # Exclude structural intents — exit_loop is template-injected as ExitWhile
+        # above; placing it again from the manifest creates a duplicate.
+        _STRUCTURAL_INTENTS = frozenset({"exit_loop", "loop", "branch"})
         seq_body: dict = {
             exit_xname: {
                 "xName":          exit_xname,
@@ -414,6 +417,8 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             },
         }
         for step in body_steps:
+            if step.get("intent") in _STRUCTURAL_INTENTS:
+                continue
             result = make_node(step)
             if result:
                 xname, node = result
@@ -445,6 +450,20 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
         rv1_xname = f"returnValue{m1.group(1) if m1 else '1'}"
         rv2_xname = f"returnValue{m2.group(1) if m2 else '2'}"
 
+        # Split body_steps by control_flow:
+        #   control_flow='while' (or unspecified) → SequenceActivity body before IfElse
+        #   control_flow='ifelse'                 → IfElseBranchActivity
+        # Exclude structural intents (exit_loop, loop) — these are always injected
+        # from the template (ExitWhile is hardcoded first in seq_body_wi).
+        # A step with intent='exit_loop' in container_body would create a duplicate.
+        _STRUCTURAL_INTENTS = frozenset({"exit_loop", "loop", "branch"})
+        while_seq_steps     = [s for s in body_steps
+                                if s.get("control_flow", "while") != "ifelse"
+                                and s.get("intent") not in _STRUCTURAL_INTENTS]
+        ifelse_branch_steps = [s for s in body_steps
+                                if s.get("control_flow") == "ifelse"
+                                and s.get("intent") not in _STRUCTURAL_INTENTS]
+
         branch1: dict = {
             "xName":          br1_xname,
             "CustomTypeName": "IfElseBranchActivity",
@@ -455,7 +474,7 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             "CustomTypeName": "IfElseBranchActivity",
             rv2_xname: {"xName": rv2_xname, "CustomTypeName": "ReturnValue"},
         }
-        for step in body_steps:
+        for step in ifelse_branch_steps:
             result = make_node(step)
             if result:
                 xname, node = result
@@ -471,13 +490,20 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             br1_xname:        branch1,
             br2_xname:        branch2,
         }
+
+        # ExitWhile first, then while-body activities, then IfElse last
         seq_body_wi: dict = {
             exit_xname: {
                 "xName":          exit_xname,
                 "CustomTypeName": "ExitWhile",
             },
-            ifelse_xname: ifelse_node,
         }
+        for step in while_seq_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                seq_body_wi[xname] = node
+        seq_body_wi[ifelse_xname] = ifelse_node
         seq_node_wi: dict = {
             "xName":          seq_xname,
             "CustomTypeName": "SequenceActivity",
@@ -511,7 +537,10 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             "CustomTypeName": "IfElseBranchActivity",
             rv2_xname: {"xName": rv2_xname, "CustomTypeName": "ReturnValue"},
         }
+        _STRUCTURAL_INTENTS = frozenset({"exit_loop", "loop", "branch"})
         for step in body_steps:
+            if step.get("intent") in _STRUCTURAL_INTENTS:
+                continue
             result = make_node(step)
             if result:
                 xname, node = result
@@ -557,6 +586,304 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
         "workflow_raw_data":  raw,
         "variable_contracts": variable_contract,
     }
+
+
+# ---------------------------------------------------------------------------
+# Wirer output normalizer — Children-list → xName-keyed dict
+# ---------------------------------------------------------------------------
+
+def _convert_children_format(node: dict) -> dict:
+    """
+    Recursively convert Wirer's Children-list format to the pipeline's
+    xName-keyed dict format.
+
+    Wirer sometimes returns:
+        {"xName": "whileActivity1", "CustomTypeName": "WhileActivity",
+         "Children": [{"xName": "getCellValue1", ...}, ...]}
+
+    Pipeline expects:
+        {"xName": "whileActivity1", "CustomTypeName": "WhileActivity",
+         "sequenceActivity1": {"xName": "sequenceActivity1",
+                               "CustomTypeName": "SequenceActivity",
+                               "exitWhile1": {...}, "getCellValue1": {...}}}
+
+    Key conversions:
+      WhileActivity.Children  → inject SequenceActivity wrapper, ExitWhile first
+      IfElseActivity.Children → branches keyed by xName, CT normalised
+      IfElseBranch.Children   → activities keyed by xName + ReturnValue hoisted
+      Other.Children          → children keyed by xName (flat)
+    """
+    ct = node.get("CustomTypeName", "")
+    # Normalise IfElseBranch → IfElseBranchActivity
+    if ct == "IfElseBranch":
+        ct = "IfElseBranchActivity"
+
+    # Build result without Children/ReturnValue — those are restructured below
+    result = {k: v for k, v in node.items()
+              if k not in ("Children", "ReturnValue")}
+    result["CustomTypeName"] = ct
+
+    children = node.get("Children") or []
+    if not isinstance(children, list):
+        children = []
+
+    if ct == "WhileActivity":
+        # Wrap children in a SequenceActivity, ExitWhile first
+        xname = node.get("xName", "whileActivity1")
+        m = _re.search(r'(\d+)$', xname)
+        n = m.group(1) if m else "1"
+        seq_xname = f"sequenceActivity{n}"
+
+        exit_nodes  = [c for c in children if c.get("CustomTypeName") == "ExitWhile"]
+        other_nodes = [c for c in children if c.get("CustomTypeName") != "ExitWhile"]
+        ordered = exit_nodes + other_nodes
+
+        seq_dict: dict = {"xName": seq_xname, "CustomTypeName": "SequenceActivity"}
+        for child in ordered:
+            child_xname = child.get("xName", "")
+            if child_xname:
+                seq_dict[child_xname] = _convert_children_format(child)
+        result[seq_xname] = seq_dict
+
+    elif ct == "IfElseActivity":
+        for child in children:
+            child_ct = child.get("CustomTypeName", "")
+            if child_ct in ("IfElseBranch", "IfElseBranchActivity"):
+                child_xname = child.get("xName", "")
+                if child_xname:
+                    result[child_xname] = _convert_children_format(child)
+
+    elif ct == "IfElseBranchActivity":
+        # Hoist ReturnValue dict → keyed child node
+        rv = node.get("ReturnValue")
+        if rv and isinstance(rv, dict):
+            branch_xname = node.get("xName", "branch1")
+            m = _re.search(r'(\d+)$', branch_xname)
+            n = m.group(1) if m else "1"
+            rv_xname = f"returnValue{n}"
+            rv_node = dict(rv)
+            rv_node["xName"] = rv_xname
+            rv_node["CustomTypeName"] = "ReturnValue"
+            result[rv_xname] = rv_node
+        # Add child activities
+        for child in children:
+            child_xname = child.get("xName", "")
+            if child_xname:
+                result[child_xname] = _convert_children_format(child)
+
+    else:
+        # Generic container — just key children by xName
+        for child in children:
+            child_xname = child.get("xName", "")
+            if child_xname:
+                result[child_xname] = _convert_children_format(child)
+
+    return result
+
+
+def normalize_wirer_output(workflow_json: dict) -> dict:
+    """
+    Normalize WirerAgent output from Children-list format to xName-keyed dict
+    format expected by enrichment, fragments, scaffold, and xml_composer.
+
+    Detects the Children format by checking whether workflow_raw_data has a
+    'Children' key with a list value. If so, converts it. If workflow_raw_data
+    is already in the correct format (dict-of-dicts keyed by xName), returns
+    unchanged.
+
+    Also strips any workflow-level metadata fields (xName, Description,
+    CustomTypeName, Version, etc.) that Wirer placed as siblings of activity
+    dicts inside workflow_raw_data.
+    """
+    import copy
+    workflow_json = _ensure_dict(workflow_json)
+    raw = workflow_json.get("workflow_raw_data", {})
+    if not isinstance(raw, dict):
+        return workflow_json
+
+    result = dict(workflow_json)
+
+    # ── Case 1: Children list at top level of workflow_raw_data ──────────────
+    top_children = raw.get("Children")
+    if isinstance(top_children, list) and top_children:
+        print(f"[normalize] Converting Children-list format — "
+              f"{len(top_children)} top-level activities")
+        new_raw: dict = {}
+        for child in top_children:
+            xname = child.get("xName", "")
+            if xname:
+                new_raw[xname] = _convert_children_format(child)
+        result["workflow_raw_data"] = new_raw
+        return result
+
+    # ── Case 2: metadata fields mixed in with activity dicts ─────────────────
+    _METADATA_KEYS = frozenset({
+        "xName", "Description", "description", "CustomTypeName",
+        "Version", "Category", "CreatedBy", "Name", "Pnumber",
+        "ActivityID", "ActivityName", "DisplayName", "DateLic",
+    })
+    non_dict = [k for k, v in raw.items()
+                if not isinstance(v, dict) and k in _METADATA_KEYS]
+    if non_dict:
+        print(f"[normalize] Stripping {len(non_dict)} metadata keys "
+              f"from workflow_raw_data: {non_dict[:8]}")
+        result["workflow_raw_data"] = {
+            k: v for k, v in raw.items() if isinstance(v, dict)
+        }
+
+    # ── Backfill TableName on CreateMemoryTable from variable_contracts ───────
+    # Wirer's Children format sometimes omits TableName. Without it, scaffold
+    # cannot set ResultSet on downstream activities and r5 cannot resolve
+    # %tableName% references. variable_contracts.variables always has the name.
+    _backfill_table_vars(result)
+
+    # ── Strip template metadata sub-dicts ────────────────────────────────────
+    # Enrichment adds ActivityInfo and Output sub-dicts to every activity node
+    # as template metadata. These dicts copy the parent's xName and
+    # CustomTypeName, causing false duplicate xName errors and false control
+    # flow rule violations (e.g. WhileActivity inside ActivityInfo has no
+    # SequenceActivity). Strip them before validation.
+    _strip_metadata_dicts(result.get("workflow_raw_data", {}))
+
+    return result
+
+
+def _strip_metadata_dicts(nodes: dict) -> None:
+    """
+    Recursively strip ActivityInfo and Output metadata sub-dicts from all
+    activity nodes. These are enrichment template artifacts — the platform
+    does not use them and they cause validator false positives.
+    Mutates in place.
+    """
+    _META_KEYS = frozenset({"ActivityInfo", "Output"})
+    for xname, node in list(nodes.items()):
+        if not isinstance(node, dict):
+            continue
+        for key in _META_KEYS:
+            node.pop(key, None)
+        # Recurse into child activity dicts
+        for k, v in node.items():
+            if isinstance(v, dict) and v.get("CustomTypeName"):
+                _strip_metadata_dicts({k: v})
+
+
+def _backfill_table_vars(workflow_json: dict) -> None:
+    """
+    Backfill TableName on CreateMemoryTable nodes that are missing it,
+    using variable_contracts.variables[type=table] as the source.
+    Mutates workflow_json in place.
+    """
+    vc = workflow_json.get("variable_contracts", {})
+    if isinstance(vc, str):
+        try:
+            import json as _j; vc = _j.loads(vc)
+        except Exception:
+            vc = {}
+    table_vars = [
+        v.get("name", "").strip()
+        for v in vc.get("variables", [])
+        if v.get("type") in ("table", "MemoryTable") and v.get("name", "").strip()
+    ]
+    if not table_vars:
+        return
+
+    raw = workflow_json.get("workflow_raw_data", {})
+    if not isinstance(raw, dict):
+        return
+
+    def _walk_backfill(nodes: dict) -> None:
+        for xname, node in nodes.items():
+            if not isinstance(node, dict):
+                continue
+            ct = node.get("CustomTypeName", "")
+            if ct == "CreateMemoryTable" and not node.get("TableName", "").strip():
+                node["TableName"] = table_vars[0]
+                print(f"[normalize] Backfilled TableName='{table_vars[0]}' "
+                      f"on '{xname}' from variable_contracts")
+            # Recurse into nested containers
+            for k, v in node.items():
+                if isinstance(v, dict) and v.get("CustomTypeName"):
+                    _walk_backfill({k: v})
+
+    _walk_backfill(raw)
+
+
+# ---------------------------------------------------------------------------
+# Wirer patch applier
+# ---------------------------------------------------------------------------
+
+def _apply_wirer_patches(wirer_output: dict, enriched_workflow: dict) -> dict:
+    """
+    Apply WirerAgent patch output onto enriched_workflow.
+
+    WirerAgent returns {"wirer_patches": {xName: {field: value, ...}, ...}}.
+    This function deep-merges those patches onto the enriched_workflow skeleton,
+    which already has the correct structure and all template defaults.
+
+    Falls back to normalize_wirer_output() if Wirer returned a legacy
+    full-workflow response (has "workflow_raw_data" key instead of
+    "wirer_patches").
+
+    Patch application rules:
+    - Patches are applied recursively: if a patch key matches a nested
+      activity xName, it patches that node regardless of depth.
+    - Empty string values in patches overwrite existing values (Wirer
+      intentionally clearing a field).
+    - None values in patches are skipped (Wirer leaving field unchanged).
+    - Structural fields (xName, CustomTypeName) in patches are ignored.
+    """
+    import copy
+
+    wirer_output = _ensure_dict(wirer_output)
+
+    # ── Legacy fallback: full workflow_raw_data response ─────────────────────
+    if "workflow_raw_data" in wirer_output and "wirer_patches" not in wirer_output:
+        print("[wirer_patches] Legacy full-workflow response detected — "
+              "falling back to normalize_wirer_output")
+        return normalize_wirer_output(wirer_output)
+
+    patches = wirer_output.get("wirer_patches", {})
+    if not isinstance(patches, dict) or not patches:
+        print("[wirer_patches] No patches found in wirer_output — "
+              "returning enriched_workflow unchanged")
+        return copy.deepcopy(enriched_workflow) if enriched_workflow else wirer_output
+
+    # Start from a deep copy of the enriched_workflow skeleton
+    result = copy.deepcopy(enriched_workflow)
+
+    _SKIP_PATCH_FIELDS = frozenset({"xName", "CustomTypeName"})
+
+    def _apply_to_node(node: dict, patch: dict) -> None:
+        """Merge patch fields onto node, skipping structural fields and None values."""
+        for field, value in patch.items():
+            if field in _SKIP_PATCH_FIELDS:
+                continue
+            if value is None:
+                continue
+            node[field] = value
+
+    def _find_and_patch(nodes: dict, patches_remaining: dict) -> None:
+        """Recursively walk nodes, applying any matching patches by xName."""
+        if not patches_remaining:
+            return
+        for key, node in nodes.items():
+            if not isinstance(node, dict):
+                continue
+            xname = node.get("xName", "")
+            if xname and xname in patches_remaining:
+                _apply_to_node(node, patches_remaining[xname])
+                # Don't pop — same xName could appear at multiple depths
+                # (shouldn't happen but be safe)
+            # Recurse into nested activity nodes
+            _find_and_patch(node, patches_remaining)
+
+    raw = result.get("workflow_raw_data", {})
+    if isinstance(raw, dict):
+        _find_and_patch(raw, patches)
+
+    n_patched = len(patches)
+    print(f"[wirer_patches] Applied patches for {n_patched} activit(ies)")
+    return result
 
 
 # ---------------------------------------------------------------------------

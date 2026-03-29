@@ -43,21 +43,26 @@ _FORMULA_PATTERN = re.compile(r'^=.+\(&&&,.+\)$')
 # D7 — Variable reference validator constants
 # ---------------------------------------------------------------------------
 
-# %varName% in these fields must resolve to a known xName, TableName, or
-# VariableName. A broken reference here = hard runtime failure.
+# %varName% in these fields must resolve to an activity xName.
+# These are strictly xName-to-xName references — broken reference = hard
+# runtime failure.
 _STRUCTURAL_REF_FIELDS: frozenset = frozenset({
-    "ResultSet",      # GetRowsCount, GetCellValue — must be a real table variable
-    "ResultSetName",  # GetCellValue — must be a real table variable
     "Counter",        # ExitWhile — must reference a GetRowsCount xName
     "RowNumber",      # GetCellValue — must reference a WhileActivity xName
     "SessionName",    # JsonToTable — must reference a StartJsonSession xName
-    "TableVariableName",  # ForEach — must reference a table variable
 })
 
 # %varName% in these fields should resolve — broken reference = wrong behavior.
 # Flagged as verify_notes (not hard errors) since the value could be an
 # external variable populated before the workflow runs.
 _SEMANTIC_REF_FIELDS: frozenset = frozenset({
+    # Table variable references — reference named table vars, not activity xNames.
+    # ResultSet/ResultSetName reference %tableName% which is a CreateMemoryTable
+    # TableName value, not an xName — classifying as structural caused false errors.
+    "ResultSet",          # GetRowsCount, GetCellValue — named table variable
+    "ResultSetName",      # GetCellValue — named table variable
+    "TableVariableName",  # ForEach — named table variable
+    # Semantic field references
     "HostName",       # Ping, Service activities
     "VariableValue",  # MemorySet input
     "FirstDate",      # DateDifference
@@ -159,14 +164,22 @@ def _load_enum_values() -> dict:
 def validate_xname_uniqueness(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
-    """Every xName in the workflow must be unique across all activities including nested ones."""
+    """Every xName in the workflow must be unique across all activity nodes."""
     workflow_json = _ensure_dict(workflow_json)
     seen = {}
     duplicates = []
 
+    # Metadata sub-dicts that legitimately repeat the parent xName — skip these.
+    # ActivityInfo and Output are template metadata containers, not activity nodes.
+    _SKIP_KEYS = frozenset({"ActivityInfo", "Output", "Properties"})
+
     def walk(node: dict, path: str = ""):
+        # Only collect xNames from real activity nodes (those with CustomTypeName).
+        # Pure metadata dicts (ActivityInfo, Output) copy the parent xName but are
+        # not themselves activities — collecting them produces false duplicates.
+        ct = node.get("CustomTypeName", "")
         xname = node.get("xName", "")
-        if xname:
+        if xname and ct:
             if xname in seen:
                 duplicates.append(
                     f"Duplicate xName '{xname}' at {path} (first seen at {seen[xname]})"
@@ -174,6 +187,8 @@ def validate_xname_uniqueness(
             else:
                 seen[xname] = path or "root"
         for key, value in node.items():
+            if key in _SKIP_KEYS:
+                continue
             if isinstance(value, dict):
                 walk(value, f"{path}.{key}")
 
@@ -434,17 +449,19 @@ def validate_variable_references(
         - All xName values (activity outputs referenced as %xName%)
         - All CreateMemoryTable.TableName values (table variable %TableName%)
         - All MemorySet.VariableName values (stored variable %VariableName%)
+        - All variable_contracts.variables[].name values (Wirer-declared variables)
         - Platform global variables (pre-populated by the Resolve engine)
 
       Pass 2 — check all field values containing %ref% patterns:
-        - Structural ref fields (ResultSet, Counter, RowNumber, SessionName,
-          ResultSetName, TableVariableName): unresolved → ERROR
-          These cause hard runtime failures when they don't resolve.
-        - Semantic ref fields (HostName, VariableValue, FirstDate, SecondDate,
-          Expression, TheValue, etc.): unresolved → VERIFY note
-          These cause incorrect behavior but not necessarily import failure.
-        - Free-form fields (Description, Body, Query, Script, etc.): skipped
-          These contain human text or literals, not variable references.
+        - Structural ref fields (Counter, RowNumber, SessionName):
+          unresolved → ERROR. These are strictly xName-to-xName references
+          that cause hard runtime failures when they don't resolve.
+        - Semantic ref fields (ResultSet, ResultSetName, HostName, VariableValue,
+          FirstDate, SecondDate, Expression, TheValue, etc.):
+          unresolved → VERIFY note. These reference named variables (table names,
+          memory variables) or external inputs — broken = wrong behavior but not
+          necessarily import failure.
+        - Free-form fields (Description, Body, Query, Script, etc.): skipped.
 
     Why this matters:
       A workflow with HostName="%getCellValue%" instead of "%getCellValue1%"
@@ -470,15 +487,17 @@ def validate_variable_references(
         ct = node.get("CustomTypeName", "")
 
         # CreateMemoryTable: variable is %TableName%, NOT %xName%
+        # Skip template placeholder values ending in "_value".
         if ct == "CreateMemoryTable":
             tname = node.get("TableName", "").strip().strip("%")
-            if tname:
+            if tname and not tname.endswith("_value"):
                 valid_vars.add(tname)
 
         # MemorySet: variable is %VariableName%, NOT %xName%
+        # Skip template placeholder values ending in "_value".
         if ct == "MemorySet":
             vname = node.get("VariableName", "").strip()
-            if vname:
+            if vname and not vname.endswith("_value"):
                 valid_vars.add(vname)
 
         for v in node.values():
@@ -488,6 +507,21 @@ def validate_variable_references(
     for activity in raw.values():
         if isinstance(activity, dict):
             collect_vars(activity)
+
+    # Also collect from variable_contracts.variables — Wirer's Children format
+    # records all variable names here even when individual activities are missing
+    # their field values (e.g. CreateMemoryTable.TableName not set by Wirer).
+    # This prevents r5 false positives on legitimate table variable references.
+    _vc = workflow_json.get("variable_contracts", {})
+    if isinstance(_vc, str):
+        try:
+            _vc = json.loads(_vc)
+        except Exception:
+            _vc = {}
+    for _var in _vc.get("variables", []):
+        _vname = _var.get("name", "").strip()
+        if _vname:
+            valid_vars.add(_vname)
 
     # ── Pass 2: check all %ref% values against valid_vars ────────────────────
     def check_refs(node: dict, path: str = "") -> None:

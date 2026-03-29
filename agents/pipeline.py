@@ -43,8 +43,11 @@ WHY STAGE 4f EXISTS:
 
 RETRY ARCHITECTURE:
   On validation failure, main.py calls build_correction_pipeline().
-  CorrectionPipeline skips DecomposerAgent entirely and reuses placed_skeleton
-  from session state (built deterministically in attempt 1).
+  CorrectionPipeline skips DecomposerAgent entirely. It re-runs all deterministic
+  stages (retrieval, skeleton builder, enrichment, fragments, scaffold) from
+  decomposition (which persists as an LlmAgent output_key). It does NOT read
+  placed_skeleton from session state — Python-stage state mutations do not
+  persist through ADK get_session() in the correction run.
   WirerAgent receives CORRECTION REQUIRED prompt with embedded workflow_json.
 
 ACTIVITY COUNT GUARD:
@@ -55,8 +58,8 @@ ACTIVITY COUNT GUARD:
 ADK STATE NOTE:
   LlmAgent output_key values persist through get_session().
   Python-stage ctx.session.state mutations do NOT persist through get_session().
-  decomposition, placed_skeleton, workflow_json (output_keys) survive retry.
-  activity_manifest and enriched_workflow must be recomputed.
+  decomposition and workflow_json (output_keys) survive retry.
+  placed_skeleton, activity_manifest, enriched_workflow must be recomputed.
 """
 
 import os
@@ -84,7 +87,9 @@ from tools.pipeline_stages import (
     run_pattern_match,
     run_retrieval,
     run_skeleton_builder,
+    normalize_wirer_output,
     run_enrichment,
+    _apply_wirer_patches,
     run_fragments,
     run_content_scaffold,
     run_cleanup,
@@ -176,40 +181,92 @@ def _check_activity_count(
         )
 
     print(f"  [pipeline] activity count ok — {actual}/{expected} top-level activities")
-
-    # D4: Structural check — if any WhileActivity is present, verify it has a
-    # SequenceActivity with at least 2 children (ExitWhile + 1 action activity).
-    # The ratio check above passes when the skeleton is correct N/N top-level
-    # activities, but doesn't detect an empty or missing loop body.
-    # Kept as a safety net on WirerAgent output even though the skeleton builder
-    # now guarantees correct structure going in.
-    raw = workflow_json.get("workflow_raw_data", {})
-    for xname, node in raw.items():
-        if not isinstance(node, dict):
-            continue
-        if node.get("CustomTypeName") != "WhileActivity":
-            continue
-        seq = next(
-            (v for v in node.values()
-             if isinstance(v, dict) and v.get("CustomTypeName") == "SequenceActivity"),
-            None,
-        )
-        if seq is None:
-            return (
-                f"WhileActivity '{xname}' has no nested SequenceActivity. "
-                f"Loop body activities must be inside a SequenceActivity child. "
-                f"Wirer may have flattened the loop structure — retry may resolve."
-            )
-        body = [v for v in seq.values()
-                if isinstance(v, dict) and v.get("CustomTypeName")]
-        if len(body) < 2:
-            return (
-                f"WhileActivity '{xname}' body has only {len(body)} activit(ies) — "
-                f"expected at least ExitWhile + 1 action activity. "
-                f"Loop body appears collapsed or empty."
-            )
-
+    # D4 structural check removed — validate_control_flow_rules (r3) enforces
+    # WhileActivity/SequenceActivity structure and allows the correction pipeline
+    # to retry. Hard-failing here bypassed retry for recoverable Wirer collapses.
     return None
+
+
+# ---------------------------------------------------------------------------
+# Shared deterministic stages (Stages 3, 4a-4c.5)
+# ---------------------------------------------------------------------------
+
+def _run_deterministic_stages(
+    ctx: InvocationContext,
+    decomposition: dict,
+    label: str,
+) -> tuple[list, dict] | None:
+    """
+    Runs Stages 3 (retrieval) through 4c.5 (scaffold) deterministically.
+    Returns (activity_manifest, scaffolded_workflow) on success, or None on failure.
+    label is used in log messages ('pipeline' or 'correction').
+    """
+    # Stage 3: Retrieve
+    try:
+        activity_manifest = run_retrieval(decomposition)
+        ctx.session.state["activity_manifest"] = activity_manifest
+        print(f"  [{label}] retrieval ok — {len(activity_manifest)} entries")
+    except Exception as e:
+        print(f"  [{label}] retrieval failed: {e}")
+        ctx.session.state["output_result"] = {
+            "status": "failed",
+            "errors": [f"Retrieval failed: {e}"],
+        }
+        return None
+
+    # Stage 4a: Build skeleton (deterministic — no LLM)
+    try:
+        placed_skeleton = run_skeleton_builder(decomposition, activity_manifest)
+        ctx.session.state["placed_skeleton"] = placed_skeleton
+        print(f"  [{label}] placed_skeleton ok — "
+              f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
+    except Exception as e:
+        print(f"  [{label}] skeleton builder failed: {e}")
+        ctx.session.state["output_result"] = {
+            "status": "failed",
+            "errors": [f"Skeleton builder failed: {e}"],
+        }
+        return None
+
+    # Stage 4b: Enrich
+    try:
+        enriched_workflow = run_enrichment(placed_skeleton, activity_manifest)
+        ctx.session.state["enriched_workflow"] = enriched_workflow
+        print(f"  [{label}] enrichment ok — "
+              f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities enriched")
+    except Exception as e:
+        print(f"  [{label}] enrichment failed: {e}")
+        ctx.session.state["output_result"] = {
+            "status": "failed",
+            "errors": [f"Enrichment failed: {e}"],
+        }
+        return None
+
+    # Stage 4c: Fragments
+    try:
+        fragmented_workflow = run_fragments(enriched_workflow)
+        ctx.session.state["enriched_workflow"] = fragmented_workflow
+        print(f"  [{label}] fragments ok — "
+              f"{len(fragmented_workflow.get('workflow_raw_data', {}))} activities")
+    except Exception as e:
+        print(f"  [{label}] fragments failed: {e}")
+        ctx.session.state["output_result"] = {
+            "status": "failed",
+            "errors": [f"Fragment application failed: {e}"],
+        }
+        return None
+
+    # Stage 4c.5: Content scaffold
+    try:
+        scaffolded_workflow = run_content_scaffold(fragmented_workflow)
+        ctx.session.state["enriched_workflow"] = scaffolded_workflow
+        print(f"  [{label}] scaffold ok — "
+              f"{len(scaffolded_workflow.get('workflow_raw_data', {}))} activities")
+    except Exception as e:
+        print(f"  [{label}] scaffold failed (non-fatal): {e}")
+        scaffolded_workflow = fragmented_workflow
+
+    return activity_manifest, scaffolded_workflow
 
 
 # ---------------------------------------------------------------------------
@@ -221,9 +278,13 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
     Runs Stages 4f-7 after WirerAgent completes.
     Writes output_result to ctx.session.state in all cases.
     """
-    workflow_json = _ensure_dict(ctx.session.state.get("workflow_json"))
+    _raw_wj = ctx.session.state.get("workflow_json")
+    workflow_json = _ensure_dict(_raw_wj)
 
     if not workflow_json:
+        print(f"  [pipeline] WirerAgent output empty — "
+              f"type={type(_raw_wj).__name__} "
+              f"len={len(str(_raw_wj)) if _raw_wj is not None else 0}")
         ctx.session.state["_empty_response_error"] = True
         ctx.session.state["output_result"] = {
             "status": "failed",
@@ -231,8 +292,31 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         }
         return
 
+    # ── Apply Wirer patches onto enriched_workflow ───────────────────────────
+    # WirerAgent now returns only the fields it changed as a flat
+    # {xName: {field: value}} patch dict under "wirer_patches".
+    # The pipeline merges these onto the enriched_workflow skeleton.
+    # Falls back to normalize_wirer_output for legacy full-workflow responses.
+    enriched_for_merge = _ensure_dict(
+        ctx.session.state.get("enriched_workflow", {})
+    )
+    try:
+        workflow_json = _apply_wirer_patches(
+            workflow_json, enriched_for_merge
+        )
+        ctx.session.state["workflow_json"] = workflow_json
+    except Exception as e:
+        print(f"  [pipeline] patch apply failed: {e}")
+        ctx.session.state["output_result"] = {
+            "status": "failed",
+            "errors": [f"Wirer patch application failed: {e}"],
+        }
+        return
+
+    raw_data = workflow_json.get("workflow_raw_data", {})
+    n_dicts = sum(1 for v in raw_data.values() if isinstance(v, dict))
     print(f"  [pipeline] workflow_json ok — "
-          f"{len(workflow_json.get('workflow_raw_data', {}))} activities")
+          f"{n_dicts} activity dicts in workflow_raw_data")
 
     # ── Activity count guard ──────────────────────────────────────────────────
     enriched_workflow = _ensure_dict(ctx.session.state.get("enriched_workflow", {}))
@@ -246,9 +330,6 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         return
 
     # ── Stage 4f: Re-apply fragments + scaffold on Wirer output ──────────────
-    # Enforces F1-F9 and F10 on activities WirerAgent may have modified or
-    # reconstructed. Both apply_fragments() and apply_content_scaffold() are
-    # idempotent — safe to call a second time after Stages 4c/4c.5.
     try:
         workflow_json = run_fragments(workflow_json)
         ctx.session.state["workflow_json"] = workflow_json
@@ -265,8 +346,6 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         print(f"  [pipeline] stage 4f scaffold failed (non-fatal): {e}")
 
     # ── Stage 4g: Post-Wirer cleanup ─────────────────────────────────────────
-    # Removes inert nodes WirerAgent may have added — e.g. MemorySet with
-    # empty VariableName/VariableValue that stores nothing.
     try:
         workflow_json = run_cleanup(workflow_json)
         ctx.session.state["workflow_json"] = workflow_json
@@ -364,70 +443,11 @@ class WorkflowPipeline(BaseAgent):
         except Exception as e:
             print(f"  [pipeline] pattern_match failed (non-fatal): {e}")
 
-        # Stage 3: Retrieve
-        try:
-            activity_manifest = run_retrieval(decomposition)
-            ctx.session.state["activity_manifest"] = activity_manifest
-            print(f"  [pipeline] retrieval ok — {len(activity_manifest)} entries")
-        except Exception as e:
-            print(f"  [pipeline] retrieval failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Retrieval failed: {e}"],
-            }
+        # Stages 3, 4a-4c.5: deterministic stages
+        result = _run_deterministic_stages(ctx, decomposition, label="pipeline")
+        if result is None:
             return
-
-        # Stage 4a: Build skeleton (deterministic — no LLM)
-        try:
-            placed_skeleton = run_skeleton_builder(decomposition, activity_manifest)
-            ctx.session.state["placed_skeleton"] = placed_skeleton
-            print(f"  [pipeline] placed_skeleton ok — "
-                  f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
-        except Exception as e:
-            print(f"  [pipeline] skeleton builder failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Skeleton builder failed: {e}"],
-            }
-            return
-
-        # Stage 4b: Enrich
-        try:
-            enriched_workflow = run_enrichment(placed_skeleton, activity_manifest)
-            ctx.session.state["enriched_workflow"] = enriched_workflow
-            print(f"  [pipeline] enrichment ok — "
-                  f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities enriched")
-        except Exception as e:
-            print(f"  [pipeline] enrichment failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Enrichment failed: {e}"],
-            }
-            return
-
-        # Stage 4c: Fragments
-        try:
-            fragmented_workflow = run_fragments(enriched_workflow)
-            ctx.session.state["enriched_workflow"] = fragmented_workflow
-            print(f"  [pipeline] fragments ok — "
-                  f"{len(fragmented_workflow.get('workflow_raw_data', {}))} activities")
-        except Exception as e:
-            print(f"  [pipeline] fragments failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Fragment application failed: {e}"],
-            }
-            return
-
-        # Stage 4c.5: Content scaffold
-        try:
-            scaffolded_workflow = run_content_scaffold(fragmented_workflow)
-            ctx.session.state["enriched_workflow"] = scaffolded_workflow
-            print(f"  [pipeline] scaffold ok — "
-                  f"{len(scaffolded_workflow.get('workflow_raw_data', {}))} activities")
-        except Exception as e:
-            print(f"  [pipeline] scaffold failed (non-fatal): {e}")
-            scaffolded_workflow = fragmented_workflow
+        activity_manifest, _ = result
 
         # Stage 4d: Wire
         async for event in self.wirer.run_async(ctx):
@@ -444,10 +464,15 @@ class WorkflowPipeline(BaseAgent):
 class CorrectionPipeline(BaseAgent):
     """
     Targeted retry pipeline. Skips DecomposerAgent entirely.
-    Reuses decomposition and placed_skeleton from attempt 1 session state —
-    placed_skeleton was built deterministically by run_skeleton_builder and
-    is stable across retries. WirerAgent receives the CORRECTION REQUIRED
-    prompt with embedded workflow_json from attempt 1.
+
+    Re-runs all deterministic stages (retrieval, skeleton builder, enrichment,
+    fragments, scaffold) from decomposition, which persists as an LlmAgent
+    output_key. Does NOT read placed_skeleton or enriched_workflow from session
+    state — Python-stage state mutations do not persist through ADK get_session()
+    in the correction run.
+
+    WirerAgent receives the CORRECTION REQUIRED prompt with embedded workflow_json
+    from attempt 1.
     """
 
     wirer: LlmAgent
@@ -456,8 +481,7 @@ class CorrectionPipeline(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
 
-        decomposition   = _ensure_dict(ctx.session.state.get("decomposition"))
-        placed_skeleton = _ensure_dict(ctx.session.state.get("placed_skeleton"))
+        decomposition = _ensure_dict(ctx.session.state.get("decomposition"))
 
         if not decomposition:
             print("  [correction] decomposition missing — aborting")
@@ -468,20 +492,11 @@ class CorrectionPipeline(BaseAgent):
             }
             return
 
-        if not placed_skeleton:
-            print("  [correction] placed_skeleton missing — aborting")
-            ctx.session.state["_empty_response_error"] = True
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": ["CorrectionPipeline: placed_skeleton not found in session state."],
-            }
-            return
-
         print(f"  [correction] reusing decomposition "
-              f"({len(decomposition.get('steps', []))} steps) and placed_skeleton "
-              f"({len(placed_skeleton.get('workflow_raw_data', {}))} activities)")
+              f"({len(decomposition.get('steps', []))} steps) — "
+              f"rebuilding skeleton and enrichment deterministically")
 
-        # Re-run pattern match (deterministic)
+        # Stage 2: Pattern match (deterministic)
         try:
             pattern_match = run_pattern_match(decomposition)
             ctx.session.state["pattern_match"] = pattern_match
@@ -489,49 +504,11 @@ class CorrectionPipeline(BaseAgent):
         except Exception as e:
             print(f"  [correction] pattern_match failed (non-fatal): {e}")
 
-        # Re-run retrieval (deterministic)
-        try:
-            activity_manifest = run_retrieval(decomposition)
-            ctx.session.state["activity_manifest"] = activity_manifest
-            print(f"  [correction] retrieval ok — {len(activity_manifest)} entries")
-        except Exception as e:
-            print(f"  [correction] retrieval failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Correction retrieval failed: {e}"],
-            }
+        # Stages 3, 4a-4c.5: deterministic stages (re-run from decomposition)
+        result = _run_deterministic_stages(ctx, decomposition, label="correction")
+        if result is None:
             return
-
-        # Re-run enrichment (deterministic)
-        try:
-            enriched_workflow = run_enrichment(placed_skeleton, activity_manifest)
-            ctx.session.state["enriched_workflow"] = enriched_workflow
-            print(f"  [correction] enrichment ok — "
-                  f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities")
-        except Exception as e:
-            print(f"  [correction] enrichment failed: {e}")
-            ctx.session.state["output_result"] = {
-                "status": "failed",
-                "errors": [f"Correction enrichment failed: {e}"],
-            }
-            return
-
-        # Re-apply fragments (deterministic)
-        try:
-            fragmented_workflow = run_fragments(enriched_workflow)
-            ctx.session.state["enriched_workflow"] = fragmented_workflow
-            print(f"  [correction] fragments ok")
-        except Exception as e:
-            print(f"  [correction] fragments failed (non-fatal): {e}")
-            fragmented_workflow = enriched_workflow
-
-        # Re-apply content scaffold (deterministic)
-        try:
-            scaffolded_workflow = run_content_scaffold(fragmented_workflow)
-            ctx.session.state["enriched_workflow"] = scaffolded_workflow
-            print(f"  [correction] scaffold ok")
-        except Exception as e:
-            print(f"  [correction] scaffold failed (non-fatal): {e}")
+        activity_manifest, _ = result
 
         # WirerAgent receives CORRECTION REQUIRED prompt with embedded workflow_json
         async for event in self.wirer.run_async(ctx):
