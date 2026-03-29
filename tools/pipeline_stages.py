@@ -4,6 +4,7 @@ tools/pipeline_stages.py
 Deterministic Python replacements for five LLM agents:
   PatternMatcherAgent    → run_pattern_match()
   ActivityRetrieverAgent → run_retrieval()
+  PlacerAgent            → run_skeleton_builder()   ← Phase 3: replaces LLM
   AnnotationAgent        → run_annotation()
   ValidationAgent        → run_validation()
 
@@ -266,22 +267,366 @@ def run_retrieval(decomposition: dict) -> list:
 
 
 # ---------------------------------------------------------------------------
+# Stage 4a — Skeleton builder (Phase 3: deterministic replacement for PlacerAgent)
+# ---------------------------------------------------------------------------
+
+def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
+    """
+    Phase 3: deterministic replacement for PlacerAgent.
+
+    Builds placed_skeleton from decomposition zone tags and activity_manifest.
+    No LLM involved — pure Python structure assembly.
+
+    xName generation: lowercase(first char) + rest + counter per type
+    e.g. getCellValue1, getCellValue2, ping1, whileActivity1
+
+    Zone assignment from decomposition.steps[].zone:
+      linear         → top-level sequence (no container)
+      pre_container  → top-level, before the container
+      container      → IS the WhileActivity or IfElseActivity (skip — injected
+                        from template; these steps are not placed individually)
+      container_body → inside SequenceActivity (while) or IfElseBranchActivity (ifelse)
+      post_container → top-level, after the container
+
+    Control flow detection:
+      loop_type in variable_contract  → While
+      branch steps present            → IfElse
+      both                            → while_ifelse
+      usergroup steps present         → UserGroup
+      else                            → linear
+    """
+    decomposition = _ensure_dict(decomposition)
+    steps = decomposition.get("steps", [])
+    variable_contract = decomposition.get("variable_contract",
+                        decomposition.get("variable_contracts", {}))
+
+    # ── Detect control flow type ──────────────────────────────────────────────
+    loop_type = variable_contract.get("loop_type", "none")
+    has_loop = loop_type.lower() in ("while", "foreach")
+    has_branch = any(
+        s.get("control_flow") in ("ifelse",) or s.get("intent") == "branch"
+        for s in steps
+    )
+    has_usergroup = any(s.get("control_flow") == "usergroup" for s in steps)
+
+    if has_loop and has_branch:
+        cf_type = "while_ifelse"
+    elif has_loop:
+        cf_type = "While"
+    elif has_usergroup:
+        cf_type = "UserGroup"
+    elif has_branch:
+        cf_type = "IfElse"
+    else:
+        cf_type = "linear"
+
+    # ── Build manifest lookup: step_id → selected_activity ───────────────────
+    manifest_by_step: dict = {
+        entry["step_id"]: entry.get("selected_activity", "")
+        for entry in activity_manifest
+        if entry.get("step_id")
+    }
+
+    # ── xName counter ─────────────────────────────────────────────────────────
+    xname_counters: dict = {}
+
+    def make_xname(ct: str) -> str:
+        base = ct[0].lower() + ct[1:]
+        xname_counters[base] = xname_counters.get(base, 0) + 1
+        return f"{base}{xname_counters[base]}"
+
+    # ── Zone ordering ─────────────────────────────────────────────────────────
+    ZONE_ORDER = {
+        "linear":         0,
+        "pre_container":  0,
+        "container":      1,
+        "container_body": 2,
+        "post_container": 3,
+    }
+    steps_sorted = sorted(
+        steps,
+        key=lambda s: ZONE_ORDER.get(s.get("zone", "linear"), 0)
+    )
+
+    # ── Separate steps by zone ────────────────────────────────────────────────
+    # "container" steps are skipped — the container itself is injected from the
+    # template (WhileActivity, IfElseActivity etc.) not placed per-step.
+    if cf_type == "linear":
+        pre_steps   = []
+        body_steps  = [s for s in steps_sorted
+                       if s.get("zone", "linear") != "container"]
+        post_steps  = []
+    else:
+        pre_steps   = [s for s in steps_sorted
+                       if s.get("zone", "linear") == "pre_container"]
+        body_steps  = [s for s in steps_sorted
+                       if s.get("zone", "linear") == "container_body"]
+        post_steps  = [s for s in steps_sorted
+                       if s.get("zone", "linear") == "post_container"]
+        # Fall back: if Decomposer didn't emit zone tags, treat everything as body
+        if not body_steps and not pre_steps and not post_steps:
+            body_steps = [s for s in steps_sorted
+                          if s.get("zone", "linear") != "container"]
+
+    # ── make_node: convert one manifest step to (xname, node) ────────────────
+    def make_node(step: dict) -> tuple[str, dict] | None:
+        step_id = step.get("step_id", "")
+        ct = manifest_by_step.get(step_id, "")
+        if not ct or ct.upper() == "UNAVAILABLE":
+            return None
+        ct = _normalise_ct(ct)
+        if not ct:
+            return None
+        xname = make_xname(ct)
+        node: dict = {
+            "xName":          xname,
+            "CustomTypeName": ct,
+        }
+        return xname, node
+
+    # ── Assemble skeleton ─────────────────────────────────────────────────────
+    raw: dict = {}
+
+    # Place pre-container activities
+    for step in pre_steps:
+        result = make_node(step)
+        if result:
+            xname, node = result
+            raw[xname] = node
+
+    if cf_type == "linear":
+        for step in body_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                raw[xname] = node
+
+    elif cf_type == "While":
+        while_xname = make_xname("WhileActivity")
+        seq_xname   = make_xname("SequenceActivity")
+        exit_xname  = make_xname("ExitWhile")
+
+        # ExitWhile is always the first child of SequenceActivity
+        seq_body: dict = {
+            exit_xname: {
+                "xName":          exit_xname,
+                "CustomTypeName": "ExitWhile",
+            },
+        }
+        for step in body_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                seq_body[xname] = node
+
+        seq_node: dict = {
+            "xName":          seq_xname,
+            "CustomTypeName": "SequenceActivity",
+            **seq_body,
+        }
+        while_node: dict = {
+            "xName":          while_xname,
+            "CustomTypeName": "WhileActivity",
+            "Condition":      "{x:Null}",
+            seq_xname:        seq_node,
+        }
+        raw[while_xname] = while_node
+
+    elif cf_type == "while_ifelse":
+        while_xname  = make_xname("WhileActivity")
+        seq_xname    = make_xname("SequenceActivity")
+        exit_xname   = make_xname("ExitWhile")
+        ifelse_xname = make_xname("IfElseActivity")
+        br1_xname    = make_xname("IfElseBranchActivity")
+        br2_xname    = make_xname("IfElseBranchActivity")
+
+        m1 = _re.search(r'(\d+)$', br1_xname)
+        m2 = _re.search(r'(\d+)$', br2_xname)
+        rv1_xname = f"returnValue{m1.group(1) if m1 else '1'}"
+        rv2_xname = f"returnValue{m2.group(1) if m2 else '2'}"
+
+        branch1: dict = {
+            "xName":          br1_xname,
+            "CustomTypeName": "IfElseBranchActivity",
+            rv1_xname: {"xName": rv1_xname, "CustomTypeName": "ReturnValue"},
+        }
+        branch2: dict = {
+            "xName":          br2_xname,
+            "CustomTypeName": "IfElseBranchActivity",
+            rv2_xname: {"xName": rv2_xname, "CustomTypeName": "ReturnValue"},
+        }
+        for step in body_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                branch_hint = step.get("branch", 0)
+                if branch_hint == 2:
+                    branch2[xname] = node
+                else:
+                    branch1[xname] = node
+
+        ifelse_node: dict = {
+            "xName":          ifelse_xname,
+            "CustomTypeName": "IfElseActivity",
+            br1_xname:        branch1,
+            br2_xname:        branch2,
+        }
+        seq_body_wi: dict = {
+            exit_xname: {
+                "xName":          exit_xname,
+                "CustomTypeName": "ExitWhile",
+            },
+            ifelse_xname: ifelse_node,
+        }
+        seq_node_wi: dict = {
+            "xName":          seq_xname,
+            "CustomTypeName": "SequenceActivity",
+            **seq_body_wi,
+        }
+        while_node_wi: dict = {
+            "xName":          while_xname,
+            "CustomTypeName": "WhileActivity",
+            "Condition":      "{x:Null}",
+            seq_xname:        seq_node_wi,
+        }
+        raw[while_xname] = while_node_wi
+
+    elif cf_type == "IfElse":
+        ifelse_xname = make_xname("IfElseActivity")
+        br1_xname    = make_xname("IfElseBranchActivity")
+        br2_xname    = make_xname("IfElseBranchActivity")
+
+        m1 = _re.search(r'(\d+)$', br1_xname)
+        m2 = _re.search(r'(\d+)$', br2_xname)
+        rv1_xname = f"returnValue{m1.group(1) if m1 else '1'}"
+        rv2_xname = f"returnValue{m2.group(1) if m2 else '2'}"
+
+        branch1: dict = {
+            "xName":          br1_xname,
+            "CustomTypeName": "IfElseBranchActivity",
+            rv1_xname: {"xName": rv1_xname, "CustomTypeName": "ReturnValue"},
+        }
+        branch2: dict = {
+            "xName":          br2_xname,
+            "CustomTypeName": "IfElseBranchActivity",
+            rv2_xname: {"xName": rv2_xname, "CustomTypeName": "ReturnValue"},
+        }
+        for step in body_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                branch_hint = step.get("branch", 0)
+                if branch_hint == 2:
+                    branch2[xname] = node
+                else:
+                    branch1[xname] = node
+
+        ifelse_node: dict = {
+            "xName":          ifelse_xname,
+            "CustomTypeName": "IfElseActivity",
+            br1_xname:        branch1,
+            br2_xname:        branch2,
+        }
+        raw[ifelse_xname] = ifelse_node
+
+    elif cf_type == "UserGroup":
+        ug_xname = make_xname("UserGroup")
+        ug_body: dict = {}
+        for step in body_steps:
+            result = make_node(step)
+            if result:
+                xname, node = result
+                ug_body[xname] = node
+        ug_node: dict = {
+            "xName":          ug_xname,
+            "CustomTypeName": "UserGroup",
+            **ug_body,
+        }
+        raw[ug_xname] = ug_node
+
+    # Place post-container activities
+    for step in post_steps:
+        result = make_node(step)
+        if result:
+            xname, node = result
+            raw[xname] = node
+
+    print(f"[skeleton_builder] Built {len(raw)} top-level activities "
+          f"(cf_type={cf_type})")
+    return {
+        "workflow_raw_data":  raw,
+        "variable_contracts": variable_contract,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Stage 4b — Enrich
 # ---------------------------------------------------------------------------
 
 def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
+    """
+    Stage 4b: loads activity templates and applies manifest wire hints.
+
+    D5: manifest lookup is now keyed by xName → pre_filled_fields rather than
+    activity type → pre_filled_fields. Previously, two steps with the same
+    activity type (e.g. two GetCellValue steps for different columns) caused
+    the second step's wire hints to silently overwrite the first's.
+
+    Strategy:
+      1. Build xname_to_hints: map each xName in the placed skeleton to the
+         pre_filled_fields of the manifest entry whose selected_activity matches
+         that node's CustomTypeName, consuming each entry at most once in order.
+      2. Fall back to type-level lookup for xNames not matched (structural
+         containers, injected activities, ExitWhile, ReturnValue etc.).
+    """
     from tools.build_tools import load_activity_template
     from tools.annotation_tools import _ensure_dict
 
     placed_skeleton = _ensure_dict(placed_skeleton)
     raw = placed_skeleton.get("workflow_raw_data", placed_skeleton)
 
-    manifest_lookup: dict = {}
-    if isinstance(activity_manifest, list):
-        for entry in activity_manifest:
-            act = entry.get("selected_activity")
-            if act:
-                manifest_lookup[act] = entry.get("pre_filled_fields", {})
+    # ── D5: build xName-keyed lookup ─────────────────────────────────────────
+    # Walk the placed skeleton to get all xNames in order, then pair them with
+    # manifest entries by matching CustomTypeName to selected_activity in order.
+    # Each manifest entry is consumed once — prevents collision when two steps
+    # use the same activity type.
+    def _collect_xnames_in_order(nodes: dict) -> list[tuple[str, str]]:
+        """Returns [(xname, CustomTypeName), ...] in document order, all levels."""
+        result = []
+        for xname, node in nodes.items():
+            if not isinstance(node, dict):
+                continue
+            ct = _normalise_ct(node.get("CustomTypeName", ""))
+            if ct:
+                result.append((xname, ct))
+            # Recurse into nested activities
+            for k, v in node.items():
+                if isinstance(v, dict) and v.get("CustomTypeName"):
+                    result.extend(_collect_xnames_in_order({k: v}))
+        return result
+
+    xname_order = _collect_xnames_in_order(raw)
+
+    # Pair each (xname, ct) with a matching unconsumed manifest entry
+    manifest_entries = list(activity_manifest) if isinstance(activity_manifest, list) else []
+    consumed = [False] * len(manifest_entries)
+    xname_to_hints: dict[str, dict] = {}
+    # Also keep type-level fallback for unmatched nodes
+    type_to_hints: dict[str, dict] = {}
+    for entry in manifest_entries:
+        act = entry.get("selected_activity", "")
+        if act and act not in type_to_hints:
+            type_to_hints[act] = entry.get("pre_filled_fields", {})
+
+    for xname, ct in xname_order:
+        # Find first unconsumed manifest entry with matching activity type
+        for i, entry in enumerate(manifest_entries):
+            if consumed[i]:
+                continue
+            if entry.get("selected_activity") == ct:
+                xname_to_hints[xname] = entry.get("pre_filled_fields", {})
+                consumed[i] = True
+                break
 
     def enrich_node(node: dict) -> dict:
         if not isinstance(node, dict):
@@ -304,7 +649,9 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
                     if v is not None and v != ""
                 }}
                 merged["xName"] = xname or merged.get("xName", "")
-                for field, value in manifest_lookup.get(ct, {}).items():
+                # D5: use xName-keyed hints first, fall back to type-level
+                hints = xname_to_hints.get(xname) or type_to_hints.get(ct, {})
+                for field, value in hints.items():
                     if not field.startswith("_wire_hint_"):
                         merged[field] = value
             else:
@@ -336,9 +683,9 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 # ---------------------------------------------------------------------------
 #
 # Called twice in the pipeline:
-#   Stage 4c — before WirerAgent: enforces invariants on PlacerAgent skeleton
+#   Stage 4c — before WirerAgent: enforces invariants on skeleton
 #   Stage 4f — after WirerAgent:  enforces invariants on activities Wirer
-#               reconstructed that were absent from PlacerAgent's skeleton
+#               reconstructed that were absent from the skeleton
 #
 # apply_fragments() is idempotent — safe to call twice.
 #
@@ -356,16 +703,38 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 # ---------------------------------------------------------------------------
 
 _STATUS_PRODUCERS: frozenset = frozenset({
+    # Confirmed status producers — return Success/Failure string
+    # Used by F7 to select the correct ReturnValue tier
     "Ping", "ServiceStatus", "FileExist", "FTPFileExists",
     "ADUserExists", "PowerShellScript", "PowerShell",
     "ADIsAccountDisabled", "ADIsAccountLocked",
+    # D1 additions — service management (all return Success/Failure)
+    "ServiceStart", "ServiceStop", "ServiceRestart",
+    "ServicePause", "ServiceResume", "FileExistRemote",
+    "ADUnlockAccount", "ApplicationPoolStatus",
+    "ApplicationPoolStart", "ApplicationPoolStop",
+    "ApplicationPoolRecycle",
 })
 
 _SCALAR_PRODUCERS: frozenset = frozenset({
+    # Confirmed scalar producers — return a single string or number
+    # Used by F8 to select the correct ReturnValue tier
     "GetRowsCount", "DateDifference", "FunctionCalculator",
     "GetCellValue", "GetCellValueAdvanced", "GetDate", "Contains",
     "IsEmpty", "InStr", "InStrRev", "Len", "ConvertPasswordToPlaintext",
     "GetLength", "SubStringByText", "Trim", "Replace",
+    # D1 additions — string functions
+    "Left", "Right", "Mid", "UpperCase", "LowerCase",
+    "LeftTrim", "RightTrim", "Length",
+    # D1 additions — math functions
+    "Max", "Min", "Abs", "Ceiling", "Floor", "Round", "Sgn",
+    # D1 additions — date/format functions
+    "FormatDate", "AddDate", "GetUNIXTimestamp", "EpochConverter",
+    # D1 additions — string search/encode
+    "IndexOf", "EncodeURL", "JSONEncodeString",
+    "MatchRegularExpression", "ExtractLineFromText",
+    # D1 additions — returns string (not DataTable despite the name)
+    "ConvertToHTMLTable",
 })
 
 # Fields that must never appear on WhileActivity or SequenceActivity.
@@ -438,6 +807,18 @@ def _apply_returnvalue_fragment(node: dict, preceding_ct: str | None) -> None:
     # Enforce Type is always a valid value — never "Default", "Equals", or ""
     if node.get("Type") not in ("StoredValue", "UserDefinedValue"):
         node["Type"] = "StoredValue"
+
+    # D3: Pre-compute Formula deterministically — pure function of ConditionType + Value.
+    # Formula = =ConditionType(&&&,Value) when condition is active, {x:Null} otherwise.
+    # WirerAgent instruction says "do not set Formula" but enforcing it here means
+    # the correct value is always present regardless of instruction compliance.
+    ct_val  = node.get("ConditionType", "")
+    val_str = node.get("Value", "")
+    is_valid = node.get("IsValid", "False")
+    if ct_val and is_valid == "True":
+        node["Formula"] = f"={ct_val}(&&&,{val_str})"
+    else:
+        node["Formula"] = "{x:Null}"
 
 
 def _make_returnvalue(xname: str) -> dict:
@@ -684,7 +1065,7 @@ def apply_fragments(workflow_json: dict) -> dict:
 def run_fragments(enriched_workflow: dict) -> dict:
     """
     Stage 4c / 4f: applies F1-F9.
-    Stage 4c: before WirerAgent (structural context on PlacerAgent skeleton)
+    Stage 4c: before WirerAgent (structural context on skeleton)
     Stage 4f: after WirerAgent (enforce invariants on Wirer-reconstructed activities)
     """
     enriched_workflow = _ensure_dict(enriched_workflow)
@@ -696,8 +1077,23 @@ def run_fragments(enriched_workflow: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 _TABLE_PRODUCERS_XNAME: frozenset = frozenset({
+    # Core query activities — confirmed DataTable output
     "TSQLQuery", "JsonToTable", "ResultSetFilter",
     "GetRows", "NestedJsonToTable",
+    # Additional DataTable producers — confirmed via output registry
+    "ReadExcelSpreadsheet",  # Excel spreadsheet → ResultSet (t09 fix)
+    "ReadXLS",               # older Excel format → ResultSet
+    "HTTPRequest",           # returns 3-col table: Status Code / Body / Request
+    "Split",                 # splits string into single-column table of rows
+    "MemoryTableUnion",      # merges two ResultSets → new ResultSet
+    "AddMemoryTableRow",     # returns modified ResultSet
+    "DeleteMemoryTableRows", # returns modified ResultSet
+    # Probable DataTable producers — likely from corpus, flag for verification
+    "FTPListFiles",          # FTP directory listing → ResultSet
+    "ListFolderBox",         # folder contents → ResultSet
+    "GetInstalledSoftware",  # software inventory → ResultSet
+    "ProcessList",           # running process list → ResultSet
+    "SNGetRecord",           # ServiceNow record query → ResultSet
 })
 
 _TABLE_PRODUCERS_FIELD: dict = {
@@ -833,6 +1229,29 @@ def _scaffold_node(
         _sif(node, "RowNumber",    "0")   # no pre-populated rows
         _sif(node, "isEmptyGrid",  "1")   # tells platform the table is empty
 
+    # ── Ping / Service activities — HostId ───────────────────────────────────
+    # HostId="-2" = any host — corpus dominant, RitaLab confirmed.
+    # HostName is semantic (which server) — left for WirerAgent.
+    elif ct in {"Ping", "ServiceStatus", "ServiceStart", "ServiceStop",
+                "ServiceRestart", "ServicePause", "ServiceResume",
+                "ApplicationPoolStatus", "ApplicationPoolStart",
+                "ApplicationPoolStop", "ApplicationPoolRecycle"}:
+        _sif(node, "HostId", "-2")
+
+    # ── GetDate ───────────────────────────────────────────────────────────────
+    # DateFormat: confirmed platform rule — always "MM/dd/yyyy HH:mm"
+    # FuturePast: "0" = current date (corpus dominant)
+    elif ct == "GetDate":
+        _sif(node, "DateFormat", "MM/dd/yyyy HH:mm")
+        _sif(node, "FuturePast", "0")
+
+    # ── DateDifference ────────────────────────────────────────────────────────
+    # FirstDateFormat/SecondDateFormat: confirmed platform rule
+    # ReturnFormat is semantic (Days/Hours/etc.) — left for WirerAgent
+    elif ct == "DateDifference":
+        _sif(node, "FirstDateFormat",  "MM/dd/yyyy HH:mm")
+        _sif(node, "SecondDateFormat", "MM/dd/yyyy HH:mm")
+
     # ── TSQLQuery ─────────────────────────────────────────────────────────────
     elif ct == "TSQLQuery":
         _sif(node, "SiteId",             "-1")
@@ -948,6 +1367,11 @@ def apply_content_scaffold(workflow_json: dict) -> dict:
     S20  TSQLQuery.SiteId                    = "-1"
     S21  TSQLQuery.SiteName                  = ""
     S22  TSQLQuery.isUserAuthenticate        = "False"
+    S23  Ping/Service.HostId                 = "-2"  (any host)
+    S24  GetDate.DateFormat                  = "MM/dd/yyyy HH:mm"
+    S25  GetDate.FuturePast                  = "0"
+    S26  DateDifference.FirstDateFormat      = "MM/dd/yyyy HH:mm"
+    S27  DateDifference.SecondDateFormat     = "MM/dd/yyyy HH:mm"
     """
     import copy
     result = copy.deepcopy(workflow_json)

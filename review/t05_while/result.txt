@@ -1,12 +1,10 @@
 Test ID:  t05
 Status:   PASS
-Elapsed:  72.5s
+Elapsed:  40.7s
 
 Notes:
-  JSON: 18331 bytes
-  XML: 11673 bytes — VALID
-  4 VERIFY note(s) for reviewer:
-    [readCsv1] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCSV. This field expects a DataTable variab
-    [getRowsCount1] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCSV. This field expects a DataTable variab
-    [getCellValue1] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCSV. This field expects a DataTable variab
-    [getCellValue2] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCSV. This field expects a DataTable variab
+  JSON: 6852 bytes
+  XML: 8793 bytes — VALID
+  2 VERIFY note(s) for reviewer:
+    [getRowsCount1] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCsv. This field expects a DataTable variab
+    [getCellValue1] VERIFY: 'ResultSet' references '%readCsv1%' which is a Scalar output from ReadCsv. This field expects a DataTable variab

@@ -1,7 +1,12 @@
 Test ID:  t09
-Status:   PASS
-Elapsed:  37.6s
+Status:   FAIL
+Elapsed:  77.9s
 
 Notes:
-  JSON: 3200 bytes
-  XML: 3597 bytes — VALID
+  Pipeline produced no output.
+  Chat response: Workflow generation failed after 2 attempts.
+
+Attempt 1: Workflow JSON validation errors:
+- [.getRowsCount1] 'GetRowsCount' missing required field 'ResultSet' (Table Variable)
+- [.readExcelSpreadsheet1] 'ReadExcelSpreadsheet' missing 'Description' (uppercase D).
+- [.readExcelSpreadsheet1] 'ReadExcel

@@ -1,7 +1,13 @@
 Test ID:  t08
 Status:   PASS
-Elapsed:  123.9s
+Elapsed:  108.0s
 
 Notes:
-  JSON: 17801 bytes
-  XML: 1322 bytes — VALID
+  JSON: 21987 bytes
+  XML: 15230 bytes — VALID
+  5 VERIFY note(s) for reviewer:
+    [createMemoryTable1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [createMemoryTable1] VERIFY: 'TableName' is set to the literal value 'resultsTable'. Confirm this matches the exact table or column name used
+    [getRowsCount1] VERIFY: 'ResultSet' references '%splitString1%' which is a Scalar output from SplitString. This field expects a DataTabl
+    [getCellValue1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [getCellValue1] VERIFY: 'ResultSet' references '%splitString1%' which is a Scalar output from SplitString. This field expects a DataTabl

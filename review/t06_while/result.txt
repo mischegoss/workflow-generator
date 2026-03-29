@@ -1,7 +1,12 @@
 Test ID:  t06
 Status:   FAIL
-Elapsed:  12.7s
+Elapsed:  137.4s
 
 Notes:
   Pipeline produced no output.
-  Chat response: Workflow generation failed — no output produced and no error captured.
+  Chat response: Workflow generation failed after 2 attempts.
+
+Attempt 1: Workflow JSON validation errors:
+- [.whileActivity1] WhileActivity has no nested SequenceActivity. All loop body activities must be nested inside a SequenceActivity.
+- [.queryDatabase1] 'QueryDatabase' missing 'Description' (uppercase D).
+- [.

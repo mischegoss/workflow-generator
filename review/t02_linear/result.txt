@@ -1,7 +1,11 @@
 Test ID:  t02
 Status:   PASS
-Elapsed:  72.3s
+Elapsed:  67.6s
 
 Notes:
-  JSON: 6059 bytes
-  XML: 1325 bytes — VALID
+  JSON: 7877 bytes
+  XML: 8311 bytes — VALID
+  3 VERIFY note(s) for reviewer:
+    [filterMemoryTable1] VERIFY: 'ResultSet' references '%ftpListFiles1%' which is a Scalar output from FTPListFiles. This field expects a DataTa
+    [sortMemoryTable1] VERIFY: 'ResultSet' references '%filterMemoryTable1%' which is a Scalar output from FilterMemoryTable. This field expect
+    [getCellValue1] VERIFY: 'ResultSet' references '%sortMemoryTable1%' which is a Scalar output from SortMemoryTable. This field expects a 

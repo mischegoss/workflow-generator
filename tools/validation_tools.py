@@ -39,6 +39,71 @@ EXCLUDED_REQUIRED_FIELDS = {
 # Valid examples: =Equals(&&&,Success)  =<=(&&&,5)  =Contains(&&&,ERROR)
 _FORMULA_PATTERN = re.compile(r'^=.+\(&&&,.+\)$')
 
+# ---------------------------------------------------------------------------
+# D7 — Variable reference validator constants
+# ---------------------------------------------------------------------------
+
+# %varName% in these fields must resolve to a known xName, TableName, or
+# VariableName. A broken reference here = hard runtime failure.
+_STRUCTURAL_REF_FIELDS: frozenset = frozenset({
+    "ResultSet",      # GetRowsCount, GetCellValue — must be a real table variable
+    "ResultSetName",  # GetCellValue — must be a real table variable
+    "Counter",        # ExitWhile — must reference a GetRowsCount xName
+    "RowNumber",      # GetCellValue — must reference a WhileActivity xName
+    "SessionName",    # JsonToTable — must reference a StartJsonSession xName
+    "TableVariableName",  # ForEach — must reference a table variable
+})
+
+# %varName% in these fields should resolve — broken reference = wrong behavior.
+# Flagged as verify_notes (not hard errors) since the value could be an
+# external variable populated before the workflow runs.
+_SEMANTIC_REF_FIELDS: frozenset = frozenset({
+    "HostName",       # Ping, Service activities
+    "VariableValue",  # MemorySet input
+    "FirstDate",      # DateDifference
+    "SecondDate",     # DateDifference
+    "TheValue",       # Contains, IsEmpty, string functions
+    "TheValue2",      # Contains (two-operand)
+    "ValueToSet",     # SetCellValue
+    "KeyPath",        # Registry activities
+    "Expression",     # IfElseActivity — the variable being branched on
+    "InputText",      # text processing activities
+})
+
+# Fields that contain human-readable content, literal values, or structural
+# metadata — skip entirely, never check %ref% inside them.
+_FREE_FORM_FIELDS: frozenset = frozenset({
+    "Description", "description", "ValueToDisplay", "notes",
+    "Subject", "Body", "To", "CC", "BCC",
+    "Query", "SqlQuery", "Script", "Command", "CommandLine",
+    "TableAsString",
+    "VariableName",    # MemorySet output name — this IS the variable, not a reference
+    "TableName",       # CreateMemoryTable — this IS the variable, not a reference
+    "DisplayName", "label", "name", "TypeName", "CustomTypeName",
+    "xName", "ActivityName", "HelpText",
+    "Formula",         # computed value — validated separately by control flow rules
+    "Value",           # ReturnValue.Value is often a literal ("Success", "5")
+    "ColumnNumber",    # GetCellValue — column name string, not a variable reference
+    "ConditionType", "ConditionName", "ConditionNumber",
+    "IsValid", "Disabled", "Type", "UseStoredValue", "UseBranchWhenTimeout",
+})
+
+# Platform global variables pre-populated by the Resolve Actions engine.
+# Always valid — never flag these as unresolved references.
+_PLATFORM_GLOBAL_VARIABLES: frozenset = frozenset({
+    "Device", "Classification", "Description", "Priority",
+    "AssignedTo", "Impact", "Urgency", "Category", "SubCategory",
+    "WorkOrderID", "AlertID", "AlertName", "AlertDescription",
+    "AlertSeverity", "AlertStatus", "AlertSource", "AlertType",
+    "AlertCategory", "AlertSubCategory", "AlertDevice",
+    "AlertClassification", "AlertPriority", "AlertAssignedTo",
+    "NotesText", "Resolution", "CloseCode",
+    # Common MemorySet variable names that may be set externally
+    "true", "false", "null", "True", "False",
+})
+
+_VAR_PATTERN = re.compile(r'%([^%\s]+)%')
+
 
 def _ensure_dict(value) -> dict:
     """
@@ -214,16 +279,13 @@ def validate_control_flow_rules(
     Enforces platform-specific control flow rules confirmed from real workflow exports.
 
     Rules enforced:
-    - ReturnValue must only appear inside IfElseBranchActivity (confirmed RitaLab March 2026:
-      ReturnValue at top level or inside WhileActivity causes 'Template is not a member of
-      Network' compilation error on import)
+    - ReturnValue must only appear inside IfElseBranchActivity
     - WhileActivity must not carry Counter (belongs on ExitWhile)
     - ExitWhile must have Counter
     - ForEachOutputVariableName must not start with 'forEach'
     - ReturnValue ConditionType must be a confirmed valid value
-    - ReturnValue Formula must match =ConditionType(&&&,Value) format when ConditionType is set
-      (Formula is now built deterministically by the serializer, but we validate here as a safety net)
-    - Continue inside IfElseBranchActivity is flagged as a VERIFY warning (likely filler)
+    - ReturnValue Formula must match =ConditionType(&&&,Value) format when set
+    - Continue inside IfElseBranchActivity is flagged as a VERIFY warning
     """
     workflow_json = _ensure_dict(workflow_json)
     errors = []
@@ -233,10 +295,6 @@ def validate_control_flow_rules(
         type_name = node.get("CustomTypeName", "")
 
         # --- ReturnValue: must only appear inside IfElseBranchActivity ---
-        # Confirmed RitaLab March 2026: ReturnValue at top level or inside
-        # WhileActivity/SequenceActivity directly causes "Activity compilation error:
-        # 'Template' is not a member of 'Network'" on import.
-        # Linear workflows and UserGroup workflows do not use ReturnValue.
         if type_name == "ReturnValue" and parent_type not in (
             "IfElseBranchActivity", "ReturnValue"
         ):
@@ -263,9 +321,7 @@ def validate_control_flow_rules(
             if seq is None:
                 errors.append(
                     f"[{path}] WhileActivity has no nested SequenceActivity. "
-                    "All loop body activities (ExitWhile, GetCellValue, action activities) "
-                    "must be nested inside a SequenceActivity child of WhileActivity. "
-                    "Do not place them at the top level of workflow_raw_data."
+                    "All loop body activities must be nested inside a SequenceActivity."
                 )
             else:
                 body_activities = [
@@ -275,9 +331,7 @@ def validate_control_flow_rules(
                 if not body_activities:
                     errors.append(
                         f"[{path}] WhileActivity SequenceActivity is empty — "
-                        "no loop body activities were generated. "
-                        "Add ExitWhile, GetCellValue, and action activities "
-                        "inside the SequenceActivity."
+                        "no loop body activities were generated."
                     )
 
         # --- ExitWhile: Counter is required ---
@@ -315,16 +369,15 @@ def validate_control_flow_rules(
             ):
                 errors.append(
                     f"[{path}] ReturnValue Formula '{formula}' is malformed. "
-                    f"Expected format: =ConditionType(&&&,Value) with no quoted operands. "
-                    f"Example for ConditionType='{ct}': ={ct}(&&&,<value>)"
+                    f"Expected format: =ConditionType(&&&,Value). "
+                    f"Example: ={ct}(&&&,<value>)"
                 )
 
         # --- Continue inside IfElseBranchActivity is almost always filler ---
         if type_name == "Continue" and parent_type == "IfElseBranchActivity":
             verify_notes.append(
                 f"[{path}] Continue inside IfElseBranchActivity is likely unnecessary filler. "
-                "If this branch performs no action, remove Continue and leave the branch empty. "
-                "The workflow proceeds automatically without an explicit continue."
+                "If this branch performs no action, remove Continue and leave the branch empty."
             )
 
         for key, value in node.items():
@@ -369,10 +422,126 @@ def validate_required_fields(
     return {"passed": True, "errors": []}
 
 
+def validate_variable_references(
+    workflow_json: Annotated[dict, "Workflow JSON dict"],
+) -> dict:
+    """
+    D7: Checks that every %varName% reference in the workflow resolves to a
+    known variable within the same workflow.
+
+    Two-pass algorithm:
+      Pass 1 — collect valid variable names:
+        - All xName values (activity outputs referenced as %xName%)
+        - All CreateMemoryTable.TableName values (table variable %TableName%)
+        - All MemorySet.VariableName values (stored variable %VariableName%)
+        - Platform global variables (pre-populated by the Resolve engine)
+
+      Pass 2 — check all field values containing %ref% patterns:
+        - Structural ref fields (ResultSet, Counter, RowNumber, SessionName,
+          ResultSetName, TableVariableName): unresolved → ERROR
+          These cause hard runtime failures when they don't resolve.
+        - Semantic ref fields (HostName, VariableValue, FirstDate, SecondDate,
+          Expression, TheValue, etc.): unresolved → VERIFY note
+          These cause incorrect behavior but not necessarily import failure.
+        - Free-form fields (Description, Body, Query, Script, etc.): skipped
+          These contain human text or literals, not variable references.
+
+    Why this matters:
+      A workflow with HostName="%getCellValue%" instead of "%getCellValue1%"
+      imports cleanly, passes all other validators, and fails silently at runtime.
+      This validator catches that class of error before output.
+    """
+    workflow_json = _ensure_dict(workflow_json)
+    errors = []
+    verify_notes = []
+
+    raw = workflow_json.get("workflow_raw_data", {})
+    if not isinstance(raw, dict) or not raw:
+        return {"passed": True, "errors": [], "verify_notes": []}
+
+    # ── Pass 1: collect all valid variable names ──────────────────────────────
+    valid_vars: set = set(_PLATFORM_GLOBAL_VARIABLES)
+
+    def collect_vars(node: dict) -> None:
+        xname = node.get("xName", "").strip()
+        if xname:
+            valid_vars.add(xname)
+
+        ct = node.get("CustomTypeName", "")
+
+        # CreateMemoryTable: variable is %TableName%, NOT %xName%
+        if ct == "CreateMemoryTable":
+            tname = node.get("TableName", "").strip().strip("%")
+            if tname:
+                valid_vars.add(tname)
+
+        # MemorySet: variable is %VariableName%, NOT %xName%
+        if ct == "MemorySet":
+            vname = node.get("VariableName", "").strip()
+            if vname:
+                valid_vars.add(vname)
+
+        for v in node.values():
+            if isinstance(v, dict):
+                collect_vars(v)
+
+    for activity in raw.values():
+        if isinstance(activity, dict):
+            collect_vars(activity)
+
+    # ── Pass 2: check all %ref% values against valid_vars ────────────────────
+    def check_refs(node: dict, path: str = "") -> None:
+        ct = node.get("CustomTypeName", "")
+
+        for field, val in node.items():
+            if field in _FREE_FORM_FIELDS:
+                continue
+            if not isinstance(val, str):
+                continue
+
+            refs = _VAR_PATTERN.findall(val)
+            for ref in refs:
+                ref = ref.strip()
+                if not ref:
+                    continue
+                if ref in valid_vars:
+                    continue
+
+                field_path = f"{path}.{field}" if path else field
+
+                if field in _STRUCTURAL_REF_FIELDS:
+                    errors.append(
+                        f"[{field_path}] '%{ref}%' does not resolve to any known "
+                        f"variable in this workflow. "
+                        f"Known variables: {sorted(valid_vars - _PLATFORM_GLOBAL_VARIABLES)}"
+                    )
+                elif field in _SEMANTIC_REF_FIELDS:
+                    verify_notes.append(
+                        f"[{field_path}] '%{ref}%' not found in workflow variables. "
+                        f"If this is an external variable populated before running, "
+                        f"this is expected. Otherwise check the reference."
+                    )
+                # All other fields with %ref% that aren't in either list:
+                # skip silently — too many false positives on free-form fields
+                # that happen to contain % characters.
+
+        for key, val in node.items():
+            if isinstance(val, dict):
+                check_refs(val, path=f"{path}.{key}" if path else key)
+
+    for xname, activity in raw.items():
+        if isinstance(activity, dict):
+            check_refs(activity, path=xname)
+
+    if errors:
+        return {"passed": False, "errors": errors, "verify_notes": verify_notes}
+    return {"passed": True, "errors": [], "verify_notes": verify_notes}
+
+
 def run_all_validators(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
-    """Runs all four validators in sequence. Returns combined result."""
+    """Runs all five validators in sequence. Returns combined result."""
     workflow_json = _ensure_dict(workflow_json)
     all_errors = []
     all_verify_notes = []
@@ -395,6 +564,11 @@ def run_all_validators(
     r4 = validate_required_fields(workflow_json)
     results["required_fields"] = r4
     all_errors.extend(r4.get("errors", []))
+
+    r5 = validate_variable_references(workflow_json)
+    results["variable_references"] = r5
+    all_errors.extend(r5.get("errors", []))
+    all_verify_notes.extend(r5.get("verify_notes", []))
 
     return {
         "status": "valid" if not all_errors else "invalid",

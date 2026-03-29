@@ -7,49 +7,56 @@ STAGE MAP:
   Stage 1    LLM   DecomposerAgent      → session state: decomposition
   Stage 2    PY    run_pattern_match    → session state: pattern_match
   Stage 3    PY    run_retrieval        → session state: activity_manifest
-  Stage 4a   LLM   PlacerAgent          → session state: placed_skeleton
+  Stage 4a   PY    run_skeleton_builder → session state: placed_skeleton
   Stage 4b   PY    run_enrichment       → session state: enriched_workflow
   Stage 4c   PY    run_fragments        → session state: enriched_workflow
   Stage 4c.5 PY    run_content_scaffold → session state: enriched_workflow
   Stage 4d   LLM   WirerAgent           → session state: workflow_json
-  Stage 4f   PY    run_fragments        → session state: workflow_json (enforces
-                                          invariants on activities Wirer added)
+  Stage 4f   PY    run_fragments+scaffold → session state: workflow_json
+  Stage 4g   PY    run_cleanup          → session state: workflow_json
   Stage 5    PY    run_annotation       → session state: annotation_result
   Stage 6    PY    run_validation       → session state: validation_result
   Stage 7    PY    run_output           → json_files/<n>.json
 
+MODEL CONFIGURATION:
+  Two distinct model factories — each tuned for its task:
+
+  _model_decomposer()  Flash  temp=0.1  top_p=0.8  max_tokens=4096  JSON mode
+    Decomposition is closed-set classification (intent enum, zone enum, control_flow
+    enum). Needs enough latitude to interpret natural language but must stay within
+    the defined enums. 0.1/0.8 balances interpretation with consistency.
+
+  _model_wirer()       Pro    temp=0.1  top_p=0.7  max_tokens=8192  JSON mode
+    Semantic field filling — descriptions, variable references, email content.
+    Needs more reasoning than Flash but must not hallucinate field names or
+    variable references. 0.1/0.7 keeps it grounded.
+
+  JSON mode via response_mime_type is NOT used — not supported by the
+  LiteLLM/Gemini routing path. _ensure_dict() handles markdown fence stripping.
+
 WHY STAGE 4f EXISTS:
-  PlacerAgent collapse — placing only 3 of 9 activities in a skeleton —
-  means WirerAgent reconstructs the missing activities (ExitWhile, ReturnValues,
-  nested IfElse branches) from scratch. Those reconstructed activities never
-  passed through Stage 4c fragments, so F1-F9 invariants are not enforced on
-  them. WirerAgent also adds spurious fields (LeftOperand, Operator,
-  RightOperand on WhileActivity) that the platform rejects.
-
-  Stage 4f re-runs run_fragments() on the Wirer output. apply_fragments() is
-  idempotent — safe to call twice. It strips spurious container fields and
-  enforces F1-F9 on everything Wirer produced, not just what Placer placed.
-
-  Stage 4f is a bridge fix. Phase 3 (deterministic skeleton builder) eliminates
-  the collapse entirely, at which point 4f becomes a no-op safety net.
+  WirerAgent may modify or reconstruct structural activities in ways that bypass
+  the fragment/scaffold layers run at Stages 4c/4c.5. Stage 4f re-runs both
+  idempotently after Wirer to enforce F1-F9 and F10 on everything Wirer produced.
+  apply_fragments() and apply_content_scaffold() are both idempotent — safe to
+  call twice.
 
 RETRY ARCHITECTURE:
   On validation failure, main.py calls build_correction_pipeline().
-  CorrectionPipeline skips DecomposerAgent and PlacerAgent entirely.
-  Stages 3, 4b, 4c, 4c.5, and 4f are re-run deterministically.
-  WirerAgent receives the CORRECTION REQUIRED prompt with embedded
-  workflow_json from attempt 1.
+  CorrectionPipeline skips DecomposerAgent entirely and reuses placed_skeleton
+  from session state (built deterministically in attempt 1).
+  WirerAgent receives CORRECTION REQUIRED prompt with embedded workflow_json.
 
 ACTIVITY COUNT GUARD:
-  After WirerAgent runs, _run_post_wirer_stages compares workflow_json
-  activity count against enriched_workflow. If Wirer returned fewer than
-  70% of expected top-level activities the output is rejected as truncation.
+  After WirerAgent, workflow_json is compared against enriched_workflow.
+  Below 70% of expected top-level activity count → rejected as truncation.
+  D4 structural check verifies WhileActivity bodies are not empty.
 
 ADK STATE NOTE:
   LlmAgent output_key values persist through get_session().
   Python-stage ctx.session.state mutations do NOT persist through get_session().
-  Therefore: decomposition, placed_skeleton, workflow_json (output_keys) survive
-  retry. activity_manifest and enriched_workflow must be recomputed.
+  decomposition, placed_skeleton, workflow_json (output_keys) survive retry.
+  activity_manifest and enriched_workflow must be recomputed.
 """
 
 import os
@@ -62,7 +69,6 @@ from google.adk.events import Event
 from google.adk.models.lite_llm import LiteLlm
 
 from agents.decomposer_agent import INSTRUCTION as DECOMPOSER_INSTRUCTION
-from agents.placer_agent import INSTRUCTION as PLACER_INSTRUCTION
 from agents.wirer_agent import INSTRUCTION as WIRER_INSTRUCTION
 
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
@@ -77,6 +83,7 @@ from tools.pattern_tools import get_examples_for_control_flow
 from tools.pipeline_stages import (
     run_pattern_match,
     run_retrieval,
+    run_skeleton_builder,
     run_enrichment,
     run_fragments,
     run_content_scaffold,
@@ -92,18 +99,40 @@ from tools.annotation_tools import _ensure_dict
 # Model factories
 # ---------------------------------------------------------------------------
 
-def _model_fast() -> LiteLlm:
+def _model_decomposer() -> LiteLlm:
+    """
+    DecomposerAgent — Flash with low temperature.
+
+    Decomposition is closed-set classification: the output must use only
+    the defined intent enum, zone enum, and control_flow enum values.
+    temperature=0.1 keeps the model on-enum while allowing natural language
+    interpretation. top_p=0.8 provides slightly more vocabulary range than
+    Wirer since the Decomposer must interpret free-form user prompts.
+    """
     return LiteLlm(
         model=os.getenv("MODEL_FAST", "gemini/gemini-2.5-flash"),
+        temperature=0.1,
+        top_p=0.8,
+        max_tokens=4096,
         api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
 
-def _model_structure() -> LiteLlm:
+def _model_wirer() -> LiteLlm:
+    """
+    WirerAgent — Pro with constrained sampling.
+
+    Semantic field filling requires stronger reasoning than Flash for
+    correct variable references, contextual descriptions, and SQL/script
+    content. temperature=0.1 keeps field values grounded. top_p=0.7
+    prevents the model from sampling unlikely tokens that produce hallucinated
+    variable names or field keys. max_tokens=8192 accommodates large workflows.
+    """
     return LiteLlm(
         model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
-        max_tokens=8192,
         temperature=0.1,
+        top_p=0.7,
+        max_tokens=8192,
         api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
@@ -123,9 +152,7 @@ def _check_activity_count(
 ) -> str | None:
     """
     Returns an error string if WirerAgent dropped too many activities, else None.
-    Threshold: workflow_json must have at least 70% of enriched_workflow's
-    top-level activity count. Below this the output is almost certainly
-    a partial/truncated response rather than a complete workflow.
+    Threshold: 70% of enriched_workflow top-level activity count.
     """
     expected = _count_top_level_activities(enriched_workflow)
     actual   = _count_top_level_activities(workflow_json)
@@ -149,11 +176,44 @@ def _check_activity_count(
         )
 
     print(f"  [pipeline] activity count ok — {actual}/{expected} top-level activities")
+
+    # D4: Structural check — if any WhileActivity is present, verify it has a
+    # SequenceActivity with at least 2 children (ExitWhile + 1 action activity).
+    # The ratio check above passes when the skeleton is correct N/N top-level
+    # activities, but doesn't detect an empty or missing loop body.
+    # Kept as a safety net on WirerAgent output even though the skeleton builder
+    # now guarantees correct structure going in.
+    raw = workflow_json.get("workflow_raw_data", {})
+    for xname, node in raw.items():
+        if not isinstance(node, dict):
+            continue
+        if node.get("CustomTypeName") != "WhileActivity":
+            continue
+        seq = next(
+            (v for v in node.values()
+             if isinstance(v, dict) and v.get("CustomTypeName") == "SequenceActivity"),
+            None,
+        )
+        if seq is None:
+            return (
+                f"WhileActivity '{xname}' has no nested SequenceActivity. "
+                f"Loop body activities must be inside a SequenceActivity child. "
+                f"Wirer may have flattened the loop structure — retry may resolve."
+            )
+        body = [v for v in seq.values()
+                if isinstance(v, dict) and v.get("CustomTypeName")]
+        if len(body) < 2:
+            return (
+                f"WhileActivity '{xname}' body has only {len(body)} activit(ies) — "
+                f"expected at least ExitWhile + 1 action activity. "
+                f"Loop body appears collapsed or empty."
+            )
+
     return None
 
 
 # ---------------------------------------------------------------------------
-# Shared post-wirer stages (Stages 4f, 5, 6, 7)
+# Shared post-wirer stages (Stages 4f, 4g, 5, 6, 7)
 # ---------------------------------------------------------------------------
 
 async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list):
@@ -185,12 +245,10 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         }
         return
 
-    # ── Stage 4f: Re-apply fragments + scaffold on Wirer output ─────────────
-    # Enforces F1-F9 and F10 on activities WirerAgent reconstructed that were
-    # absent from the PlacerAgent skeleton and never processed by Stages 4c/4c.5.
-    # Both apply_fragments() and apply_content_scaffold() are idempotent.
-    # F10 (description sync) lives in run_content_scaffold, not run_fragments —
-    # both must run here to cover Wirer-added nested activities.
+    # ── Stage 4f: Re-apply fragments + scaffold on Wirer output ──────────────
+    # Enforces F1-F9 and F10 on activities WirerAgent may have modified or
+    # reconstructed. Both apply_fragments() and apply_content_scaffold() are
+    # idempotent — safe to call a second time after Stages 4c/4c.5.
     try:
         workflow_json = run_fragments(workflow_json)
         ctx.session.state["workflow_json"] = workflow_json
@@ -205,11 +263,10 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         print(f"  [pipeline] stage 4f scaffold ok")
     except Exception as e:
         print(f"  [pipeline] stage 4f scaffold failed (non-fatal): {e}")
-        # Fall through — annotation runs on unpatched Wirer output
 
-    # ── Stage 4g: Post-Wirer cleanup ────────────────────────────────────────
-    # Removes inert nodes WirerAgent added when reconstructing a collapsed
-    # PlacerAgent skeleton — e.g. MemorySet with empty VariableName/VariableValue.
+    # ── Stage 4g: Post-Wirer cleanup ─────────────────────────────────────────
+    # Removes inert nodes WirerAgent may have added — e.g. MemorySet with
+    # empty VariableName/VariableValue that stores nothing.
     try:
         workflow_json = run_cleanup(workflow_json)
         ctx.session.state["workflow_json"] = workflow_json
@@ -246,7 +303,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         }
         return
 
-    # Stage 6b: validation failure — return without output for outer retry.
+    # Stage 6b: validation failure — return without output for outer retry
     if validation_result["status"] == "invalid":
         print(f"  [pipeline] validation failed — returning without output for outer retry")
         ctx.session.state["output_result"] = {
@@ -276,7 +333,6 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
 class WorkflowPipeline(BaseAgent):
 
     decomposer: LlmAgent
-    placer:     LlmAgent
     wirer:      LlmAgent
 
     async def _run_async_impl(
@@ -321,23 +377,19 @@ class WorkflowPipeline(BaseAgent):
             }
             return
 
-        # Stage 4a: Place
-        async for event in self.placer.run_async(ctx):
-            yield event
-
-        placed_skeleton = _ensure_dict(ctx.session.state.get("placed_skeleton"))
-
-        if not placed_skeleton:
-            print("  [pipeline] placed_skeleton is empty — aborting")
-            ctx.session.state["_empty_response_error"] = True
+        # Stage 4a: Build skeleton (deterministic — no LLM)
+        try:
+            placed_skeleton = run_skeleton_builder(decomposition, activity_manifest)
+            ctx.session.state["placed_skeleton"] = placed_skeleton
+            print(f"  [pipeline] placed_skeleton ok — "
+                  f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
+        except Exception as e:
+            print(f"  [pipeline] skeleton builder failed: {e}")
             ctx.session.state["output_result"] = {
                 "status": "failed",
-                "errors": ["PlacerAgent returned empty or unparseable output."],
+                "errors": [f"Skeleton builder failed: {e}"],
             }
             return
-
-        print(f"  [pipeline] placed_skeleton ok — "
-              f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
 
         # Stage 4b: Enrich
         try:
@@ -391,10 +443,11 @@ class WorkflowPipeline(BaseAgent):
 
 class CorrectionPipeline(BaseAgent):
     """
-    Targeted retry pipeline. Skips DecomposerAgent and PlacerAgent.
-    Expects session pre-loaded with decomposition and placed_skeleton
-    from attempt 1. WirerAgent receives the CORRECTION REQUIRED prompt
-    with embedded workflow_json from attempt 1.
+    Targeted retry pipeline. Skips DecomposerAgent entirely.
+    Reuses decomposition and placed_skeleton from attempt 1 session state —
+    placed_skeleton was built deterministically by run_skeleton_builder and
+    is stable across retries. WirerAgent receives the CORRECTION REQUIRED
+    prompt with embedded workflow_json from attempt 1.
     """
 
     wirer: LlmAgent
@@ -479,7 +532,6 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] scaffold ok")
         except Exception as e:
             print(f"  [correction] scaffold failed (non-fatal): {e}")
-            scaffolded_workflow = fragmented_workflow
 
         # WirerAgent receives CORRECTION REQUIRED prompt with embedded workflow_json
         async for event in self.wirer.run_async(ctx):
@@ -523,25 +575,18 @@ def _derive_base_name(prompt: str, max_words: int = 4) -> str:
 # ---------------------------------------------------------------------------
 
 def build_pipeline() -> WorkflowPipeline:
+    """Return a fresh WorkflowPipeline with per-agent optimised models."""
     decomposer = LlmAgent(
         name="DecomposerAgent",
-        model=_model_fast(),
+        model=_model_decomposer(),
         instruction=DECOMPOSER_INSTRUCTION,
         tools=[assess_complexity, decompose_workflow, estimate_activity_count],
         output_key="decomposition",
         include_contents="none",
     )
-    placer = LlmAgent(
-        name="PlacerAgent",
-        model=_model_fast(),
-        instruction=PLACER_INSTRUCTION,
-        tools=[fill_scaffold_params, resolve_control_flow, get_examples_for_control_flow],
-        output_key="placed_skeleton",
-        include_contents="none",
-    )
     wirer = LlmAgent(
         name="WirerAgent",
-        model=_model_structure(),
+        model=_model_wirer(),
         instruction=WIRER_INSTRUCTION,
         tools=[load_activity_template],
         output_key="workflow_json",
@@ -550,15 +595,15 @@ def build_pipeline() -> WorkflowPipeline:
     return WorkflowPipeline(
         name="workflow_pipeline",
         decomposer=decomposer,
-        placer=placer,
         wirer=wirer,
     )
 
 
 def build_correction_pipeline() -> CorrectionPipeline:
+    """Return a CorrectionPipeline for validation-failure retries."""
     wirer = LlmAgent(
         name="WirerAgent",
-        model=_model_structure(),
+        model=_model_wirer(),
         instruction=WIRER_INSTRUCTION,
         tools=[load_activity_template],
         output_key="workflow_json",

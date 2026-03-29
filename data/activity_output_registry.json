@@ -25,7 +25,7 @@
     "outputDescription": "Compares two files and determines whether they are identical or not. True/False."
   },
   {
-    "activityName": "File Exists",
+    "activityName": "FileExist",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specified file exists or not. True/False"
   },
@@ -35,7 +35,7 @@
     "outputDescription": "Checks whether a specific file is writable or not. True/False"
   },
   {
-    "activityName": "Folder Exists",
+    "activityName": "FolderExist",
     "outputType": "Boolean",
     "outputDescription": "Checks whether a specified folder exists or not. True/False"
   },
@@ -105,7 +105,7 @@
     "outputDescription": "Retrieves a list of McAfee ESM events according to the selected time frame and criteria. A ResultSet of all matching events."
   },
   {
-    "activityName": "Get CPU",
+    "activityName": "CPU",
     "outputType": "DataTable",
     "outputDescription": "If there is more than one CPU on the target machine, a table is returned. The selected machine's CPU usage/availability value."
   },
@@ -115,7 +115,7 @@
     "outputDescription": "Retrieves a ResultSet of the Cisco session's related interfaces and their status (up/down). A list of interfaces and their statuses."
   },
   {
-    "activityName": "Get Windows Event Logs",
+    "activityName": "GetWindowEventLogs",
     "outputType": "DataTable",
     "outputDescription": "Returns a table of all events according to the specified event type. A ResultSet of the filtered result."
   },
@@ -150,7 +150,7 @@
     "outputDescription": "Returns response as a DataTable. Columns: Status Code, Body, Request. Use GetCellValue to extract body."
   },
   {
-    "activityName": "Hash Check",
+    "activityName": "FileChecksumComparison",
     "outputType": "DataTable",
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this hash malicious. The last scan date, the amount of engines that scanned the hash, an"
   },
@@ -185,7 +185,7 @@
     "outputDescription": "Gets a list of Jira issues according to the selected criteria. A ResultSet of all matching issues."
   },
   {
-    "activityName": "List Folder",
+    "activityName": "ListFolderBox",
     "outputType": "DataTable",
     "outputDescription": "Lists all files and folders under a specified folder, according to predefined time criteria. A ResultSet (table) of the files and folders which reside in the specified folder and match the predefined "
   },
@@ -225,7 +225,7 @@
     "outputDescription": "Gets a list of QRadar events/flows that are connected to the specified offense. A ResultSet of all the connected events/flows to the specified offense."
   },
   {
-    "activityName": "Read Excel",
+    "activityName": "ReadXLS",
     "outputType": "DataTable",
     "outputDescription": "Reads an Excel file and returns all data in it. A ResultSet of the file's content. :::note This activity supports Excel 2003, Excel 2007, Excel 2010 and Excel 2014 files. ::: :::note In case of a dupl"
   },
@@ -250,12 +250,12 @@
     "outputDescription": "This can be plain text, a variable, a table, or combination. Success/Failure"
   },
   {
-    "activityName": "SolarWinds NPM Get Alert",
+    "activityName": "SLNPMGetAlert",
     "outputType": "DataTable",
     "outputDescription": "Gets a list of active SolarWinds alerts according to the selected criteria. A result set or json message of all matching alerts."
   },
   {
-    "activityName": "SolarWinds NPM Get Node",
+    "activityName": "SLNPMGetNode",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of SolarWinds NPM nodes according to the selected criteria. A result set of all matching nodes."
   },
@@ -285,7 +285,7 @@
     "outputDescription": "Returns a table or text value of the searched text between a starting and ending point. The table or text value."
   },
   {
-    "activityName": "Submit File",
+    "activityName": "SubmitFile",
     "outputType": "DataTable",
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this file malicious. The last scan date, the amount of engines that scanned the file, an"
   },
@@ -300,12 +300,12 @@
     "outputDescription": "Returns a table that contains the last scan date, the number of scanners, and the number of scanners that found this URL to be malicious. The last scan date, the amount of engines that scanned the URL"
   },
   {
-    "activityName": "VM Host List",
+    "activityName": "HyperVList",
     "outputType": "DataTable",
     "outputDescription": "Retrieves a list of all VM hosts in the vCenter. A ResultSet of the VM host names."
   },
   {
-    "activityName": "WMI Query",
+    "activityName": "WMIQuery",
     "outputType": "DataTable",
     "outputDescription": "Explores and queries the management classes, objects, and properties of a WMI (Windows Management Instrumentation). The ResultSet of the WMI query."
   },
@@ -315,7 +315,7 @@
     "outputDescription": "Produces a CSV file out of a table. Success/Failure"
   },
   {
-    "activityName": "Write Excel",
+    "activityName": "ExcelWrite",
     "outputType": "DataTable",
     "outputDescription": "Produces an Excel file out of a table. Success/Failure :::note The file is saved in Excel 2010 format. :::"
   },
@@ -335,7 +335,7 @@
     "outputDescription": "Control activity. Logs a value. Produces no output variable."
   },
   {
-    "activityName": "AD Computer Last Logged In Date",
+    "activityName": "ADComputerLoggedInDate",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the last date in which a selected machine logged in to the Active Directory. Date (by the default operating system's regional setting format)."
   },
@@ -375,7 +375,7 @@
     "outputDescription": "Searches for users\u2019 logon names according to predefined criteria. A list of logon names which match the search criteria."
   },
   {
-    "activityName": "AD User Last Logged In Date",
+    "activityName": "ADUserLoggedInDate",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the last date on which a specific user logged in to the Active Directory. The last login date."
   },
@@ -390,7 +390,7 @@
     "outputDescription": "Attaches an existing volume to an Amazon Web Service instance. An attachment notice."
   },
   {
-    "activityName": "AWS Copy Image",
+    "activityName": "AWSCopyImage",
     "outputType": "Scalar",
     "outputDescription": "Copies an Amazon Web Service image from a specified region. The ID of the new image."
   },
@@ -415,7 +415,7 @@
     "outputDescription": "Creates a new Amazon Web Service volume. The ID of the new volume."
   },
   {
-    "activityName": "AWS Execute CLI",
+    "activityName": "AWSSSMCommandExecute",
     "outputType": "Scalar",
     "outputDescription": "The command result as it was returned from Amazon EC2."
   },
@@ -530,7 +530,7 @@
     "outputDescription": "The Function Calculator performs various calculations on variables. The calculation's result. :::note The activity supports the following functions: Abs, Ceiling, Floor, Max, Min, Pow, Round, Sgn, Sqr"
   },
   {
-    "activityName": "Generate Password",
+    "activityName": "GeneratePassword",
     "outputType": "Scalar",
     "outputDescription": "Generates a strong password. The generated password can be used in another activity with %activity instance name.password%."
   },
@@ -550,7 +550,7 @@
     "outputDescription": "Returns the number of columns in a table as a scalar value. Reference as %xName%."
   },
   {
-    "activityName": "Get Disk Space",
+    "activityName": "DiskSpace",
     "outputType": "Scalar",
     "outputDescription": "Returns the current disk space value (usage/availability) of a machine. The selected machine's disk space usage/availability value."
   },
@@ -560,32 +560,32 @@
     "outputDescription": "Returns the external IP address of the VAR::Resolve Actions Dev server. The IP address."
   },
   {
-    "activityName": "Get File Extension",
+    "activityName": "FileGetExt",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the extension of a selected file. The file extension (e.g., in case `%FileName%=log.txt`, the retrieved value would be `txt`)."
   },
   {
-    "activityName": "Get File Path",
+    "activityName": "FileGetPath",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a file's path. The path (e.g., `C:\\logs\\log.txt`. The retrieved value would be `C:\\logs`)."
   },
   {
-    "activityName": "Get File Root",
+    "activityName": "FileGetRoot",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a file's root folder. The root folder."
   },
   {
-    "activityName": "Get File Size",
+    "activityName": "FileSize",
     "outputType": "Scalar",
     "outputDescription": "Returns the size of a specified file. The file size (in MB)."
   },
   {
-    "activityName": "Get File Version",
+    "activityName": "FileVersion",
     "outputType": "Scalar",
     "outputDescription": "Returns the version of a specified file. The file version."
   },
   {
-    "activityName": "Get Folder Size",
+    "activityName": "FolderSize",
     "outputType": "Scalar",
     "outputDescription": "Returns the size of a specified folder. The folder size (in MB)."
   },
@@ -595,22 +595,22 @@
     "outputDescription": "This can be used, for example, to trigger a workflow only when an incident is open for more than a specified number of minutes. The number of minutes for which an incident is open."
   },
   {
-    "activityName": "Get Installed Software",
+    "activityName": "GetInstalledSoftware",
     "outputType": "Scalar",
     "outputDescription": "Returns a list of the installed software on a server. The list of installed programs."
   },
   {
-    "activityName": "Get Length",
+    "activityName": "GetLength",
     "outputType": "Scalar",
     "outputDescription": "Returns the number of characters in a text. The number of characters."
   },
   {
-    "activityName": "Get Memory",
+    "activityName": "Memory",
     "outputType": "Scalar",
     "outputDescription": "Returns the available memory/memory usage of the selected machine (in MB). The selected machine's memory usage/availability value."
   },
   {
-    "activityName": "Get Name Without Extension",
+    "activityName": "FileGetNameWithoutExt",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a file name without its extension. The file name (e.g., in case `%FileName%=log.txt` the retrieved value would be `log`)."
   },
@@ -620,22 +620,22 @@
     "outputDescription": "Returns the list of the currently open incidents in Resolve Actions, according to predefined criteria. The list of open incidents."
   },
   {
-    "activityName": "Get Operating System",
+    "activityName": "OperatingSystem",
     "outputType": "Scalar",
     "outputDescription": "Returns a server's operating system type. The server's operating system"
   },
   {
-    "activityName": "Get Process CPU Usage",
+    "activityName": "ProcessCPUUsage",
     "outputType": "Scalar",
     "outputDescription": "Returns the CPU usage value of a specified process. The selected process's CPU usage value."
   },
   {
-    "activityName": "Get Process Memory Usage",
+    "activityName": "ProcessMemoryUsage",
     "outputType": "Scalar",
     "outputDescription": "Returns the memory usage value of a specified process (in MB). The selected process's memory usage value."
   },
   {
-    "activityName": "Get Process Owner",
+    "activityName": "ProcessOwner",
     "outputType": "Scalar",
     "outputDescription": "Returns a list of process IDs and process owners. The list of processes."
   },
@@ -645,12 +645,12 @@
     "outputDescription": "Returns the number of rows in a table as a scalar value. Reference as %xName%. Use in ExitWhile Counter field."
   },
   {
-    "activityName": "Get Service Startup Type",
+    "activityName": "ServiceStartupType",
     "outputType": "Scalar",
     "outputDescription": "Returns the service's startup type (Manual/Auto/Disabled). Manual/Auto/Disabled"
   },
   {
-    "activityName": "Get Volume List",
+    "activityName": "VolumeList",
     "outputType": "Scalar",
     "outputDescription": "Returns the volume list of a specified machine. The volume list."
   },
@@ -690,7 +690,7 @@
     "outputDescription": "The search begins at the first character of the text. The index of the phrase or 0 if it does not exist."
   },
   {
-    "activityName": "InStr Reverse",
+    "activityName": "InStrRev",
     "outputType": "Scalar",
     "outputDescription": "The search begins at the last character of the text. The location of the phrase."
   },
@@ -715,7 +715,7 @@
     "outputDescription": "Creates a new Jira issue. The ID of the new issue."
   },
   {
-    "activityName": "Jira General Command",
+    "activityName": "JiraGenericCommand",
     "outputType": "Scalar",
     "outputDescription": "For instructions on using the Jira API, refer to the Atlassian Developers site for Jira Cloud and Jira Server. The ID of the new issue."
   },
@@ -775,7 +775,7 @@
     "outputDescription": "Returns Success or Failure as a scalar value. Reference as %xName%."
   },
   {
-    "activityName": "Power",
+    "activityName": "Pow",
     "outputType": "Scalar",
     "outputDescription": "Returns a specified number raised to the specified power. The function's result."
   },
@@ -785,12 +785,12 @@
     "outputDescription": "Returns the number of active instances of a specified process in the operating system. The list of processes."
   },
   {
-    "activityName": "Process List",
+    "activityName": "ProcessList",
     "outputType": "Scalar",
     "outputDescription": "Lists the currently active processes on a selected machine. The list of processes"
   },
   {
-    "activityName": "Query Registry Value",
+    "activityName": "QueryRegistryValue",
     "outputType": "Scalar",
     "outputDescription": "Queries a selected entry in the registry according to a selected registry key and a path. The value stored in the specified path."
   },
@@ -820,7 +820,7 @@
     "outputDescription": "Returns a new text in which all occurrences of a specified phrase are replaced with another phrase. The new text."
   },
   {
-    "activityName": "Resume Service",
+    "activityName": "ServiceResume",
     "outputType": "Scalar",
     "outputDescription": "Resumes a paused service. Running/stopped/paused."
   },
@@ -845,12 +845,12 @@
     "outputDescription": "Creates a new ServiceNow record. The ID of the new record."
   },
   {
-    "activityName": "SNMP Get Next Request",
+    "activityName": "SNMPGetNextRequest",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the value of the next Object ID of a specified device. The SNMP object value."
   },
   {
-    "activityName": "SNMP Get Request",
+    "activityName": "SNMPGetRequest",
     "outputType": "Scalar",
     "outputDescription": "Retrieves the value of an SNMP Object ID of a specified device. The SNMP object value."
   },
@@ -880,7 +880,7 @@
     "outputDescription": "The activity follows the Start SSH Session activity, and is followed by the Send SSH Command and Terminate SSH Session activities. Prompt Session"
   },
   {
-    "activityName": "Sign",
+    "activityName": "Sgn",
     "outputType": "Scalar",
     "outputDescription": "Returns a value indicating the sign of a decimal number. The function's result."
   },
@@ -890,12 +890,12 @@
     "outputDescription": "Splits a text into phrases (according to a delimiter) and returns a one-dimensional table containing the phrases. The table."
   },
   {
-    "activityName": "Square",
+    "activityName": "Sqr",
     "outputType": "Scalar",
     "outputDescription": "Returns the square root of a specified number. The function's result."
   },
   {
-    "activityName": "Start Process",
+    "activityName": "ProcessStart",
     "outputType": "Scalar",
     "outputDescription": "Starts a specified process. The new process's ID."
   },
@@ -910,7 +910,7 @@
     "outputDescription": "Returns the numeric sum of cells as a scalar value. Reference as %xName%."
   },
   {
-    "activityName": "Trace Route",
+    "activityName": "TraceRoute",
     "outputType": "Scalar",
     "outputDescription": "Returns the route over the network between two systems, listing all the intermediate routers a connection must pass through to get to its destination. The route."
   },
@@ -935,7 +935,7 @@
     "outputDescription": "Capitalizes all characters in a text. The new text."
   },
   {
-    "activityName": "VM IP Address",
+    "activityName": "HyperVIPAddress",
     "outputType": "Scalar",
     "outputDescription": "Retrieves a Virtual Machine's IP addresses. The Virtual Machine's IP address."
   },
@@ -955,7 +955,7 @@
     "outputDescription": "Lists all snapshots of a Virtual Machine. The list of snapshots of the selected Virtual Machine"
   },
   {
-    "activityName": "VM List Templates",
+    "activityName": "HyperVListTemplates",
     "outputType": "Scalar",
     "outputDescription": "Lists the templates in the vCenter. The list of templates in the selected vCenter."
   },
@@ -975,12 +975,12 @@
     "outputDescription": "Returns the number of currently active instances of the selected Workflow. The number of instances."
   },
   {
-    "activityName": "Zip Compression",
+    "activityName": "ZipCompression",
     "outputType": "Scalar",
     "outputDescription": "Compresses a file or folder using the selected compression method. The compressed file"
   },
   {
-    "activityName": "Zip Decompression",
+    "activityName": "ZipDecompression",
     "outputType": "Scalar",
     "outputDescription": "Extracts a selected compressed file. The extracted file."
   },
@@ -1080,32 +1080,32 @@
     "outputDescription": "Detaches a volume from an Amazon Web Service instance. Success/Failure"
   },
   {
-    "activityName": "AWS Reboot Instance",
+    "activityName": "AWSRebootInstance",
     "outputType": "Status",
     "outputDescription": "Reboots an Amazon Web Service instance. Success (instance rebooted)/Failure"
   },
   {
-    "activityName": "AWS Start Instance",
+    "activityName": "AWSStartInstance",
     "outputType": "Status",
     "outputDescription": "Starts an Amazon Web Service instance. Success (instance started)/Failure"
   },
   {
-    "activityName": "AWS Stop Instance",
+    "activityName": "AWSStopInstance",
     "outputType": "Status",
     "outputDescription": "Stops a running Amazon Web Service instance. Success (instance stopped)/Failure"
   },
   {
-    "activityName": "AWS Terminate Instance",
+    "activityName": "AWSTerminateInstance",
     "outputType": "Status",
     "outputDescription": "Terminates an Amazon Web Service instance. Success (instance terminated)/Failure"
   },
   {
-    "activityName": "Add XML Attribute",
+    "activityName": "AddXMLAttribute",
     "outputType": "Status",
     "outputDescription": "Adds the specified attribute as the last node in the collection. Success/failure."
   },
   {
-    "activityName": "Add XML Node",
+    "activityName": "AddXMLNode",
     "outputType": "Status",
     "outputDescription": "Adds a new node in the specified Xpath. Success/Failure."
   },
@@ -1160,12 +1160,12 @@
     "outputDescription": "Retrieves a list of Cherwell records based on the selected criteria. Success/Failure"
   },
   {
-    "activityName": "Copy File",
+    "activityName": "FileCopy",
     "outputType": "Status",
     "outputDescription": "Copies a specified file from a source location to a destination location. Success/Failure"
   },
   {
-    "activityName": "Copy Folder",
+    "activityName": "FolderCopy",
     "outputType": "Status",
     "outputDescription": "Copies the contents of a specified folder from a source location to a destination location. Success/Failure"
   },
@@ -1190,17 +1190,17 @@
     "outputDescription": "Deletes a folder (and all the files and subfolders that reside in it) in a specified location. Success/Failure"
   },
   {
-    "activityName": "Delete Registry",
+    "activityName": "DeleteRegistryKey",
     "outputType": "Status",
     "outputDescription": "Deletes a selected entry from the registry according to a selected registry key and a path. Success/Failure"
   },
   {
-    "activityName": "Delete XML Attribute",
+    "activityName": "DeleteXMLAttribute",
     "outputType": "Status",
     "outputDescription": "Removes the selected attribute from the specified Xpath. Success/Failure."
   },
   {
-    "activityName": "Download Email Attachment",
+    "activityName": "DownloadEmailAttachment",
     "outputType": "Status",
     "outputDescription": "The file can then be used by any of the read file activities. Success/Failure"
   },
@@ -1210,12 +1210,12 @@
     "outputDescription": "Edits a Virtual Directory on an IIS website. Success/Failure"
   },
   {
-    "activityName": "Edit XML Attribute",
+    "activityName": "EditXMLAttribute",
     "outputType": "Status",
     "outputDescription": "Changes a specified XML attribute's value. Success/Failure"
   },
   {
-    "activityName": "Edit XML Node",
+    "activityName": "EditXMLNode",
     "outputType": "Status",
     "outputDescription": "Changes a specified XML's value. Success/Failure."
   },
@@ -1225,7 +1225,7 @@
     "outputDescription": "Sends an \"ena\" command with its password. Success/Failure."
   },
   {
-    "activityName": "File Download",
+    "activityName": "FileDownload",
     "outputType": "Status",
     "outputDescription": "Downloads a file from a website. Success/Failure :::note The activity is not a download manager; therefore, network connectivity problems may cause the activity to fail. :::"
   },
@@ -1300,7 +1300,7 @@
     "outputDescription": "Modifies the memory of a virtual server. Success/Failure"
   },
   {
-    "activityName": "HyperV Refresh",
+    "activityName": "HyperVRefreshVM",
     "outputType": "Status",
     "outputDescription": "Refreshes the state of a virtual server. Success/Failure"
   },
@@ -1315,17 +1315,17 @@
     "outputDescription": "Updates an existing IBM Tivoli Omnibus alert. Success/Failure."
   },
   {
-    "activityName": "IIS Reset",
+    "activityName": "IISReset",
     "outputType": "Status",
     "outputDescription": "Restarts the Internet Information Server (IIS). Success/Failure"
   },
   {
-    "activityName": "IIS Start",
+    "activityName": "IISStart",
     "outputType": "Status",
     "outputDescription": "Starts the Internet Information Server (IIS). Success/Failure"
   },
   {
-    "activityName": "IIS Stop",
+    "activityName": "IISStop",
     "outputType": "Status",
     "outputDescription": "Stops the Internet Information Server (IIS). Success/Failure"
   },
@@ -1335,7 +1335,7 @@
     "outputDescription": "Updates an existing Jira issue. Success/Failure."
   },
   {
-    "activityName": "Kill Process",
+    "activityName": "ProcessKill",
     "outputType": "Status",
     "outputDescription": "Terminates all active instances of a specified process. Success/Failure"
   },
@@ -1345,7 +1345,7 @@
     "outputDescription": "Locks an executor to be exclusively used by the activities of the running workflow in case multiple executor components are set up on the same cluster. Success/Failure"
   },
   {
-    "activityName": "Move File",
+    "activityName": "FileMove",
     "outputType": "Status",
     "outputDescription": "Cuts a file from a source location and pastes it into the destination location. Success/Failure"
   },
@@ -1380,12 +1380,12 @@
     "outputDescription": "Sends a single SSH protocol command to an open session. Success/Failure"
   },
   {
-    "activityName": "Server Hibernate",
+    "activityName": "Hibernate",
     "outputType": "Status",
     "outputDescription": "Puts the selected workstation into Hibernation mode. Success/Failure"
   },
   {
-    "activityName": "Server Standby",
+    "activityName": "Standby",
     "outputType": "Status",
     "outputDescription": "Puts the selected workstation into standby mode. Success/Failure"
   },
@@ -1400,27 +1400,27 @@
     "outputDescription": ":::note \"Single SSH Command\" opens an SSH session, executes the command and terminates the session. Success/Failure"
   },
   {
-    "activityName": "SolarWinds Acknowledge Alert",
+    "activityName": "SLNPMAcknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Acknowledges an active alert in SolarWinds. Success/Failure."
   },
   {
-    "activityName": "SolarWinds NPM Add Note",
+    "activityName": "SLNPMAddNote",
     "outputType": "Status",
     "outputDescription": "Adds a note to an active alert in SolarWinds. Success/Failure."
   },
   {
-    "activityName": "SolarWinds NPM Manage Node",
+    "activityName": "SLNPMManageNode",
     "outputType": "Status",
     "outputDescription": "When Scheduled is unchecked the node is immediately set to \"Managed\" state upon execution. Success/Failure"
   },
   {
-    "activityName": "SolarWinds NPM Unmanage Node",
+    "activityName": "SLNPMUnManageNode",
     "outputType": "Status",
     "outputDescription": "Sets a node in \"Unmanaged\" state. Success/Failure"
   },
   {
-    "activityName": "SolarWinds Unacknowledge Alert",
+    "activityName": "SLNPMUnacknowledgeAlert",
     "outputType": "Status",
     "outputDescription": "Unacknowledges an active alert in SolarWinds. Success/Failure."
   },

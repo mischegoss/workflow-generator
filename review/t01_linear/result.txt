@@ -1,10 +1,10 @@
 Test ID:  t01
 Status:   PASS
-Elapsed:  36.4s
+Elapsed:  32.0s
 
 Notes:
-  JSON: 7265 bytes
-  XML: 5531 bytes — VALID
+  JSON: 4339 bytes
+  XML: 5607 bytes — VALID
   2 VERIFY note(s) for reviewer:
-    [getCellValue1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
-    [getCellValue1] VERIFY: 'ResultSet' references '%convertJsonToTable1%' which is a Scalar output from ConvertJsonToTable. This field expe
+    [deviceInventoryTable] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [deviceInventoryTable] VERIFY: 'TableName' is set to the literal value 'deviceInventoryTable'. Confirm this matches the exact table or column n

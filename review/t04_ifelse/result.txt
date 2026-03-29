@@ -1,13 +1,7 @@
 Test ID:  t04
-Status:   FAIL
-Elapsed:  69.4s
+Status:   PASS
+Elapsed:  64.4s
 
 Notes:
-  Pipeline produced no output.
-  Chat response: Workflow generation failed after 2 attempts.
-
-Attempt 1: Workflow JSON validation errors:
-- [.getLength1] 'GetLength' missing 'description' (lowercase d).
-- [.regex1] 'Regex' missing 'description' (lowercase d).
-- [.booleanExpression1] 'BooleanExpression' missing 'description' (lowercase d).
-- [.ifE
+  JSON: 5313 bytes
+  XML: 8837 bytes — VALID

@@ -1,7 +1,10 @@
 Test ID:  t07
 Status:   PASS
-Elapsed:  74.3s
+Elapsed:  72.0s
 
 Notes:
-  JSON: 4560 bytes
-  XML: 1324 bytes — VALID
+  JSON: 13698 bytes
+  XML: 12836 bytes — VALID
+  2 VERIFY note(s) for reviewer:
+    [createMemoryTable1] VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runt
+    [createMemoryTable1] VERIFY: 'TableName' is set to the literal value 'machineTable'. Confirm this matches the exact table or column name used

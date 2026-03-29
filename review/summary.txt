@@ -1,20 +1,20 @@
 ============================================================
 TEST SUITE SUMMARY
 ============================================================
-Total: 10  |  Passed: 7  |  Failed: 3
+Total: 10  |  Passed: 8  |  Failed: 2
 
 ID     CF             STATUS   TIME  NOTES
 ------------------------------------------------------------
-t01    linear         PASS    36.4s  JSON: 7265 bytes
-t02    linear         PASS    72.3s  JSON: 6059 bytes
-t03    ifelse         PASS    63.5s  JSON: 5631 bytes
-t04    ifelse         FAIL    69.4s  Pipeline produced no output.
-t05    while          PASS    72.5s  JSON: 18331 bytes
-t06    while          FAIL    12.7s  Pipeline produced no output.
-t07    while_ifelse   PASS    74.3s  JSON: 4560 bytes
-t08    while_ifelse   PASS   123.9s  JSON: 17801 bytes
-t09    usergroup      PASS    37.6s  JSON: 3200 bytes
-t10    usergroup      FAIL    78.2s  Pipeline produced no output.
+t01    linear         PASS    32.0s  JSON: 4339 bytes
+t02    linear         PASS    67.6s  JSON: 7877 bytes
+t03    ifelse         PASS    73.2s  JSON: 9097 bytes
+t04    ifelse         PASS    64.4s  JSON: 5313 bytes
+t05    while          PASS    40.7s  JSON: 6852 bytes
+t06    while          FAIL   137.4s  Pipeline produced no output.
+t07    while_ifelse   PASS    72.0s  JSON: 13698 bytes
+t08    while_ifelse   PASS   108.0s  JSON: 21987 bytes
+t09    usergroup      FAIL    77.9s  Pipeline produced no output.
+t10    usergroup      PASS    36.8s  JSON: 4105 bytes
 
 Output files are in: review/
 Each subfolder contains: prompt.txt, workflow.json, workflow.xml, result.txt
