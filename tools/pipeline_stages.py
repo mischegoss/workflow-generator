@@ -368,6 +368,17 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             body_steps = [s for s in steps_sorted
                           if s.get("zone", "linear") != "container"]
 
+    # Activity types that are structural containers — they are always injected
+    # by the skeleton template, never placed by make_node from manifest steps.
+    # If retrieval returns one of these for a content step (e.g. IfElseActivity
+    # for a display step when Decomposer emits control_flow=ifelse context),
+    # skip it rather than creating a ghost container activity in the wrong place.
+    _CONTAINER_TYPES_SKIP = frozenset({
+        "WhileActivity", "SequenceActivity", "IfElseActivity",
+        "IfElseBranchActivity", "ExitWhile", "ReturnValue",
+        "ForEachActivity", "ParallelActivity", "UserGroup",
+    })
+
     # ── make_node: convert one manifest step to (xname, node) ────────────────
     def make_node(step: dict) -> tuple[str, dict] | None:
         step_id = step.get("step_id", "")
@@ -376,6 +387,12 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
             return None
         ct = _normalise_ct(ct)
         if not ct:
+            return None
+        # Never place structural container types as content activities.
+        # These are always injected by the skeleton template.
+        if ct in _CONTAINER_TYPES_SKIP:
+            print(f"[skeleton_builder] skipping structural type '{ct}' "
+                  f"for step '{step_id}' — template-injected only")
             return None
         xname = make_xname(ct)
         node: dict = {
@@ -450,19 +467,75 @@ def run_skeleton_builder(decomposition: dict, activity_manifest: list) -> dict:
         rv1_xname = f"returnValue{m1.group(1) if m1 else '1'}"
         rv2_xname = f"returnValue{m2.group(1) if m2 else '2'}"
 
-        # Split body_steps by control_flow:
-        #   control_flow='while' (or unspecified) → SequenceActivity body before IfElse
-        #   control_flow='ifelse'                 → IfElseBranchActivity
-        # Exclude structural intents (exit_loop, loop) — these are always injected
-        # from the template (ExitWhile is hardcoded first in seq_body_wi).
-        # A step with intent='exit_loop' in container_body would create a duplicate.
+        # Split body_steps into while-sequence steps and ifelse-branch steps.
+        #
+        # Primary split: use the intent='branch' step as a structural divider.
+        # The Decomposer emits one step with intent='branch' to mark the IfElse
+        # activity itself. Everything before it in body_steps belongs in the
+        # SequenceActivity (before the IfElse); everything after it belongs in
+        # the IfElse branches. This is more reliable than control_flow tags
+        # because the Decomposer frequently emits 'while' or 'linear' for display
+        # steps that logically belong inside the conditional branches.
+        #
+        # Fallback: if no branch step exists, use control_flow tag.
         _STRUCTURAL_INTENTS = frozenset({"exit_loop", "loop", "branch"})
-        while_seq_steps     = [s for s in body_steps
-                                if s.get("control_flow", "while") != "ifelse"
-                                and s.get("intent") not in _STRUCTURAL_INTENTS]
-        ifelse_branch_steps = [s for s in body_steps
-                                if s.get("control_flow") == "ifelse"
-                                and s.get("intent") not in _STRUCTURAL_INTENTS]
+
+        branch_step_idx = next(
+            (i for i, s in enumerate(body_steps)
+             if s.get("intent") == "branch"),
+            None
+        )
+
+        if branch_step_idx is not None:
+            # Steps before the branch marker → while sequence body
+            while_seq_steps = [
+                s for s in body_steps[:branch_step_idx]
+                if s.get("intent") not in _STRUCTURAL_INTENTS
+            ]
+            # Steps after the branch marker → IfElse branch activities.
+            # Use step position to assign branches: first half → branch1,
+            # second half → branch2. Works for 2-branch if/else patterns.
+            after_branch = [
+                s for s in body_steps[branch_step_idx + 1:]
+                if s.get("intent") not in _STRUCTURAL_INTENTS
+            ]
+            mid = max(1, len(after_branch) // 2)
+            ifelse_branch_steps = []
+            for i, s in enumerate(after_branch):
+                s = dict(s)
+                # Assign to branch 2 if in the second half and no explicit hint
+                if "branch" not in s:
+                    s["branch"] = 2 if i >= mid else 1
+                ifelse_branch_steps.append(s)
+        else:
+            # Fallback: use intent to assign steps rather than control_flow alone.
+            # control_flow tags from the Decomposer are unreliable — action steps
+            # like Ping often get tagged control_flow='ifelse' because they're in
+            # a while_ifelse workflow, even though they execute unconditionally
+            # before the branch. Intent is a better signal:
+            # - display/send_email/set_variable → branch content (shown conditionally)
+            # - all other action intents → while-sequence (unconditional)
+            _BRANCH_CONTENT_INTENTS = frozenset({
+                "display", "send_email", "set_variable", "write", "update",
+                "log", "notify", "store",
+            })
+            # Intent is the authoritative signal. control_flow tags from the
+            # Decomposer are unreliable — action steps like Ping often get
+            # tagged control_flow='ifelse' when inside a while_ifelse workflow.
+            # Rule: a step belongs in the IfElse branches ONLY if its intent
+            # signals conditional output (display, send_email, etc.).
+            # All other action steps (intent='other', 'get_cell', etc.) belong
+            # in the while-sequence and execute unconditionally.
+            while_seq_steps = [
+                s for s in body_steps
+                if s.get("intent") not in _STRUCTURAL_INTENTS
+                and s.get("intent") not in _BRANCH_CONTENT_INTENTS
+            ]
+            ifelse_branch_steps = [
+                s for s in body_steps
+                if s.get("intent") not in _STRUCTURAL_INTENTS
+                and s.get("intent") in _BRANCH_CONTENT_INTENTS
+            ]
 
         branch1: dict = {
             "xName":          br1_xname,
@@ -714,35 +787,33 @@ def normalize_wirer_output(workflow_json: dict) -> dict:
             if xname:
                 new_raw[xname] = _convert_children_format(child)
         result["workflow_raw_data"] = new_raw
-        return result
+        # Fall through to backfill+strip — do NOT return early here.
 
     # ── Case 2: metadata fields mixed in with activity dicts ─────────────────
+    # Also runs after Case 1 to strip any leftover wrapper fields.
     _METADATA_KEYS = frozenset({
         "xName", "Description", "description", "CustomTypeName",
         "Version", "Category", "CreatedBy", "Name", "Pnumber",
         "ActivityID", "ActivityName", "DisplayName", "DateLic",
     })
-    non_dict = [k for k, v in raw.items()
+    current_raw = result.get("workflow_raw_data", {})
+    non_dict = [k for k, v in current_raw.items()
                 if not isinstance(v, dict) and k in _METADATA_KEYS]
     if non_dict:
         print(f"[normalize] Stripping {len(non_dict)} metadata keys "
               f"from workflow_raw_data: {non_dict[:8]}")
         result["workflow_raw_data"] = {
-            k: v for k, v in raw.items() if isinstance(v, dict)
+            k: v for k, v in current_raw.items() if isinstance(v, dict)
         }
 
     # ── Backfill TableName on CreateMemoryTable from variable_contracts ───────
-    # Wirer's Children format sometimes omits TableName. Without it, scaffold
-    # cannot set ResultSet on downstream activities and r5 cannot resolve
-    # %tableName% references. variable_contracts.variables always has the name.
+    # Always runs regardless of which format was detected above.
+    # Also replaces template placeholder values ending in "_value".
     _backfill_table_vars(result)
 
     # ── Strip template metadata sub-dicts ────────────────────────────────────
-    # Enrichment adds ActivityInfo and Output sub-dicts to every activity node
-    # as template metadata. These dicts copy the parent's xName and
-    # CustomTypeName, causing false duplicate xName errors and false control
-    # flow rule violations (e.g. WhileActivity inside ActivityInfo has no
-    # SequenceActivity). Strip them before validation.
+    # Always runs — catches ActivityInfo/Output sub-dicts from enrichment
+    # templates regardless of Wirer output format.
     _strip_metadata_dicts(result.get("workflow_raw_data", {}))
 
     return result
@@ -796,7 +867,8 @@ def _backfill_table_vars(workflow_json: dict) -> None:
             if not isinstance(node, dict):
                 continue
             ct = node.get("CustomTypeName", "")
-            if ct == "CreateMemoryTable" and not node.get("TableName", "").strip():
+            tname_cur = node.get("TableName", "").strip()
+            if ct == "CreateMemoryTable" and (not tname_cur or tname_cur.endswith("_value")):
                 node["TableName"] = table_vars[0]
                 print(f"[normalize] Backfilled TableName='{table_vars[0]}' "
                       f"on '{xname}' from variable_contracts")
@@ -806,6 +878,22 @@ def _backfill_table_vars(workflow_json: dict) -> None:
                     _walk_backfill({k: v})
 
     _walk_backfill(raw)
+
+
+def run_strip_metadata_dicts(workflow_json: dict) -> dict:
+    """
+    Public wrapper for _strip_metadata_dicts.
+    Strips ActivityInfo and Output sub-dicts from all activity nodes.
+    Called after _apply_wirer_patches in _run_post_wirer_stages to ensure
+    template artifacts are removed regardless of Wirer output format.
+    Returns a modified copy.
+    """
+    import copy
+    result = copy.deepcopy(_ensure_dict(workflow_json))
+    raw = result.get("workflow_raw_data", {})
+    if isinstance(raw, dict):
+        _strip_metadata_dicts(raw)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -851,14 +939,51 @@ def _apply_wirer_patches(wirer_output: dict, enriched_workflow: dict) -> dict:
     # Start from a deep copy of the enriched_workflow skeleton
     result = copy.deepcopy(enriched_workflow)
 
+    # ── Flatten nested activity patches to top level ─────────────────────────
+    # Wirer sometimes nests activity patches inside parent patches, e.g.:
+    #   "ifElseBranchActivity1": {"displayValue1": {CustomTypeName: ...}, ...}
+    # Extract those nested activity dicts to the top level so _find_and_patch
+    # can locate the real skeleton nodes. Also removes hallucinated activities
+    # (IfElseActivity2 etc.) that don't match any skeleton node — they are
+    # simply ignored by _find_and_patch since no xName matches them.
+    def _flatten_patches(raw_patches: dict) -> dict:
+        flat: dict = {}
+        for key, patch in raw_patches.items():
+            if not isinstance(patch, dict):
+                flat[key] = patch
+                continue
+            flat_patch: dict = {}
+            for field, value in patch.items():
+                if isinstance(value, dict) and value.get("CustomTypeName"):
+                    # Nested activity — hoist to top level keyed by its xName
+                    nested_xname = value.get("xName", field)
+                    if nested_xname and nested_xname not in flat:
+                        flat[nested_xname] = value
+                else:
+                    flat_patch[field] = value
+            if flat_patch:
+                flat[key] = flat_patch
+        return flat
+
+    patches = _flatten_patches(patches)
+
     _SKIP_PATCH_FIELDS = frozenset({"xName", "CustomTypeName"})
 
     def _apply_to_node(node: dict, patch: dict) -> None:
-        """Merge patch fields onto node, skipping structural fields and None values."""
+        """
+        Merge patch fields onto node.
+        Skips structural fields (xName, CustomTypeName), None values, and any
+        value that is a dict — dict values are activity nodes, not field values,
+        and should have been flattened to the top level by _flatten_patches.
+        """
         for field, value in patch.items():
             if field in _SKIP_PATCH_FIELDS:
                 continue
             if value is None:
+                continue
+            if isinstance(value, dict):
+                # Dict values are either nested activities (already flattened)
+                # or hallucinations — never set them as raw field values.
                 continue
             node[field] = value
 
@@ -872,8 +997,6 @@ def _apply_wirer_patches(wirer_output: dict, enriched_workflow: dict) -> dict:
             xname = node.get("xName", "")
             if xname and xname in patches_remaining:
                 _apply_to_node(node, patches_remaining[xname])
-                # Don't pop — same xName could appear at multiple depths
-                # (shouldn't happen but be safe)
             # Recurse into nested activity nodes
             _find_and_patch(node, patches_remaining)
 
@@ -881,7 +1004,8 @@ def _apply_wirer_patches(wirer_output: dict, enriched_workflow: dict) -> dict:
     if isinstance(raw, dict):
         _find_and_patch(raw, patches)
 
-    n_patched = len(patches)
+    n_patched = sum(1 for v in patches.values()
+                    if isinstance(v, dict) and not v.get("CustomTypeName"))
     print(f"[wirer_patches] Applied patches for {n_patched} activit(ies)")
     return result
 
@@ -971,7 +1095,19 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
         if ct:
             template = load_activity_template(ct)
             if template:
-                merged = {**template, **{
+                # Merge template fields onto node, but exclude template-level
+                # nested activity dicts (keys whose value has a CustomTypeName)
+                # that are NOT present in the actual node. These are template
+                # scaffold children that bleed through and create ghost activities
+                # (e.g. IfElseActivity2/3 in IfElseBranchActivity templates).
+                # Only scalar/string template fields should survive; nested
+                # activity placement belongs to the skeleton builder.
+                template_scalar = {
+                    k: v for k, v in template.items()
+                    if not (isinstance(v, dict) and v.get("CustomTypeName")
+                            and k not in node)
+                }
+                merged = {**template_scalar, **{
                     k: v for k, v in node.items()
                     if v is not None and v != ""
                 }}
@@ -1262,6 +1398,11 @@ def _walk_while(while_node: dict, while_xname: str,
     last_ct: str | None = None
     local_getrowscount  = nearest_getrowscount_xname
 
+    _EXITWHILE_SPURIOUS = frozenset({
+        "Condition", "IsExpression", "LeftOperand", "Operator", "RightOperand",
+        "SuccessReason", "Expression",
+    })
+
     for xname, node in seq_node.items():
         if not isinstance(node, dict):
             continue
@@ -1269,6 +1410,9 @@ def _walk_while(while_node: dict, while_xname: str,
         if not ct:
             continue
         if ct == "ExitWhile":
+            # Strip spurious fields Wirer may have added (e.g. Condition, IsExpression)
+            for f in _EXITWHILE_SPURIOUS:
+                node.pop(f, None)
             node["exitWhileInsideWhile"] = "True"
             node["isValid"] = "True"
             node["TypeName"] = "ExitWhile"
@@ -1298,6 +1442,16 @@ def _walk_while(while_node: dict, while_xname: str,
                       "IfElseActivity", "IfElseBranchActivity"):
             last_ct = ct
 
+    # Reorder seq_node so ExitWhile is always first (F2 platform rule).
+    # Wirer sometimes places ExitWhile at the end of the sequence.
+    exit_items = [(k, v) for k, v in seq_node.items()
+                  if isinstance(v, dict) and v.get("CustomTypeName") == "ExitWhile"]
+    other_items = [(k, v) for k, v in seq_node.items()
+                   if not (isinstance(v, dict) and v.get("CustomTypeName") == "ExitWhile")]
+    if exit_items and list(seq_node.items())[0][0] != exit_items[0][0]:
+        seq_node.clear()
+        for k, v in exit_items + other_items:
+            seq_node[k] = v
 
 def _walk_sequence_as_scope(seq_node: dict,
                              nearest_getrowscount_xname: str | None) -> None:
@@ -1441,13 +1595,20 @@ def _get_table_var(node: dict) -> str | None:
     field = _TABLE_PRODUCERS_FIELD.get(ct)
     if field:
         val = node.get(field, "").strip().strip("%")
-        return val or None
+        # Skip template placeholder values — they are not real variable names
+        if val and not val.endswith("_value"):
+            return val
+        return None
     return None
 
 
 def _sif(node: dict, field: str, value: str) -> None:
-    """Set field on node only if currently absent or empty (set-if-empty)."""
-    if not node.get(field):
+    """
+    Set field on node only if currently absent, empty, or a template placeholder
+    (values ending with "_value" are enrichment placeholders, not real values).
+    """
+    current = node.get(field, "")
+    if not current or (isinstance(current, str) and current.endswith("_value")):
         node[field] = value
 
 
@@ -1488,13 +1649,17 @@ def _scaffold_node(
     # ── GetRowsCount ─────────────────────────────────────────────────────────
     if ct == "GetRowsCount":
         if nearest_table_var:
-            _sif(node, "ResultSet", f"%{nearest_table_var}%")
+            # Authoritative rule: ResultSet is ALWAYS %tableName%, never an xName.
+            # Use direct assignment (not _sif) so post-Wirer scaffold restores
+            # any incorrect value Wirer may have written (e.g. %getRowsCount1%).
+            node["ResultSet"] = f"%{nearest_table_var}%"
 
     # ── GetCellValue ─────────────────────────────────────────────────────────
     elif ct == "GetCellValue":
         if nearest_table_var:
-            _sif(node, "ResultSet",     f"%{nearest_table_var}%")
-            _sif(node, "ResultSetName", nearest_table_var)
+            # Same authoritative rule — direct assignment, not _sif.
+            node["ResultSet"]     = f"%{nearest_table_var}%"
+            node["ResultSetName"] = nearest_table_var
         _sif(node, "ColumnType", "Name")
 
     # ── ResultSetFilter ───────────────────────────────────────────────────────
@@ -1727,8 +1892,146 @@ def run_content_scaffold(fragmented_workflow: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Stage 4b.6 — Deterministic wiring pass
+# ---------------------------------------------------------------------------
+
+def run_wiring_pass(workflow_json: dict) -> dict:
+    """
+    Apply authoritative and high-confidence wiring rules from wiring_map.json
+    deterministically, without LLM involvement.
+
+    Only applies rules where:
+    - authoritative=True (platform-confirmed), OR
+    - pct_of_target >= 85 AND workflow_count >= 8
+
+    Walks the workflow in document order, tracks the xName of each activity,
+    and applies (source_CT, target_CT) → target_field = %source_xName% rules
+    when the pair is seen in sequence.
+
+    Special cases handled separately from wiring_map:
+    - CreateMemoryTable → GetRowsCount.ResultSet  (always = %TableName%)
+    - CreateMemoryTable → GetCellValue.ResultSet  (always = %TableName%)
+    These use TableName value, not xName.
+    """
+    import copy
+    workflow_json = _ensure_dict(workflow_json)
+    result = copy.deepcopy(workflow_json)
+    raw = result.get("workflow_raw_data", {})
+    if not isinstance(raw, dict):
+        return result
+
+    wiring = _load_wiring_map()
+
+    # Build lookup: (source_CT, target_CT) → [(field, authoritative)]
+    wire_lookup: dict = {}
+    for entry in wiring:
+        src  = entry.get("source_activity", "")
+        tgt  = entry.get("target_activity", "")
+        fld  = entry.get("target_field", "")
+        auth = entry.get("authoritative", False)
+        pct  = entry.get("pct_of_target", 0)
+        cnt  = entry.get("workflow_count", 0)
+        if not (src and tgt and fld):
+            continue
+        if not auth and (pct < 85 or cnt < 8):
+            continue
+        wire_lookup.setdefault((src, tgt), []).append((fld, auth))
+
+    def _apply_wiring(nodes: dict,
+                      prev_ct: str | None = None,
+                      prev_xname: str | None = None,
+                      table_name: str | None = None) -> tuple:
+        """Walk nodes in order, applying wiring rules. Returns updated (prev_ct, prev_xname, table_name)."""
+        for xname, node in nodes.items():
+            if not isinstance(node, dict):
+                continue
+            ct = node.get("CustomTypeName", "")
+            if not ct:
+                continue
+
+            # Track CreateMemoryTable TableName for downstream ResultSet wiring
+            if ct == "CreateMemoryTable":
+                tn = node.get("TableName", "").strip()
+                if tn and not tn.endswith("_value"):
+                    table_name = tn
+
+            # Apply (prev_ct, ct) wiring rules
+            if prev_ct and prev_xname:
+                rules = wire_lookup.get((prev_ct, ct), [])
+                for field, auth in rules:
+                    if not node.get(field) or node.get(field, "").endswith("_value"):
+                        node[field] = f"%{prev_xname}%"
+
+            # Special: ResultSet on GetRowsCount/GetCellValue uses TableName var
+            if ct in ("GetRowsCount", "GetCellValue", "ResultSetFilter") and table_name:
+                if not node.get("ResultSet") or node.get("ResultSet","").endswith("_value"):
+                    node["ResultSet"] = f"%{table_name}%"
+                if ct == "GetCellValue":
+                    if not node.get("ResultSetName") or node.get("ResultSetName","").endswith("_value"):
+                        node["ResultSetName"] = table_name
+
+            # Recurse into containers
+            if ct in ("WhileActivity", "SequenceActivity", "IfElseActivity",
+                      "IfElseBranchActivity", "UserGroup", "ForEachActivity"):
+                prev_ct, prev_xname, table_name = _apply_wiring(
+                    node, prev_ct, prev_xname, table_name
+                )
+                continue
+
+            # Update prev for next sibling
+            if ct not in ("ExitWhile", "ReturnValue", "IfElseActivity",
+                          "IfElseBranchActivity", "SequenceActivity"):
+                prev_ct = ct
+                prev_xname = xname
+
+        return prev_ct, prev_xname, table_name
+
+    _apply_wiring(raw)
+    n_raw = len(raw)
+    print(f"[wiring_pass] Applied deterministic wiring to {n_raw} top-level activities")
+    return result
+
+
+def run_wiring(workflow_json: dict) -> dict:
+    """Stage 4b.6: deterministic wiring from wiring_map.json."""
+    return run_wiring_pass(_ensure_dict(workflow_json))
+
+
+# ---------------------------------------------------------------------------
 # Stage 4g — Post-Wirer cleanup
 # ---------------------------------------------------------------------------
+
+# Fields that are invalid on specific activity types — Wirer sometimes invents
+# these based on misunderstanding which activity produces/consumes variables.
+_INVALID_FIELDS_BY_TYPE: dict[str, frozenset] = {
+    "GetRowsCount":  frozenset({"TableName", "ResultSetName", "ColumnType",
+                                "ColumnNumber", "ColumnName", "RowNumber"}),
+    "GetCellValue":  frozenset({"TableName"}),
+    "ExitWhile":     frozenset({"Condition", "IsExpression", "Expression"}),
+    "DisplayValue":  frozenset({"ResultSet", "ResultSetName"}),
+    "Ping":          frozenset({"ResultSet", "ResultSetName", "TableName"}),
+    "MemorySet":     frozenset({"ResultSet", "ResultSetName", "TableName"}),
+}
+
+
+def _strip_invalid_fields(raw: dict) -> int:
+    """Strip activity-type-specific invalid fields added by Wirer."""
+    stripped = 0
+    for xname, node in raw.items():
+        if not isinstance(node, dict):
+            continue
+        ct = node.get("CustomTypeName", "")
+        invalid = _INVALID_FIELDS_BY_TYPE.get(ct, frozenset())
+        for field in invalid:
+            if field in node:
+                del node[field]
+                stripped += 1
+        # Recurse into containers
+        for v in node.values():
+            if isinstance(v, dict) and v.get("CustomTypeName"):
+                stripped += _strip_invalid_fields({v.get("xName","_"): v})
+    return stripped
+
 
 def _remove_empty_nodes(raw: dict) -> int:
     """
@@ -1788,6 +2091,9 @@ def run_cleanup(workflow_json: dict) -> dict:
     n = _remove_empty_nodes(raw)
     if n:
         print(f"[cleanup] Stage 4g: removed {n} empty node(s)")
+    s = _strip_invalid_fields(raw)
+    if s:
+        print(f"[cleanup] Stage 4g: stripped {s} invalid field(s)")
     return result
 
 

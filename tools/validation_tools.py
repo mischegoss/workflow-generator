@@ -15,6 +15,10 @@ CONTAINER_TYPES = {
     "WhileActivity", "SequenceActivity", "IfElseActivity", "IfElseBranchActivity",
     "ParallelActivity", "UserGroup", "ForEachActivity", "ExitWhile", "ReturnValue",
     "IfElseCondition",
+    # Workflow wrapper node — not an activity, never check required fields on it.
+    # Wirer sometimes includes the top-level Workflow node in workflow_raw_data;
+    # it has no Description/description requirement.
+    "Workflow",
 }
 
 # All propertiesControl fields across all activities are opaque UI blobs
@@ -306,6 +310,11 @@ def validate_control_flow_rules(
     errors = []
     verify_notes = []
 
+    # Sub-dicts that are template metadata, not activity nodes — skip entirely.
+    # ActivityInfo and Output copy the parent's xName/CustomTypeName which
+    # causes false "WhileActivity has no SequenceActivity" errors.
+    _SKIP_KEYS = frozenset({"ActivityInfo", "Output", "Properties"})
+
     def check_node(node: dict, parent_type: str = "", path: str = ""):
         type_name = node.get("CustomTypeName", "")
 
@@ -396,6 +405,8 @@ def validate_control_flow_rules(
             )
 
         for key, value in node.items():
+            if key in _SKIP_KEYS:
+                continue
             if isinstance(value, dict):
                 check_node(value, parent_type=type_name, path=f"{path}.{key}")
 
