@@ -15,16 +15,28 @@ PLATFORM_GLOBAL_VARIABLES = {
     "incidentEscalationLevel", "incidentWorkNotes",
 }
 
-SMTP_FIELD_MAP = {
-    "SmtpServer":       "PLACEHOLDER_SMTP_SERVER",
-    "SmtpPort":         "PLACEHOLDER_SMTP_PORT",
-    "Username":         "PLACEHOLDER_SMTP_USER",
-    "Password":         "PLACEHOLDER_SMTP_PASS",
-    "From":             "PLACEHOLDER_SMTP_FROM",
-    "TargetModuleName": "PLACEHOLDER_EMAIL_MODULE",
-    "TargetModuleID":   "PLACEHOLDER_EMAIL_MODULE_ID",
+# ---------------------------------------------------------------------------
+# SMTP defaults — importable values the user must update before running.
+# These fire only on SendEmail activities.
+# TargetModuleName / TargetModuleID intentionally NOT included here —
+# those are routing fields on every activity whose correct default is ""
+# (empty = local module). Stamping a placeholder on them prevents import.
+# ---------------------------------------------------------------------------
+SMTP_FIELD_DEFAULTS = {
+    "SmtpServer": "smtp.yourcompany.com",
+    "SmtpPort":   "25",
+    "From":       "noreply@yourcompany.com",
 }
 
+# Human-readable notes shown in output summary for each SMTP default
+SMTP_FIELD_NOTES = {
+    "SmtpServer": "UPDATE BEFORE RUNNING: Set to your SMTP server address",
+    "SmtpPort":   "UPDATE BEFORE RUNNING: Set to your SMTP port (25, 465, or 587)",
+    "From":       "UPDATE BEFORE RUNNING: Set to your sender email address",
+}
+
+# Credential fields — set to "" (empty imports cleanly; Category 4 validator
+# fires a VERIFY note on empty mandatory fields so users are alerted)
 CREDENTIAL_FIELD_KEYS = {
     "ACPassword", "AdminPassword", "ArchivePassword", "AuthPassword",
     "CertificatePassword", "DomainServerPassword", "EncPassword",
@@ -61,7 +73,7 @@ SCALAR_INPUT_FIELDS = {
 
 
 # ---------------------------------------------------------------------------
-# Table producers — loaded from corpus-mined table_producers.json
+# Table producers
 # ---------------------------------------------------------------------------
 
 _table_producers_cache: set | None = None
@@ -96,19 +108,13 @@ def _get_table_producing_activities() -> set:
 
 
 # ---------------------------------------------------------------------------
-# Output registry — loaded from activity_output_registry.json (Category 6)
+# Output registry (Category 6)
 # ---------------------------------------------------------------------------
 
 _output_registry_cache: dict | None = None
 
 
 def _load_output_registry() -> dict:
-    """
-    Load activity_output_registry.json once and cache as a dict keyed by
-    activityName → outputType.
-
-    outputType values: "DataTable", "Scalar", "Boolean", "Status", "None"
-    """
     global _output_registry_cache
     if _output_registry_cache is not None:
         return _output_registry_cache
@@ -131,7 +137,7 @@ def _load_output_registry() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Other cached indices
+# Detailed index
 # ---------------------------------------------------------------------------
 
 _detailed_index: dict | None = None
@@ -187,7 +193,6 @@ def _is_variable_reference(value: str) -> bool:
 
 
 def _extract_var_name(value: str) -> str | None:
-    """Extract the variable name from a %varName% reference, or None."""
     m = re.match(r'^%([^%]+)%$', value.strip())
     return m.group(1) if m else None
 
@@ -196,8 +201,6 @@ def _looks_like_hardcoded_literal(value: str) -> bool:
     if not value or not isinstance(value, str):
         return False
     if _is_variable_reference(value):
-        return False
-    if value.startswith("PLACEHOLDER_"):
         return False
     if value in ("{x:Null}", "", "True", "False", "0", "1", "-1", "-2",
                  "None", "null", "LocalHost", "localhost"):
@@ -220,8 +223,6 @@ def _is_plain_word(value: str) -> bool:
         return False
     if value in ("{x:Null}", "", "True", "False", "0", "1", "Name", "Index"):
         return False
-    if value.startswith("PLACEHOLDER_"):
-        return False
     return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9_]*$', value))
 
 
@@ -233,48 +234,48 @@ def inject_unavailable_stubs(
     workflow_json: Annotated[dict, "Workflow JSON with UNAVAILABLE step markers"],
     activity_manifest: Annotated[dict, "Manifest from retriever with UNAVAILABLE entries"],
 ) -> dict:
-    workflow_json = _ensure_dict(workflow_json)
+    workflow_json     = _ensure_dict(workflow_json)
     activity_manifest = _ensure_dict(activity_manifest)
 
     result = copy.deepcopy(workflow_json)
-    raw = result.get("workflow_raw_data", {})
+    raw    = result.get("workflow_raw_data", {})
     manifest_steps = activity_manifest.get("steps", [])
 
     for step in manifest_steps:
         if step.get("status") == "UNAVAILABLE":
-            step_id = step["step_id"]
+            step_id     = step["step_id"]
             description = step.get("query", "Unknown step")
-            xname = f"placeholder_{step_id}"
-            raw[xname] = {
-                "xName": xname,
+            xname       = f"placeholder_{step_id}"
+            raw[xname]  = {
+                "xName":               xname,
                 "activityLicenseType": "1",
-                "id": "431",
-                "name": "DisplayValue",
-                "visible": "True",
-                "disabled": "False",
-                "isFavorite": "False",
-                "isJsonValid": "True",
-                "readPermission": True,
-                "writePermission": True,
-                "modulePermissions": None,
-                "IsValid": "True",
-                "Timeout": "00:01:00",
-                "TimeInSeconds": "60",
+                "id":                  "431",
+                "name":                "DisplayValue",
+                "visible":             "True",
+                "disabled":            "False",
+                "isFavorite":          "False",
+                "isJsonValid":         "True",
+                "readPermission":      True,
+                "writePermission":     True,
+                "modulePermissions":   None,
+                "IsValid":             "True",
+                "Timeout":             "00:01:00",
+                "TimeInSeconds":       "60",
                 "RecoveryMethodSelection": None,
-                "Path": None,
-                "DisplayName": "DisplayValue",
-                "Description": f"PLACEHOLDER — {description}",
-                "description": f"PLACEHOLDER — {description}",
-                "ValueToDisplay": f"PLACEHOLDER_{step_id.upper()}",
-                "TargetModuleID": "",
-                "TargetModuleName": "",
-                "TypeName": "DisplayValue",
-                "label": "DisplayValue",
+                "Path":                None,
+                "DisplayName":         "DisplayValue",
+                "Description":         f"MANUAL CONFIGURATION REQUIRED — {description}",
+                "description":         f"MANUAL CONFIGURATION REQUIRED — {description}",
+                "ValueToDisplay":      f"[Configure this step: {description}]",
+                "TargetModuleID":      "",
+                "TargetModuleName":    "",
+                "TypeName":            "DisplayValue",
+                "label":               "DisplayValue",
                 "notes": (
-                    f"VERIFY: No matching activity found for: '{description}'. "
+                    f"UPDATE BEFORE RUNNING: No matching activity found for: '{description}'. "
                     "Replace this placeholder with the correct activity before deployment."
                 ),
-                "CustomTypeName": "DisplayValue",
+                "CustomTypeName":      "DisplayValue",
             }
 
     result["workflow_raw_data"] = raw
@@ -285,17 +286,18 @@ def annotate_placeholders(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
     """
-    Replaces credential fields with PLACEHOLDER_ strings.
+    Replaces credential fields with empty strings (importable) and sets
+    SMTP fields to known-good defaults the user must update before running.
+
+    Design principle: every generated workflow must import without errors.
+    Fields that need user input use real-looking defaults + VERIFY notes,
+    not PLACEHOLDER_ strings that cause platform import failures.
     """
     workflow_json = _ensure_dict(workflow_json)
     result = copy.deepcopy(workflow_json)
 
     def process_node(node: dict) -> dict:
-        # Skip credential annotation on container/structural activities.
-        # These types (SequenceActivity, IfElseActivity, etc.) are structural
-        # scaffolding — they should never have SMTP or credential fields applied.
-        # Applying PLACEHOLDER_ values to them causes platform upload failures.
-        custom_type = node.get("CustomTypeName", "")
+        custom_type  = node.get("CustomTypeName", "")
         is_container = custom_type in {
             "WhileActivity", "SequenceActivity", "IfElseActivity",
             "IfElseBranchActivity", "ParallelActivity", "UserGroup",
@@ -307,19 +309,27 @@ def annotate_placeholders(
                 node[key] = process_node(value)
                 continue
             if is_container:
-                continue  # never annotate credentials on container types
+                continue
             if not isinstance(value, str):
                 continue
-            if value.startswith("PLACEHOLDER_"):
+
+            # SMTP defaults — only on SendEmail, importable values
+            if key in SMTP_FIELD_DEFAULTS and custom_type == "SendEmail":
+                if not value or value == key:
+                    node[key] = SMTP_FIELD_DEFAULTS[key]
+                    note = SMTP_FIELD_NOTES.get(key, f"UPDATE BEFORE RUNNING: Set {key}")
+                    existing_notes = node.get("notes", "")
+                    if note not in existing_notes:
+                        node["notes"] = (existing_notes + "  " + note).strip()
                 continue
-            if value.startswith("%") and _is_global_variable_ref(value):
-                continue
-            if key in SMTP_FIELD_MAP:
-                node[key] = SMTP_FIELD_MAP[key]
-                continue
+
+            # Credential fields — empty string imports cleanly
+            # Category 4 validator fires a VERIFY note on empty mandatory fields
             if key in CREDENTIAL_FIELD_KEYS:
-                node[key] = f"PLACEHOLDER_{key.upper()}"
+                if value and not _is_variable_reference(value):
+                    node[key] = ""
                 continue
+
         return node
 
     raw = result.get("workflow_raw_data", {})
@@ -331,7 +341,7 @@ def add_verify_notes(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
     """
-    Adds VERIFY notes to activities requiring post-import attention.
+    Adds VERIFY / UPDATE notes to activities requiring attention before running.
 
     Category 1: Manual config activities (SNGetRecord XMLTableResult).
     Category 2: Unconfirmed CLR namespaces.
@@ -339,12 +349,10 @@ def add_verify_notes(
     Category 3b: Plain word values in structural table/column reference fields.
     Category 4: Empty mandatory textbox/textarea fields that are not credentials.
     Category 5: Table variable prerequisite check.
-    Category 6: Output type mismatch — a scalar-producing activity's %xName%
-                is referenced in a table-input field, or a DataTable-producing
-                activity's %xName% is referenced in a scalar-input field.
+    Category 6: Output type mismatch check.
     """
     workflow_json = _ensure_dict(workflow_json)
-    result = copy.deepcopy(workflow_json)
+    result        = copy.deepcopy(workflow_json)
     detailed_index  = _load_detailed_index()
     output_registry = _load_output_registry()
 
@@ -371,9 +379,9 @@ def add_verify_notes(
 
         if custom_type in detailed_index:
             for field in detailed_index[custom_type]["mandatory"]:
-                field_key   = field.get("fieldKey", "")
-                input_type  = field.get("inputType", "")
-                field_name  = field.get("fieldName", field_key)
+                field_key  = field.get("fieldKey", "")
+                input_type = field.get("inputType", "")
+                field_name = field.get("fieldName", field_key)
 
                 if field_key not in node:
                     continue
@@ -403,9 +411,9 @@ def add_verify_notes(
                 if input_type in ("textbox", "textarea") and val == "":
                     _append_note(
                         node,
-                        f"VERIFY: '{field_key}' ({field_name}) is a required field but "
-                        f"is empty. This activity will fail at runtime without a value. "
-                        f"Set this field after import.",
+                        f"UPDATE BEFORE RUNNING: '{field_key}' ({field_name}) is a "
+                        f"required field and is currently empty. This activity will "
+                        f"fail at runtime without a value.",
                     )
 
         # ── Category 3b: Plain word in structural table/column fields ────────
@@ -434,7 +442,7 @@ def add_verify_notes(
         if "DateLic" in node:
             node["DateLic"] = ""
 
-        for key, value in node.items():
+        for key, value in list(node.items()):
             if isinstance(value, dict):
                 node[key] = process_node(value)
 
@@ -454,17 +462,12 @@ def add_verify_notes(
 
 
 def _check_table_prerequisites(workflow_json: dict) -> None:
-    """
-    Category 5: Detects table variables referenced in the workflow that are not
-    produced by any activity within the workflow.
-    Uses the corpus-loaded TABLE_PRODUCING_ACTIVITIES set (from table_producers.json).
-    """
     raw = workflow_json.get("workflow_raw_data", {})
     if not raw:
         return
 
     table_producing_activities = _get_table_producing_activities()
-    all_xnames: set = set()
+    all_xnames: set      = set()
     all_custom_types: set = set()
 
     def _collect(node: dict):
@@ -519,30 +522,22 @@ def _check_table_prerequisites(workflow_json: dict) -> None:
 
 def _check_output_type_mismatches(workflow_json: dict, output_registry: dict) -> None:
     """
-    Category 6: Detects output type mismatches using activity_output_registry.json.
+    Category 6: Detects output type mismatches.
 
-    Two checks:
-    A. A DataTable-producing activity's %xName% is referenced in a SCALAR_INPUT_FIELD.
-       (e.g. TSQLQuery result wired directly into HostName — needs GetCellValue first)
-
-    B. A non-DataTable activity's %xName% is referenced in a TABLE_INPUT_FIELD.
-       (e.g. GetDate result wired into ResultSet — GetDate returns a string, not a table)
-
-    Builds an xName → (CustomTypeName, outputType) map, then walks all activities
-    looking for %xName% references in the relevant fields.
+    FIX: both loops wrapped with list() to prevent "dictionary changed size
+    during iteration" when _append_note adds the "notes" key for the first time.
     """
     raw = workflow_json.get("workflow_raw_data", {})
     if not raw:
         return
 
-    # Build xName → (type, outputType) index
     xname_to_output: dict = {}
 
     def _index(node: dict):
         xn = node.get("xName", "")
         ct = node.get("CustomTypeName", "")
         if xn and ct:
-            output_type = output_registry.get(ct, "Scalar")  # default: Scalar
+            output_type = output_registry.get(ct, "Scalar")
             xname_to_output[xn] = (ct, output_type)
         for v in node.values():
             if isinstance(v, dict):
@@ -558,7 +553,9 @@ def _check_output_type_mismatches(workflow_json: dict, output_registry: dict) ->
             node["notes"] = (existing + "  " + msg).strip()
 
     def _check_node(node: dict):
-        for field_key, val in node.items():
+        # list() prevents "dictionary changed size during iteration" —
+        # _append_note adds "notes" key if absent while we iterate.
+        for field_key, val in list(node.items()):
             if not isinstance(val, str):
                 continue
             var_name = _extract_var_name(val)
@@ -577,7 +574,8 @@ def _check_output_type_mismatches(workflow_json: dict, output_registry: dict) ->
                 )
 
             # Check B: Non-DataTable wired into table field
-            if output_type != "DataTable" and output_type != "None" and field_key in TABLE_INPUT_FIELDS:
+            if output_type != "DataTable" and output_type != "None" and \
+               field_key in TABLE_INPUT_FIELDS:
                 _append_note(
                     node,
                     f"VERIFY: '{field_key}' references '%{var_name}%' which is a "
@@ -585,7 +583,7 @@ def _check_output_type_mismatches(workflow_json: dict, output_registry: dict) ->
                     f"DataTable variable. Ensure the upstream activity produces a table.",
                 )
 
-        for v in node.values():
+        for v in list(node.values()):
             if isinstance(v, dict):
                 _check_node(v)
 
@@ -598,36 +596,29 @@ def collect_placeholder_summary(
     workflow_json: Annotated[dict, "Annotated workflow JSON"],
 ) -> list[dict]:
     """
-    Walks the workflow JSON and collects all PLACEHOLDER_ values and VERIFY notes.
+    Walks the workflow JSON and collects all UPDATE/VERIFY notes so the
+    output summary can present them as a clear action list for the user.
     """
     workflow_json = _ensure_dict(workflow_json)
     items = []
 
     def walk(node: dict, path: str = ""):
         custom_type = node.get("CustomTypeName", "")
-        xname = node.get("xName", path)
+        xname       = node.get("xName", path)
 
         for key, value in node.items():
-            if isinstance(value, str):
-                if value.startswith("PLACEHOLDER_"):
-                    items.append({
-                        "activity":    xname,
-                        "type":        custom_type,
-                        "field":       key,
-                        "placeholder": value,
-                        "kind":        "placeholder",
-                    })
-            if key == "notes" and isinstance(value, str) and "VERIFY" in value:
-                for note in value.split("VERIFY:"):
-                    note = note.strip()
-                    if note:
-                        items.append({
-                            "activity": xname,
-                            "type":     custom_type,
-                            "field":    "notes",
-                            "message":  "VERIFY: " + note,
-                            "kind":     "verify",
-                        })
+            if key == "notes" and isinstance(value, str):
+                for marker in ("UPDATE BEFORE RUNNING:", "VERIFY:"):
+                    for note in value.split(marker):
+                        note = note.strip()
+                        if note:
+                            items.append({
+                                "activity": xname,
+                                "type":     custom_type,
+                                "field":    "notes",
+                                "message":  f"{marker} {note}",
+                                "kind":     "update" if marker.startswith("UPDATE") else "verify",
+                            })
             if isinstance(value, dict):
                 walk(value, xname)
 

@@ -3,19 +3,16 @@ main.py — entry point for the workflow generator.
 
 Retry logic:
   Attempt 1: full pipeline (Decomposer → Placer → Enrichment → Wirer)
-  Attempt 2 on validation failure: CorrectionPipeline (Wirer only, reusing
-    decomposition and placed_skeleton from attempt 1's persisted output_keys)
+  Attempt 2 on validation failure: CorrectionPipeline (Wirer only)
   Attempt 2 on empty response: full pipeline retry with fresh session
 
-The correction pipeline fix prevents DecomposerAgent from receiving the
-CORRECTION REQUIRED error list and trying to decompose it as a workflow.
-
-CORRECTION MESSAGE DESIGN:
-  The correction message sent to WirerAgent includes the full workflow_json
-  from attempt 1, so WirerAgent can fix specific fields in place rather than
-  regenerating the workflow from scratch. This prevents the truncation failure
-  mode where WirerAgent returned a partial workflow (2-4 activities) instead
-  of the complete one.
+ADK SESSION STATE NOTE:
+  State passed to create_session(state=initial_state) persists through
+  get_session() and is visible inside pipeline agents.
+  Post-create mutations (session.state[x] = y after create_session) do NOT
+  persist — ADK reads from the session service, not the local object.
+  The correction pipeline therefore passes all required state via the
+  state= parameter, not via post-create mutation.
 """
 
 import argparse
@@ -39,15 +36,14 @@ load_dotenv()
 
 litellm.cache = None
 
-MVP_CEILING  = 25
-OUTPUT_DIR   = pathlib.Path("json_files")
+MVP_CEILING = 25
+OUTPUT_DIR  = pathlib.Path("json_files")
 
 
 async def _extract_session_state(runner: InMemoryRunner,
                                   app_name: str,
                                   session_id: str,
                                   user_id: str) -> dict:
-    """Read session state via the public session service API."""
     try:
         session = await runner.session_service.get_session(
             app_name=app_name,
@@ -81,7 +77,6 @@ def _ensure_dict(value) -> dict:
 
 
 def _find_output_file(run_start: float) -> pathlib.Path | None:
-    """Scan json_files/ for any .json file written after run_start."""
     if not OUTPUT_DIR.exists():
         return None
     candidates = [
@@ -109,10 +104,7 @@ def _check_needs_retry(state: dict) -> tuple:
 
 
 async def _run_pipeline(prompt: str, run_id: str) -> tuple:
-    """
-    Full pipeline run (Attempt 1).
-    Returns (output_file: pathlib.Path | None, session_state: dict).
-    """
+    """Full pipeline run (Attempt 1)."""
     app_name  = f"wf_gen_{run_id}"
     user_id   = f"system_{run_id}"
     run_start = time.time()
@@ -120,11 +112,12 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     pipeline = build_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
+    # Pass prompt in initial state so it survives get_session()
     session = await runner.session_service.create_session(
         app_name=app_name,
         user_id=user_id,
+        state={"prompt": prompt},
     )
-    session.state["prompt"] = prompt
 
     user_message = Content(role="user", parts=[Part(text=prompt)])
     event_count  = 0
@@ -158,9 +151,6 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
         print(f"  Output file:  {output_file}")
     else:
         print("  Output file:  NOT FOUND — checking for validation errors in state")
-        # Python-stage mutations don't survive get_session(), but workflow_json
-        # does (it's an output_key). Run validation here so _check_needs_retry
-        # can surface errors and trigger the correction retry.
         raw_wf = _ensure_dict(state.get("workflow_json"))
         if raw_wf:
             try:
@@ -187,16 +177,9 @@ async def _run_correction_pipeline(
     """
     Correction pipeline run (Attempt 2 on validation failure).
 
-    Creates a new session pre-loaded with decomposition and placed_skeleton
-    from attempt 1 (both persist as output_key values). WirerAgent receives
-    the CORRECTION REQUIRED prompt as its user message.
-
-    KEY CHANGE: The correction message now embeds the full workflow_json from
-    attempt 1. This gives WirerAgent the complete workflow to fix in place,
-    preventing the truncation failure mode where it regenerated only 2-4
-    activities from scratch instead of returning the full corrected workflow.
-
-    Returns (output_file: pathlib.Path | None, session_state: dict).
+    KEY: all required state is passed via state=initial_state to create_session().
+    Post-create mutations (session.state[x] = y) are NOT visible inside the
+    pipeline — ADK reads state from the session service, not the local object.
     """
     app_name  = f"wf_corr_{run_id}"
     user_id   = f"system_{run_id}"
@@ -205,21 +188,7 @@ async def _run_correction_pipeline(
     pipeline = build_correction_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
-    session = await runner.session_service.create_session(
-        app_name=app_name,
-        user_id=user_id,
-    )
-
-    # Pre-load persisted values from attempt 1
-    session.state["prompt"]          = original_prompt
-    session.state["decomposition"]   = prior_state.get("decomposition", {})
-    session.state["placed_skeleton"] = prior_state.get("placed_skeleton", {})
-
-    # Embed the full workflow_json from attempt 1 in the correction message.
-    # WirerAgent's enriched_workflow input (set by pipeline stages 4b-4c.5)
-    # will be the freshly re-enriched skeleton, but the correction message
-    # also shows Wirer exactly what it produced before and what was wrong,
-    # so it can make targeted fixes rather than regenerating from scratch.
+    # Build the correction message with embedded prior workflow_json
     prior_workflow_json = _ensure_dict(prior_state.get("workflow_json", {}))
     prior_wf_str = ""
     if prior_workflow_json:
@@ -241,6 +210,19 @@ async def _run_correction_pipeline(
         f"{error_summary}"
         f"{prior_wf_str}\n\n"
         f"Original workflow request: {original_prompt}"
+    )
+
+    # All state passed here — the only way to make it visible inside the pipeline
+    initial_state = {
+        "prompt":          original_prompt,
+        "decomposition":   _ensure_dict(prior_state.get("decomposition", {})),
+        "placed_skeleton": _ensure_dict(prior_state.get("placed_skeleton", {})),
+    }
+
+    session = await runner.session_service.create_session(
+        app_name=app_name,
+        user_id=user_id,
+        state=initial_state,
     )
 
     user_message = Content(role="user", parts=[Part(text=correction_message)])
@@ -280,9 +262,7 @@ async def _run_correction_pipeline(
 
 
 async def run(prompt: str) -> tuple:
-    """
-    Returns (output_file_path: str | None, chat_response: str).
-    """
+    """Returns (output_file_path: str | None, chat_response: str)."""
     load_activity_list()
 
     complexity = assess_complexity(prompt)
@@ -298,7 +278,7 @@ async def run(prompt: str) -> tuple:
         )
         return None, msg
 
-    # ── Attempt 1: Full pipeline ───────────────────────────────────────────
+    # Attempt 1
     run_id = uuid.uuid4().hex[:12]
     print(f"\n[attempt 1] run_id={run_id}")
     output_file, state = await _run_pipeline(prompt, run_id)
@@ -311,7 +291,7 @@ async def run(prompt: str) -> tuple:
     if not needs_retry:
         return None, "Workflow generation failed — no output produced and no error captured."
 
-    # ── Attempt 2 ──────────────────────────────────────────────────────────
+    # Attempt 2
     print(f"\n[attempt 2] First attempt failed. Retrying...")
     print(f"  Reason: {error_summary[:200]}")
 
@@ -319,11 +299,9 @@ async def run(prompt: str) -> tuple:
     print(f"  retry run_id={retry_run_id}")
 
     if state.get("_empty_response_error"):
-        # Empty model response — retry full pipeline with fresh session
         print(f"  Strategy: full pipeline retry (empty response)")
         retry_output_file, retry_state = await _run_pipeline(prompt, retry_run_id)
     else:
-        # Validation failure — use correction pipeline (Wirer only)
         print(f"  Strategy: correction pipeline (WirerAgent only)")
         retry_output_file, retry_state = await _run_correction_pipeline(
             prior_state=state,
@@ -346,7 +324,6 @@ async def run(prompt: str) -> tuple:
 
 
 def _build_chat_response(output_file: pathlib.Path, state: dict) -> str:
-    """Build human-readable summary from the written JSON file."""
     try:
         with open(output_file, encoding="utf-8") as f:
             output = json.load(f)
@@ -363,14 +340,14 @@ def _build_chat_response(output_file: pathlib.Path, state: dict) -> str:
 
     placeholders = output.get("placeholder_summary", [])
     if placeholders:
-        placeholder_items = [i for i in placeholders if i.get("kind") == "placeholder"]
-        verify_items      = [i for i in placeholders if i.get("kind") == "verify"]
-        if placeholder_items:
-            lines.append(f"\n{len(placeholder_items)} field(s) need values before import:")
-            for item in placeholder_items:
-                lines.append(f"  [{item['activity']}] {item['field']}: {item['placeholder']}")
+        update_items  = [i for i in placeholders if i.get("kind") == "update"]
+        verify_items  = [i for i in placeholders if i.get("kind") == "verify"]
+        if update_items:
+            lines.append(f"\n{len(update_items)} field(s) to update before running:")
+            for item in update_items:
+                lines.append(f"  [{item['activity']}] {item['message']}")
         if verify_items:
-            lines.append(f"\n{len(verify_items)} item(s) require manual review:")
+            lines.append(f"\n{len(verify_items)} item(s) to verify after import:")
             for item in verify_items:
                 lines.append(f"  [{item['activity']}] {item['message']}")
 
