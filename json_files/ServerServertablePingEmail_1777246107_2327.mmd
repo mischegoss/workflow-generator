@@ -1,0 +1,37 @@
+flowchart TD
+    createMemoryTable1["Create a memory table named serverTable to hold s…"]
+    getRowsCount1["Get the total number of rows in serverTable to co…"]
+    whileActivity1[["Begin a loop to process each server in the server…"]]
+    exitWhile1["Exit the loop when all rows in serverTable have b…"]
+    getCellValue1["Get the server name from the current row of serve…"]
+    ping1["Ping the current server to check its availability."]
+    ifElseActivity1{"Check if the ping to the server was successful."}
+    displayValue1["If the ping was successful, display a message ind…"]
+    sendEmail1["If the ping failed, send an email to the administ…"]
+
+    createMemoryTable1 --> getRowsCount1
+    getRowsCount1 --> whileActivity1
+    whileActivity1 --> exitWhile1
+    exitWhile1 --> getCellValue1
+    getCellValue1 --> ping1
+    ping1 --> ifElseActivity1
+    ifElseActivity1 -->|"success"| displayValue1
+    ifElseActivity1 -->|"failure"| sendEmail1
+    displayValue1 -->|"loop"| whileActivity1
+    sendEmail1 -->|"loop"| whileActivity1
+
+    subgraph task_other["other"]
+        createMemoryTable1
+        getCellValue1
+        ping1
+        displayValue1
+        sendEmail1
+    end
+    subgraph task_iterate_rows["iterate_rows"]
+        getRowsCount1
+        whileActivity1
+        exitWhile1
+    end
+    subgraph task_branch_decision["branch_decision"]
+        ifElseActivity1
+    end

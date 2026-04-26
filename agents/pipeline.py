@@ -20,6 +20,7 @@ STAGE MAP:
   Stage 5     PY    run_annotation       → session state: annotation_result
   Stage 6     PY    run_validation       → session state: validation_result
   Stage 7     PY    run_output           → json_files/<n>.json
+  Stage 8     PY    write_mermaid        → json_files/<n>.mmd  (non-fatal)
 
 DETERMINISTIC STAGES (3, 4a-4c.6):
   By Stage 4c.6 the workflow has correct structure, template defaults,
@@ -35,6 +36,13 @@ POST-WIRER REPAIR (Stage 4f.5):
   deterministic source as UPDATE BEFORE RUNNING. Runs after Stage 4f
   scaffold (so the scaffold-injected baseline is included) and before
   Stage 4g cleanup.
+
+VISUALIZATION (Stage 8):
+  After Stage 7 writes the JSON, write_mermaid emits a sibling .mmd file
+  using task subgraphs derived from data/task_taxonomy.json. NEVER blocks
+  the pipeline — failures are logged and execution continues. The .mmd
+  path is stashed in session state as "mermaid_file" for api.py / frontend
+  consumption.
 
 MODEL CONFIGURATION:
   _model_decomposer()  Flash  temp=0.1  top_p=0.8  max_tokens=4096
@@ -103,6 +111,7 @@ from tools.pipeline_stages import (
 from tools.output_tools import run_output
 from tools.annotation_tools import _ensure_dict
 from tools.post_wirer_repair import repair_workflow
+from tools.visualize import write_mermaid
 
 
 # ---------------------------------------------------------------------------
@@ -183,18 +192,18 @@ def _check_activity_count(workflow_json: dict, enriched_workflow: dict) -> str |
 
 
 # ---------------------------------------------------------------------------
-# Shared post-wirer stages (Stages 4f, 4f.5, 4g, 5, 6, 7)
+# Shared post-wirer stages (Stages 4f, 4f.5, 4g, 5, 6, 7, 8)
 # ---------------------------------------------------------------------------
 
 async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list):
     """
-    Runs Stages 4f-7 after WirerAgent completes.
+    Runs Stages 4f-8 after WirerAgent completes.
 
     Normalizes Wirer output (Children-list → xName-keyed, metadata strip,
     TableName backfill), then runs fragments/scaffold/repair/cleanup/
-    annotation/validation/output. No fallback to enriched_workflow — if
-    Wirer returns empty the outer retry fires and CorrectionPipeline reruns
-    with a better prompt.
+    annotation/validation/output/visualization. No fallback to
+    enriched_workflow — if Wirer returns empty the outer retry fires and
+    CorrectionPipeline reruns with a better prompt.
     """
     sid = _sid(ctx)
 
@@ -346,6 +355,25 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [f"Output stage failed: {e}"],
         }
+        return
+
+    # Stage 8: Mermaid visualization
+    # Generates a sibling .mmd file alongside the workflow JSON for the
+    # frontend (Phase H) and for human inspection. NEVER blocks the
+    # pipeline — failures here are logged but do not affect output_result.
+    output_file = (output_result.get("output_file")
+                   if isinstance(output_result, dict) else None)
+    if output_file:
+        try:
+            decomposition = _ensure_dict(ctx.session.state.get("decomposition"))
+            mmd_path = write_mermaid(workflow_json, decomposition, output_file)
+            if mmd_path:
+                ctx.session.state["mermaid_file"] = mmd_path
+                print(f"  [pipeline] mermaid written: {mmd_path}")
+            else:
+                print(f"  [pipeline] mermaid skipped (renderer returned empty)")
+        except Exception as e:
+            print(f"  [pipeline] mermaid stage failed (non-fatal): {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -512,7 +540,7 @@ class WorkflowPipeline(BaseAgent):
         except Exception as telem_err:
             print(f"  [pipeline] telemetry.log_wirer_call failed: {telem_err}")
 
-        # Stages 4f-7
+        # Stages 4f-8
         await _run_post_wirer_stages(ctx, activity_manifest)
 
 
@@ -667,7 +695,7 @@ class CorrectionPipeline(BaseAgent):
         except Exception as telem_err:
             print(f"  [correction] telemetry.log_wirer_call failed: {telem_err}")
 
-        # Stages 4f-7
+        # Stages 4f-8
         await _run_post_wirer_stages(ctx, activity_manifest)
 
 
