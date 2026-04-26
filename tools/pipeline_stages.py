@@ -1142,7 +1142,169 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Stage 4c / 4f — Apply structural fragments (F1-F9)
+# Nested sub-object normalization (Advanced, Result)
+# ---------------------------------------------------------------------------
+#
+# Activity templates load nested Advanced and Result sub-objects with
+# placeholder xNames (typically xName=CustomTypeName, e.g. xName="Advanced")
+# and unset Description/description fields. Validation rejects workflows
+# where any of these are duplicated or missing description text.
+#
+# This module turns that mechanical work into a deterministic stage that
+# replaces the previous Wirer-prompt band-aid. Runs as part of
+# apply_fragments() so it fires both before WirerAgent (Stage 4c) and after
+# (Stage 4f) — the post-Wirer pass repairs anything Wirer regressed.
+#
+# Idempotent: a second invocation leaves correctly-formatted sub-objects
+# unchanged. Counters increment across the WHOLE workflow, not per parent.
+#
+# ReturnValue sub-objects are deliberately NOT included here. They are
+# already handled by F6-F9 in _walk_top_level / _walk_branch_body / etc.,
+# which set defaults including empty Description strings via
+# _apply_returnvalue_fragment.
+# ---------------------------------------------------------------------------
+
+# CustomTypeNames whose nested instances need xName + Description fix.
+_NESTED_NORMALIZED_TYPES: frozenset = frozenset({"Advanced", "Result"})
+
+# Description templates per nested type, keyed off parent activity type.
+# Walked at runtime — see _description_template_for().
+_NESTED_DESCRIPTION_TEMPLATES: dict[str, str] = {
+    "Advanced": "Advanced settings for {parent}.",
+    "Result":   "Result of {parent}.",
+}
+
+
+def _description_template_for(nested_ct: str, parent_ct: str) -> str:
+    """Return the Description text for a nested sub-object given its
+    CustomTypeName and the parent activity's CustomTypeName."""
+    template = _NESTED_DESCRIPTION_TEMPLATES.get(
+        nested_ct, "{nested} for {parent}."
+    )
+    return template.format(nested=nested_ct, parent=parent_ct or "Activity")
+
+
+def _xname_already_correct(xname: str, custom_type: str) -> bool:
+    """
+    Returns True if xname matches the deterministic pattern derived from
+    custom_type — lowercased first character + rest + digits.
+      ('advanced1', 'Advanced') → True
+      ('advanced42', 'Advanced') → True
+      ('Advanced', 'Advanced')  → False  (capital A)
+      ('advanced', 'Advanced')  → False  (no counter)
+      ('advancedX', 'Advanced') → False  (non-digit suffix)
+    """
+    if not xname or not custom_type:
+        return False
+    expected_prefix = custom_type[0].lower() + custom_type[1:]
+    if not xname.startswith(expected_prefix):
+        return False
+    suffix = xname[len(expected_prefix):]
+    return suffix.isdigit() and len(suffix) > 0
+
+
+def _normalize_nested_subobjects(raw: dict) -> int:
+    """
+    Walk the workflow tree in document order. For every nested Advanced or
+    Result sub-object encountered:
+
+      1. Assign a numbered xName (advanced1, advanced2, ..., result1, ...)
+         if the current xName is missing, equal to the CustomTypeName, or
+         otherwise non-conformant. Counters increment per CustomTypeName
+         across the WHOLE workflow.
+      2. Set Description and description (both spellings) using a generic
+         template keyed off the parent activity's CustomTypeName, e.g.
+         "Advanced settings for GetRowsCount." Existing non-empty values
+         that aren't placeholders are preserved.
+
+    Mutates raw in place. Returns the count of sub-objects normalized.
+
+    Idempotent — a second call leaves correctly-formatted sub-objects
+    unchanged. Counters max-track existing correct numbers so subsequent
+    assignments don't collide.
+
+    ReturnValue sub-objects are NOT touched — F6-F9 handle them.
+    """
+    counters: dict[str, int] = {}     # CustomTypeName -> next counter value
+    normalized_count = 0
+
+    def _walk(nodes: dict, parent_ct: str | None) -> None:
+        nonlocal normalized_count
+        for key, node in nodes.items():
+            if not isinstance(node, dict):
+                continue
+            ct = node.get("CustomTypeName", "")
+            if not ct:
+                continue
+
+            # Only normalize Advanced/Result — and only when we know the
+            # parent activity's CT (template derivation needs it)
+            if ct in _NESTED_NORMALIZED_TYPES and parent_ct:
+                current_xname = node.get("xName", "")
+
+                if _xname_already_correct(current_xname, ct):
+                    # Preserve. Update counter so future assignments don't
+                    # collide with this one.
+                    suffix = current_xname[len(ct[0].lower() + ct[1:]):]
+                    try:
+                        n = int(suffix)
+                        if n > counters.get(ct, 0):
+                            counters[ct] = n
+                    except ValueError:
+                        pass
+                else:
+                    # Assign a fresh numbered xName.
+                    counters[ct] = counters.get(ct, 0) + 1
+                    new_xname = f"{ct[0].lower()}{ct[1:]}{counters[ct]}"
+                    node["xName"] = new_xname
+                    normalized_count += 1
+
+                # Populate Description / description if missing or placeholder.
+                template = _description_template_for(ct, parent_ct)
+
+                d_upper = node.get("Description", "")
+                if not d_upper or (isinstance(d_upper, str)
+                                   and d_upper.endswith("_value")):
+                    node["Description"] = template
+
+                d_lower = node.get("description", "")
+                if not d_lower or (isinstance(d_lower, str)
+                                   and d_lower.endswith("_value")):
+                    node["description"] = template
+
+            # Recurse into all CT-bearing children regardless of whether
+            # the current node was normalized. The recursion uses THIS
+            # node's CT as the parent for its descendants.
+            for child_key, child_val in node.items():
+                if (isinstance(child_val, dict)
+                        and child_val.get("CustomTypeName")):
+                    _walk({child_key: child_val}, parent_ct=ct)
+
+    _walk(raw, parent_ct=None)
+    return normalized_count
+
+
+def normalize_nested_subobjects(workflow_json: dict) -> dict:
+    """
+    Public stage entry point. Deep-copies, normalizes nested sub-objects,
+    returns the new workflow. Use this when calling as a standalone stage;
+    use _normalize_nested_subobjects when mutating in place inside another
+    stage (e.g. apply_fragments).
+    """
+    import copy
+    workflow_json = _ensure_dict(workflow_json)
+    result = copy.deepcopy(workflow_json)
+    raw = result.get("workflow_raw_data", result)
+    if isinstance(raw, dict):
+        n = _normalize_nested_subobjects(raw)
+        if n:
+            print(f"[nested] Normalized {n} nested sub-object(s) "
+                  f"(Advanced/Result xNames + Descriptions)")
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Stage 4c / 4f — Apply structural fragments (F1-F9 + nested normalization)
 # ---------------------------------------------------------------------------
 #
 # Called twice in the pipeline:
@@ -1163,6 +1325,8 @@ def run_enrichment(placed_skeleton: dict, activity_manifest: list) -> dict:
 # F7   ReturnValue status tier (preceding activity is Status producer)
 # F8   ReturnValue scalar tier (preceding activity is Scalar producer)
 # F9   Inject missing ReturnValue into every IfElseBranchActivity
+# F11  Nested Advanced/Result sub-objects: numbered xNames + Descriptions
+#      (replaces former Wirer-prompt band-aid)
 # ---------------------------------------------------------------------------
 
 _STATUS_PRODUCERS: frozenset = frozenset({
@@ -1529,8 +1693,9 @@ def _walk_top_level(raw: dict) -> None:
 
 def apply_fragments(workflow_json: dict) -> dict:
     """
-    Apply structural invariants F1-F9. Idempotent — safe to call twice
-    (Stage 4c before Wirer and Stage 4f after Wirer).
+    Apply structural invariants F1-F9 plus F11 (nested sub-object
+    normalization). Idempotent — safe to call twice (Stage 4c before Wirer
+    and Stage 4f after Wirer).
     """
     import copy
     result = copy.deepcopy(workflow_json)
@@ -1539,15 +1704,21 @@ def apply_fragments(workflow_json: dict) -> dict:
         print("[fragments] Warning: workflow_raw_data is not a dict — skipping")
         return result
     _walk_top_level(raw)
-    print(f"[fragments] Applied F1-F9 to {len(raw)} top-level activities")
+    n_nested = _normalize_nested_subobjects(raw)
+    n_top = len(raw)
+    if n_nested:
+        print(f"[fragments] Applied F1-F9 to {n_top} top-level activities; "
+              f"F11 normalized {n_nested} nested sub-object(s)")
+    else:
+        print(f"[fragments] Applied F1-F9 to {n_top} top-level activities")
     return result
 
 
 def run_fragments(enriched_workflow: dict) -> dict:
     """
-    Stage 4c / 4f: applies F1-F9.
+    Stage 4c / 4f: applies F1-F9 + F11.
     Stage 4c: before WirerAgent (structural context on skeleton)
-    Stage 4f: after WirerAgent (enforce invariants on Wirer-reconstructed activities)
+    Stage 4f: after WirerAgent  (enforce invariants on Wirer-reconstructed activities)
     """
     enriched_workflow = _ensure_dict(enriched_workflow)
     return apply_fragments(enriched_workflow)

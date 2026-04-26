@@ -1,151 +1,73 @@
 {
-  "branch_decision": [
-    "if",
-    "when",
-    "depending on",
-    "check if",
-    "decide",
-    "branch on",
-    "based on"
-  ],
-  "set_variable": [
-    "set variable",
-    "store in variable",
-    "assign",
-    "save to",
-    "put in"
-  ],
-  "parallel_execution": [],
-  "read_table_cell": [
-    "get cell",
-    "read column",
-    "get column value",
-    "get value from"
-  ],
-  "display_value": [
-    "display",
-    "show",
-    "print",
-    "output"
-  ],
-  "count_table_rows": [
-    "count rows",
-    "number of rows",
-    "how many rows",
-    "row count"
-  ],
-  "string_operations": [
-    "split",
-    "substring",
-    "contains",
-    "is empty",
-    "replace",
-    "trim"
-  ],
-  "terminate": [
-    "stop workflow",
-    "terminate",
-    "exit",
-    "end workflow"
-  ],
-  "modify_table": [
-    "set cell",
-    "update row",
-    "add row",
-    "delete row",
-    "update the column"
-  ],
-  "sequence_control": [],
-  "iterate_rows": [
-    "for each",
-    "loop through",
-    "iterate over",
-    "for every",
-    "go through each",
-    "repeat for each"
-  ],
-  "query_database": [
-    "query database",
-    "run sql",
-    "select from",
-    "sql query",
-    "query the db",
-    "run a query",
-    "database lookup"
-  ],
-  "invoke_subworkflow": [],
-  "create_table": [
-    "create table",
-    "make a table",
-    "new memory table"
-  ],
+  "_meta": {
+    "version": "path-b-2",
+    "generated_at": "2026-04-26",
+    "derived_from": "data/task_taxonomy.json",
+    "regenerate_when": "task_taxonomy.json changes",
+    "matcher_rule": "Phrases are matched as case-insensitive word-boundary regexes against the prompt. Longer phrases are tried first to prevent 'check if' matching when 'check if running' would also match.",
+    "version_history": {
+      "path-b-1": "initial Path B phrase map",
+      "path-b-2": "dropped 'when' from branch_decision (was matching temporal triggers); added 'slack', 'slack channel', 'teams channel', 'post a message' to send_notification"
+    }
+  },
+
   "read_file": [
     "read excel",
     "read spreadsheet",
     "read csv",
-    "read file",
+    "read the file",
     "load file",
     "import data from",
     "parse json",
     "parse xml",
     "extract data from",
     "read the excel",
-    "read the csv"
+    "read the csv",
+    "from a file",
+    "from the spreadsheet",
+    "from an excel file"
   ],
-  "filter_table": [
-    "filter",
-    "exclude",
-    "only keep",
-    "where",
-    "remove rows where",
-    "keep only"
+
+  "read_table_cell": [
+    "get cell",
+    "read column",
+    "get column value",
+    "get value from",
+    "read the value",
+    "look up the",
+    "get the field",
+    "extract the column"
   ],
-  "date_operations": [
-    "current date",
-    "today",
-    "days between",
-    "add days",
-    "subtract days",
-    "date difference",
-    "how old",
-    "expiry",
-    "expiration"
+
+  "iterate_rows": [
+    "for each",
+    "loop through",
+    "iterate over",
+    "for every",
+    "go through each",
+    "repeat for each",
+    "for each row",
+    "for each item",
+    "process each",
+    "for each server",
+    "for each user",
+    "loop over"
   ],
-  "query_itsm": [
-    "servicenow",
-    "get ticket",
-    "get incident",
-    "jira",
-    "get record",
-    "update ticket",
-    "create incident",
-    "look up incident"
+
+  "branch_decision": [
+    "if",
+    "depending on",
+    "check if",
+    "decide",
+    "branch on",
+    "based on",
+    "if the",
+    "when the",
+    "should the",
+    "in case",
+    "otherwise"
   ],
-  "run_script": [
-    "run script",
-    "powershell",
-    "execute command",
-    "run command"
-  ],
-  "read_structured_input": [],
-  "send_email": [
-    "send email",
-    "email",
-    "notify via email",
-    "email admin",
-    "send a mail",
-    "send message"
-  ],
-  "goto": [],
-  "query_api": [
-    "call api",
-    "http request",
-    "rest call",
-    "fetch from api",
-    "call endpoint",
-    "hit the api",
-    "web request"
-  ],
+
   "query_system_state": [
     "ping",
     "check server",
@@ -154,98 +76,108 @@
     "is running",
     "health check",
     "is up",
+    "is down",
     "wmi",
     "check cpu",
     "check memory",
     "file exists",
-    "folder exists"
+    "folder exists",
+    "is the service",
+    "check if running",
+    "is alive",
+    "verify connection"
   ],
-  "wait": [
-    "wait",
-    "pause",
-    "delay",
-    "sleep"
+
+  "query_database": [
+    "query database",
+    "run sql",
+    "select from",
+    "sql query",
+    "query the db",
+    "run a query",
+    "database lookup",
+    "fetch from db",
+    "query the database",
+    "look up in database",
+    "sql select",
+    "from the database"
   ],
-  "write_file": [
-    "write to file",
-    "save file",
-    "export to",
-    "download file"
+
+  "query_itsm": [
+    "servicenow",
+    "service now",
+    "snow ticket",
+    "snow incident",
+    "sn ticket",
+    "sn incident",
+    "sn record",
+    "get ticket",
+    "get incident",
+    "create ticket",
+    "create incident",
+    "update ticket",
+    "update incident",
+    "jira",
+    "jira issue",
+    "jira ticket",
+    "look up incident",
+    "open a ticket",
+    "close ticket",
+    "cherwell",
+    "remedyforce",
+    "itsm",
+    "in the catalog"
   ],
-  "convert_table": [
-    "convert to html",
-    "convert to json",
-    "format as table",
-    "html table"
+
+  "send_email": [
+    "send email",
+    "send an email",
+    "email",
+    "notify via email",
+    "email admin",
+    "send a mail",
+    "send message",
+    "email the",
+    "email to",
+    "mail to",
+    "send mail to",
+    "email notification"
   ],
+
   "send_notification": [
     "notify",
     "alert",
     "send notification",
-    "raise event"
+    "raise event",
+    "post to slack",
+    "send to teams",
+    "send sms",
+    "text the",
+    "slack message",
+    "teams message",
+    "send a text",
+    "ms teams",
+    "microsoft teams",
+    "to the channel",
+    "to slack",
+    "page on call",
+    "slack",
+    "slack channel",
+    "teams channel",
+    "post a message"
   ],
-  "password_operations": [],
-  "server_action": [
-    "restart server",
-    "reboot",
-    "start service",
-    "stop service",
-    "shutdown",
-    "create folder"
-  ],
-  "math_operations": [
-    "calculate",
-    "sum",
-    "add numbers",
-    "percentage"
-  ],
-  "clean_memory": [],
-  "manage_ad_account": [
-    "create account",
-    "disable account",
-    "reset password",
-    "add to group",
-    "create user"
-  ],
-  "query_directory": [
-    "active directory",
-    "check user",
-    "user exists",
-    "list group",
-    "group members",
-    "ad lookup",
-    "ad user"
-  ],
-  "sort_table": [
-    "sort",
-    "order by",
-    "ascending",
-    "descending"
-  ],
-  "lock": [],
-  "composite_count_table_rows_then_read_table_cell": [],
-  "composite_set_variable_then_display_value": [],
-  "composite_set_variable_then_set_variable": [],
-  "composite_read_table_cell_then_display_value": [],
-  "composite_set_variable_then_read_table_cell": [],
-  "composite_count_table_rows_then_display_value": [],
-  "composite_set_variable_then_count_table_rows": [],
-  "composite_read_table_cell_then_read_table_cell": [],
-  "composite_display_value_then_display_value": [],
-  "composite_read_table_cell_then_set_variable": [],
-  "composite_set_variable_then_set_variable_then_display_value": [],
-  "composite_count_table_rows_then_set_variable": [],
-  "composite_count_table_rows_then_read_table_cell_then_display_value": [],
-  "composite_read_table_cell_then_count_table_rows": [],
-  "composite_set_variable_then_display_value_then_display_value": [],
-  "composite_set_variable_then_count_table_rows_then_read_table_cell": [],
-  "composite_create_table_then_read_table_cell": [],
-  "composite_set_variable_then_read_table_cell_then_display_value": [],
-  "composite_set_variable_then_set_variable_then_set_variable": [],
-  "composite_read_file_then_read_table_cell": [],
-  "composite_count_table_rows_then_count_table_rows": [],
-  "composite_create_table_then_count_table_rows": [],
-  "composite_display_value_then_set_variable": [],
-  "composite_set_variable_then_count_table_rows_then_display_value": [],
-  "composite_read_file_then_count_table_rows": []
+
+  "display_value": [
+    "display",
+    "show",
+    "print",
+    "output",
+    "log",
+    "write to log",
+    "log the result",
+    "show the result",
+    "print the",
+    "display the",
+    "write to the workflow log"
+  ]
 }

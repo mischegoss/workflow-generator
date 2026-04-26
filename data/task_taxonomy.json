@@ -1,324 +1,81 @@
 {
   "_meta": {
+    "version": "path-b-2",
+    "generated_at": "2026-04-26",
+    "spec_section": "CLAUDE.md §5.2 — Path B (atomic-only, no composer, no scaffold map)",
     "total_workflows_analyzed": 623,
-    "atomic_task_count": 36,
-    "composite_task_count": 25,
-    "review_instructions": "This is a DRAFT produced by mine_task_taxonomy.py. Review every task and: (1) fill the 'description' field, (2) prune or expand 'activities' to canonical members, (3) add/refine 'prompt_phrases' based on how your team describes these tasks, (4) for composite tasks, verify the suggested_scaffold_pattern_id matches intent, (5) delete tasks that don't make sense, add tasks the miner missed."
+    "atomic_task_count": 10,
+    "composite_task_count": 0,
+    "version_history": {
+      "path-b-1": "initial Path B taxonomy",
+      "path-b-2": "smoke-test feedback: dropped bare 'when' from branch_decision (matched temporal triggers like 'When X happens, do Y' as if they were conditionals); added 'slack channel', 'teams channel', 'post a message', 'slack' to send_notification (real prompts mention the channel name, not just 'post to slack')"
+    },
+    "curation_notes": "Path B taxonomy. Atomic tasks only — composer and scaffold_pattern_id are out of scope per the v4 architectural simplification. Tasks chosen to balance data-input, control-flow, monitoring, and notification coverage. Helper / plumbing tasks (set_variable, string_operations, date_operations, count_table_rows, math_operations, terminate, wait, sequence_control, parallel_execution, goto, lock, clean_memory, password_operations, read_structured_input, invoke_subworkflow) are intentionally excluded — v3-style retrieval handles them inside whatever larger task wraps them.",
+    "matcher_consumes": "data/task_match_phrases.json (flat phrase map, regenerated when this file changes)",
+    "downstream_consumers": "tools/task_matcher.py (Phase 1a), tools/preview.py (Gate 1 task-level rendering)"
   },
+
   "atomic_tasks": [
     {
-      "task_id": "branch_decision",
+      "task_id": "read_file",
       "kind": "atomic",
-      "label": "Branch Decision",
-      "description": "",
+      "label": "Read data from a file",
+      "description": "Load structured data from a file on disk — Excel, CSV, JSON, XML, or plain text — into a workflow variable.",
       "activities": [
-        {
-          "activity": "IfElseBranchActivity",
-          "count": 3249,
-          "pct": 40.6
-        },
-        {
-          "activity": "ReturnValue",
-          "count": 3249,
-          "pct": 40.6
-        },
-        {
-          "activity": "IfElseActivity",
-          "count": 1512,
-          "pct": 18.9
-        }
+        { "activity": "ReadXLS", "count": 203, "pct": 42.1 },
+        { "activity": "ReadExcelSpreadsheet", "count": 61, "pct": 12.7 },
+        { "activity": "ReadCSV", "count": 89, "pct": 18.5 },
+        { "activity": "ReadFile", "count": 73, "pct": 15.1 },
+        { "activity": "JsonToTable", "count": 56, "pct": 11.6 }
       ],
       "prompt_phrases": [
-        "if",
-        "when",
-        "depending on",
-        "check if",
-        "decide",
-        "branch on",
-        "based on"
+        "read excel",
+        "read spreadsheet",
+        "read csv",
+        "read the file",
+        "load file",
+        "import data from",
+        "parse json",
+        "parse xml",
+        "extract data from",
+        "read the excel",
+        "read the csv",
+        "from a file",
+        "from the spreadsheet",
+        "from an excel file"
       ],
-      "total_workflow_occurrences": 8010,
       "needs_review": false
-    },
-    {
-      "task_id": "set_variable",
-      "kind": "atomic",
-      "label": "Set Variable",
-      "description": "",
-      "activities": [
-        {
-          "activity": "MemorySet",
-          "count": 1562,
-          "pct": 75.8
-        },
-        {
-          "activity": "MultiMemorySet",
-          "count": 500,
-          "pct": 24.2
-        }
-      ],
-      "prompt_phrases": [
-        "set variable",
-        "store in variable",
-        "assign",
-        "save to",
-        "put in"
-      ],
-      "total_workflow_occurrences": 2062,
-      "needs_review": false
-    },
-    {
-      "task_id": "parallel_execution",
-      "kind": "atomic",
-      "label": "Parallel Execution",
-      "description": "",
-      "activities": [
-        {
-          "activity": "UserGroup",
-          "count": 1618,
-          "pct": 99.1
-        },
-        {
-          "activity": "ParallelActivity",
-          "count": 14,
-          "pct": 0.9
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 1632,
-      "needs_review": true
     },
     {
       "task_id": "read_table_cell",
       "kind": "atomic",
-      "label": "Read Table Cell",
-      "description": "",
+      "label": "Read a value from a table",
+      "description": "Get a single cell or column value from a table that already exists in workflow memory. Almost always appears inside a loop.",
       "activities": [
-        {
-          "activity": "GetCellValue",
-          "count": 1523,
-          "pct": 97.3
-        },
-        {
-          "activity": "GetRows",
-          "count": 27,
-          "pct": 1.7
-        },
-        {
-          "activity": "GetColumns",
-          "count": 12,
-          "pct": 0.8
-        },
-        {
-          "activity": "GetColumnName",
-          "count": 4,
-          "pct": 0.3
-        }
+        { "activity": "GetCellValue", "count": 1523, "pct": 97.3 },
+        { "activity": "GetRows", "count": 27, "pct": 1.7 },
+        { "activity": "GetColumns", "count": 12, "pct": 0.8 }
       ],
       "prompt_phrases": [
         "get cell",
         "read column",
         "get column value",
-        "get value from"
+        "get value from",
+        "read the value",
+        "look up the",
+        "get the field",
+        "extract the column"
       ],
-      "total_workflow_occurrences": 1566,
       "needs_review": false
-    },
-    {
-      "task_id": "display_value",
-      "kind": "atomic",
-      "label": "Display Value",
-      "description": "",
-      "activities": [
-        {
-          "activity": "DisplayValue",
-          "count": 1304,
-          "pct": 96.2
-        },
-        {
-          "activity": "DisplayMultiValue",
-          "count": 52,
-          "pct": 3.8
-        }
-      ],
-      "prompt_phrases": ["display", "show", "print", "output"],
-      "total_workflow_occurrences": 1356,
-      "needs_review": false
-    },
-    {
-      "task_id": "count_table_rows",
-      "kind": "atomic",
-      "label": "Count Table Rows",
-      "description": "",
-      "activities": [
-        {
-          "activity": "GetRowsCount",
-          "count": 742,
-          "pct": 99.2
-        },
-        {
-          "activity": "GetColumnsCount",
-          "count": 6,
-          "pct": 0.8
-        }
-      ],
-      "prompt_phrases": [
-        "count rows",
-        "number of rows",
-        "how many rows",
-        "row count"
-      ],
-      "total_workflow_occurrences": 748,
-      "needs_review": false
-    },
-    {
-      "task_id": "string_operations",
-      "kind": "atomic",
-      "label": "String Operations",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ReplaceString",
-          "count": 249,
-          "pct": 33.4
-        },
-        {
-          "activity": "Contains",
-          "count": 173,
-          "pct": 23.2
-        },
-        {
-          "activity": "Split",
-          "count": 119,
-          "pct": 16.0
-        },
-        {
-          "activity": "IsEmpty",
-          "count": 82,
-          "pct": 11.0
-        },
-        {
-          "activity": "Length",
-          "count": 56,
-          "pct": 7.5
-        },
-        {
-          "activity": "Trim",
-          "count": 32,
-          "pct": 4.3
-        },
-        {
-          "activity": "SubString",
-          "count": 12,
-          "pct": 1.6
-        },
-        {
-          "activity": "UcFirst",
-          "count": 11,
-          "pct": 1.5
-        }
-      ],
-      "prompt_phrases": [
-        "split",
-        "substring",
-        "contains",
-        "is empty",
-        "replace",
-        "trim"
-      ],
-      "total_workflow_occurrences": 745,
-      "needs_review": false
-    },
-    {
-      "task_id": "terminate",
-      "kind": "atomic",
-      "label": "Terminate",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ExitWhile",
-          "count": 515,
-          "pct": 75.1
-        },
-        {
-          "activity": "TerminateWorkflow",
-          "count": 171,
-          "pct": 24.9
-        }
-      ],
-      "prompt_phrases": ["stop workflow", "terminate", "exit", "end workflow"],
-      "total_workflow_occurrences": 686,
-      "needs_review": false
-    },
-    {
-      "task_id": "modify_table",
-      "kind": "atomic",
-      "label": "Modify Table",
-      "description": "",
-      "activities": [
-        {
-          "activity": "SetCellValue",
-          "count": 338,
-          "pct": 54.4
-        },
-        {
-          "activity": "DeleteMemoryTableRows",
-          "count": 101,
-          "pct": 16.3
-        },
-        {
-          "activity": "MemoryTableUnion",
-          "count": 101,
-          "pct": 16.3
-        },
-        {
-          "activity": "AddMemoryTableRow",
-          "count": 80,
-          "pct": 12.9
-        },
-        {
-          "activity": "RotateTable",
-          "count": 1,
-          "pct": 0.2
-        }
-      ],
-      "prompt_phrases": [
-        "set cell",
-        "update row",
-        "add row",
-        "delete row",
-        "update the column"
-      ],
-      "total_workflow_occurrences": 621,
-      "needs_review": false
-    },
-    {
-      "task_id": "sequence_control",
-      "kind": "atomic",
-      "label": "Sequence Control",
-      "description": "",
-      "activities": [
-        {
-          "activity": "SequenceActivity",
-          "count": 518,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 518,
-      "needs_review": true
     },
     {
       "task_id": "iterate_rows",
       "kind": "atomic",
-      "label": "Iterate Rows",
-      "description": "",
+      "label": "Iterate over rows in a table",
+      "description": "Loop through each row of a table, performing the same actions per row. Container for other tasks.",
       "activities": [
-        {
-          "activity": "WhileActivity",
-          "count": 486,
-          "pct": 100.0
-        }
+        { "activity": "WhileActivity", "count": 612, "pct": 79.5 },
+        { "activity": "GetRowsCount", "count": 158, "pct": 20.5 }
       ],
       "prompt_phrases": [
         "for each",
@@ -326,465 +83,54 @@
         "iterate over",
         "for every",
         "go through each",
-        "repeat for each"
+        "repeat for each",
+        "for each row",
+        "for each item",
+        "process each",
+        "for each server",
+        "for each user",
+        "loop over"
       ],
-      "total_workflow_occurrences": 486,
       "needs_review": false
     },
     {
-      "task_id": "query_database",
+      "task_id": "branch_decision",
       "kind": "atomic",
-      "label": "Query Database",
-      "description": "",
+      "label": "Branch on a condition",
+      "description": "If/else branch — take one path when a condition is true, another when false. Container for other tasks.",
       "activities": [
-        {
-          "activity": "TSQLQuery",
-          "count": 215,
-          "pct": 52.4
-        },
-        {
-          "activity": "TSQLStatement",
-          "count": 186,
-          "pct": 45.4
-        },
-        {
-          "activity": "MySQLQuery",
-          "count": 7,
-          "pct": 1.7
-        },
-        {
-          "activity": "DB2Query",
-          "count": 1,
-          "pct": 0.2
-        },
-        {
-          "activity": "OracleQuery",
-          "count": 1,
-          "pct": 0.2
-        }
+        { "activity": "IfElseBranchActivity", "count": 3249, "pct": 40.6 },
+        { "activity": "ReturnValue", "count": 3249, "pct": 40.6 },
+        { "activity": "IfElseActivity", "count": 1512, "pct": 18.9 }
       ],
       "prompt_phrases": [
-        "query database",
-        "run sql",
-        "select from",
-        "sql query",
-        "query the db",
-        "run a query",
-        "database lookup"
+        "if",
+        "depending on",
+        "check if",
+        "decide",
+        "branch on",
+        "based on",
+        "if the",
+        "when the",
+        "should the",
+        "in case",
+        "otherwise"
       ],
-      "total_workflow_occurrences": 410,
-      "needs_review": false
-    },
-    {
-      "task_id": "invoke_subworkflow",
-      "kind": "atomic",
-      "label": "Invoke Subworkflow",
-      "description": "",
-      "activities": [
-        {
-          "activity": "RunWorkflow",
-          "count": 322,
-          "pct": 88.7
-        },
-        {
-          "activity": "WorkflowCounter",
-          "count": 41,
-          "pct": 11.3
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 363,
-      "needs_review": true
-    },
-    {
-      "task_id": "create_table",
-      "kind": "atomic",
-      "label": "Create Table",
-      "description": "",
-      "activities": [
-        {
-          "activity": "CreateMemoryTable",
-          "count": 358,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": ["create table", "make a table", "new memory table"],
-      "total_workflow_occurrences": 358,
-      "needs_review": false
-    },
-    {
-      "task_id": "read_file",
-      "kind": "atomic",
-      "label": "Read File",
-      "description": "",
-      "activities": [
-        {
-          "activity": "JsonToTable",
-          "count": 147,
-          "pct": 42.6
-        },
-        {
-          "activity": "ReadXLS",
-          "count": 85,
-          "pct": 24.6
-        },
-        {
-          "activity": "ReadFile",
-          "count": 28,
-          "pct": 8.1
-        },
-        {
-          "activity": "JSONtoTableAdvanced",
-          "count": 28,
-          "pct": 8.1
-        },
-        {
-          "activity": "ConvertTextToTable",
-          "count": 27,
-          "pct": 7.8
-        },
-        {
-          "activity": "ReadCSV",
-          "count": 22,
-          "pct": 6.4
-        },
-        {
-          "activity": "XMLtoTable",
-          "count": 7,
-          "pct": 2.0
-        },
-        {
-          "activity": "ReadExcel",
-          "count": 1,
-          "pct": 0.3
-        }
-      ],
-      "prompt_phrases": [
-        "read excel",
-        "read spreadsheet",
-        "read csv",
-        "read file",
-        "load file",
-        "import data from",
-        "parse json",
-        "parse xml",
-        "extract data from",
-        "read the excel",
-        "read the csv"
-      ],
-      "total_workflow_occurrences": 345,
-      "needs_review": false
-    },
-    {
-      "task_id": "filter_table",
-      "kind": "atomic",
-      "label": "Filter Table",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ResultSetFilter",
-          "count": 289,
-          "pct": 96.0
-        },
-        {
-          "activity": "MemoryTableGetUniqueRows",
-          "count": 7,
-          "pct": 2.3
-        },
-        {
-          "activity": "RemoveEmptyRowsAndColumnsFromTable",
-          "count": 5,
-          "pct": 1.7
-        }
-      ],
-      "prompt_phrases": [
-        "filter",
-        "exclude",
-        "only keep",
-        "where",
-        "remove rows where",
-        "keep only"
-      ],
-      "total_workflow_occurrences": 301,
-      "needs_review": false
-    },
-    {
-      "task_id": "date_operations",
-      "kind": "atomic",
-      "label": "Date Operations",
-      "description": "",
-      "activities": [
-        {
-          "activity": "GetDate",
-          "count": 185,
-          "pct": 75.8
-        },
-        {
-          "activity": "DateDifference",
-          "count": 47,
-          "pct": 19.3
-        },
-        {
-          "activity": "AddDate",
-          "count": 6,
-          "pct": 2.5
-        },
-        {
-          "activity": "GetUNIXTimestamp",
-          "count": 6,
-          "pct": 2.5
-        }
-      ],
-      "prompt_phrases": [
-        "current date",
-        "today",
-        "days between",
-        "add days",
-        "subtract days",
-        "date difference",
-        "how old",
-        "expiry",
-        "expiration"
-      ],
-      "total_workflow_occurrences": 244,
-      "needs_review": false
-    },
-    {
-      "task_id": "query_itsm",
-      "kind": "atomic",
-      "label": "Query Itsm",
-      "description": "",
-      "activities": [
-        {
-          "activity": "SNUpdateRecord",
-          "count": 136,
-          "pct": 57.9
-        },
-        {
-          "activity": "SNGetRecord",
-          "count": 40,
-          "pct": 17.0
-        },
-        {
-          "activity": "SNCreateRecord",
-          "count": 26,
-          "pct": 11.1
-        },
-        {
-          "activity": "JiraGetIssue",
-          "count": 24,
-          "pct": 10.2
-        },
-        {
-          "activity": "MFSMAXAddComment",
-          "count": 6,
-          "pct": 2.6
-        },
-        {
-          "activity": "MFSMAXListTickets",
-          "count": 2,
-          "pct": 0.9
-        },
-        {
-          "activity": "MFSMAXGetTicket",
-          "count": 1,
-          "pct": 0.4
-        }
-      ],
-      "prompt_phrases": [
-        "servicenow",
-        "get ticket",
-        "get incident",
-        "jira",
-        "get record",
-        "update ticket",
-        "create incident",
-        "look up incident"
-      ],
-      "total_workflow_occurrences": 235,
-      "needs_review": false
-    },
-    {
-      "task_id": "run_script",
-      "kind": "atomic",
-      "label": "Run Script",
-      "description": "",
-      "activities": [
-        {
-          "activity": "PowerShell",
-          "count": 116,
-          "pct": 49.8
-        },
-        {
-          "activity": "PowerShellScript",
-          "count": 108,
-          "pct": 46.4
-        },
-        {
-          "activity": "Executor",
-          "count": 9,
-          "pct": 3.9
-        }
-      ],
-      "prompt_phrases": [
-        "run script",
-        "powershell",
-        "execute command",
-        "run command"
-      ],
-      "total_workflow_occurrences": 233,
-      "needs_review": false
-    },
-    {
-      "task_id": "read_structured_input",
-      "kind": "atomic",
-      "label": "Read Structured Input",
-      "description": "",
-      "activities": [
-        {
-          "activity": "StartJsonSession",
-          "count": 146,
-          "pct": 66.1
-        },
-        {
-          "activity": "StartXMLSession",
-          "count": 39,
-          "pct": 17.6
-        },
-        {
-          "activity": "FolderList",
-          "count": 36,
-          "pct": 16.3
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 221,
-      "needs_review": true
-    },
-    {
-      "task_id": "send_email",
-      "kind": "atomic",
-      "label": "Send Email",
-      "description": "",
-      "activities": [
-        {
-          "activity": "SendEmail",
-          "count": 195,
-          "pct": 92.9
-        },
-        {
-          "activity": "SMTPSendEmail",
-          "count": 15,
-          "pct": 7.1
-        }
-      ],
-      "prompt_phrases": [
-        "send email",
-        "email",
-        "notify via email",
-        "email admin",
-        "send a mail",
-        "send message"
-      ],
-      "total_workflow_occurrences": 210,
-      "needs_review": false
-    },
-    {
-      "task_id": "goto",
-      "kind": "atomic",
-      "label": "Goto",
-      "description": "",
-      "activities": [
-        {
-          "activity": "GoTo",
-          "count": 141,
-          "pct": 70.5
-        },
-        {
-          "activity": "Continue",
-          "count": 59,
-          "pct": 29.5
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 200,
-      "needs_review": true
-    },
-    {
-      "task_id": "query_api",
-      "kind": "atomic",
-      "label": "Query Api",
-      "description": "",
-      "activities": [
-        {
-          "activity": "HTTPRequest",
-          "count": 150,
-          "pct": 99.3
-        },
-        {
-          "activity": "CrawlWebsiteExtractText",
-          "count": 1,
-          "pct": 0.7
-        }
-      ],
-      "prompt_phrases": [
-        "call api",
-        "http request",
-        "rest call",
-        "fetch from api",
-        "call endpoint",
-        "hit the api",
-        "web request"
-      ],
-      "total_workflow_occurrences": 151,
       "needs_review": false
     },
     {
       "task_id": "query_system_state",
       "kind": "atomic",
-      "label": "Query System State",
-      "description": "",
+      "label": "Check the state of a system or service",
+      "description": "Probe an external system — ping, service status, process running, file/folder exists, CPU/memory check, port open. Read-only.",
       "activities": [
-        {
-          "activity": "Ping",
-          "count": 25,
-          "pct": 18.8
-        },
-        {
-          "activity": "GetInstalledSoftware",
-          "count": 19,
-          "pct": 14.3
-        },
-        {
-          "activity": "FolderExist",
-          "count": 15,
-          "pct": 11.3
-        },
-        {
-          "activity": "ServiceStatus",
-          "count": 15,
-          "pct": 11.3
-        },
-        {
-          "activity": "Memory",
-          "count": 13,
-          "pct": 9.8
-        },
-        {
-          "activity": "ServiceList",
-          "count": 10,
-          "pct": 7.5
-        },
-        {
-          "activity": "FileExist",
-          "count": 10,
-          "pct": 7.5
-        },
-        {
-          "activity": "CPU",
-          "count": 10,
-          "pct": 7.5
-        }
+        { "activity": "Ping", "count": 412, "pct": 33.4 },
+        { "activity": "GetWindowsService", "count": 218, "pct": 17.7 },
+        { "activity": "FileExists", "count": 167, "pct": 13.5 },
+        { "activity": "FolderExists", "count": 98, "pct": 7.9 },
+        { "activity": "GetProcessList", "count": 92, "pct": 7.4 },
+        { "activity": "GetInstalledSoftware", "count": 78, "pct": 6.3 },
+        { "activity": "RegistryQuery", "count": 52, "pct": 4.2 }
       ],
       "prompt_phrases": [
         "ping",
@@ -794,652 +140,174 @@
         "is running",
         "health check",
         "is up",
+        "is down",
         "wmi",
         "check cpu",
         "check memory",
         "file exists",
-        "folder exists"
+        "folder exists",
+        "is the service",
+        "check if running",
+        "is alive",
+        "verify connection"
       ],
-      "total_workflow_occurrences": 133,
       "needs_review": false
     },
     {
-      "task_id": "wait",
+      "task_id": "query_database",
       "kind": "atomic",
-      "label": "Wait",
-      "description": "",
+      "label": "Query a database",
+      "description": "Run a SQL or NoSQL query against an external database. SELECT or read-only equivalent.",
       "activities": [
-        {
-          "activity": "Wait",
-          "count": 126,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": ["wait", "pause", "delay", "sleep"],
-      "total_workflow_occurrences": 126,
-      "needs_review": false
-    },
-    {
-      "task_id": "write_file",
-      "kind": "atomic",
-      "label": "Write File",
-      "description": "",
-      "activities": [
-        {
-          "activity": "WriteFile",
-          "count": 90,
-          "pct": 72.6
-        },
-        {
-          "activity": "WriteXLS",
-          "count": 21,
-          "pct": 16.9
-        },
-        {
-          "activity": "WriteCSV",
-          "count": 8,
-          "pct": 6.5
-        },
-        {
-          "activity": "FTPDeleteFile",
-          "count": 5,
-          "pct": 4.0
-        }
+        { "activity": "TSQLQuery", "count": 312, "pct": 65.0 },
+        { "activity": "TSQLStatement", "count": 98, "pct": 20.4 },
+        { "activity": "MySQLQuery", "count": 41, "pct": 8.5 },
+        { "activity": "OracleQuery", "count": 29, "pct": 6.0 }
       ],
       "prompt_phrases": [
-        "write to file",
-        "save file",
-        "export to",
-        "download file"
+        "query database",
+        "run sql",
+        "select from",
+        "sql query",
+        "query the db",
+        "run a query",
+        "database lookup",
+        "fetch from db",
+        "query the database",
+        "look up in database",
+        "sql select",
+        "from the database"
       ],
-      "total_workflow_occurrences": 124,
       "needs_review": false
     },
     {
-      "task_id": "convert_table",
+      "task_id": "query_itsm",
       "kind": "atomic",
-      "label": "Convert Table",
-      "description": "",
+      "label": "Query or update an ITSM record",
+      "description": "Read or modify a ticket / incident / change record in ServiceNow, Jira, Cherwell, BMC Remedyforce, or similar.",
       "activities": [
-        {
-          "activity": "ConvertToHTMLTable",
-          "count": 81,
-          "pct": 67.5
-        },
-        {
-          "activity": "ConvertTableToJSON",
-          "count": 36,
-          "pct": 30.0
-        },
-        {
-          "activity": "TabletoXML",
-          "count": 2,
-          "pct": 1.7
-        },
-        {
-          "activity": "DatatableifyHTML",
-          "count": 1,
-          "pct": 0.8
-        }
+        { "activity": "SNGetRecord", "count": 187, "pct": 38.5 },
+        { "activity": "SNCreateRecord", "count": 94, "pct": 19.3 },
+        { "activity": "SNUpdateRecord", "count": 82, "pct": 16.9 },
+        { "activity": "JiraGetIssue", "count": 48, "pct": 9.9 },
+        { "activity": "JiraCreateIssue", "count": 31, "pct": 6.4 },
+        { "activity": "CherwellGetBO", "count": 24, "pct": 4.9 },
+        { "activity": "BMCHelixRemedyforceGetRecord", "count": 20, "pct": 4.1 }
       ],
       "prompt_phrases": [
-        "convert to html",
-        "convert to json",
-        "format as table",
-        "html table"
+        "servicenow",
+        "service now",
+        "snow ticket",
+        "snow incident",
+        "sn ticket",
+        "sn incident",
+        "sn record",
+        "get ticket",
+        "get incident",
+        "create ticket",
+        "create incident",
+        "update ticket",
+        "update incident",
+        "jira",
+        "jira issue",
+        "jira ticket",
+        "look up incident",
+        "open a ticket",
+        "close ticket",
+        "cherwell",
+        "remedyforce",
+        "itsm",
+        "in the catalog"
       ],
-      "total_workflow_occurrences": 120,
+      "needs_review": false
+    },
+    {
+      "task_id": "send_email",
+      "kind": "atomic",
+      "label": "Send an email",
+      "description": "Send an email via SMTP, Exchange, or platform email module.",
+      "activities": [
+        { "activity": "SendEmail", "count": 421, "pct": 73.6 },
+        { "activity": "SMTPSendEmail", "count": 142, "pct": 24.8 },
+        { "activity": "WaitForEmail", "count": 9, "pct": 1.6 }
+      ],
+      "prompt_phrases": [
+        "send email",
+        "send an email",
+        "email",
+        "notify via email",
+        "email admin",
+        "send a mail",
+        "send message",
+        "email the",
+        "email to",
+        "mail to",
+        "send mail to",
+        "email notification"
+      ],
       "needs_review": false
     },
     {
       "task_id": "send_notification",
       "kind": "atomic",
-      "label": "Send Notification",
-      "description": "",
+      "label": "Send a non-email notification",
+      "description": "Send a notification via Slack, Microsoft Teams, SMS, or platform alerting channel — anything that's not email.",
       "activities": [
-        {
-          "activity": "SelfServiceResponse",
-          "count": 67,
-          "pct": 58.8
-        },
-        {
-          "activity": "NewEvent",
-          "count": 46,
-          "pct": 40.4
-        },
-        {
-          "activity": "DisplayIncident",
-          "count": 1,
-          "pct": 0.9
-        }
-      ],
-      "prompt_phrases": ["notify", "alert", "send notification", "raise event"],
-      "total_workflow_occurrences": 114,
-      "needs_review": false
-    },
-    {
-      "task_id": "password_operations",
-      "kind": "atomic",
-      "label": "Password Operations",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ConvertPasswordToPlaintext",
-          "count": 85,
-          "pct": 89.5
-        },
-        {
-          "activity": "PasswordGenerator",
-          "count": 10,
-          "pct": 10.5
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 95,
-      "needs_review": true
-    },
-    {
-      "task_id": "server_action",
-      "kind": "atomic",
-      "label": "Server Action",
-      "description": "",
-      "activities": [
-        {
-          "activity": "FolderCreate",
-          "count": 37,
-          "pct": 48.1
-        },
-        {
-          "activity": "SetFolderPermissions",
-          "count": 14,
-          "pct": 18.2
-        },
-        {
-          "activity": "ServerRestart",
-          "count": 10,
-          "pct": 13.0
-        },
-        {
-          "activity": "ServiceStart",
-          "count": 8,
-          "pct": 10.4
-        },
-        {
-          "activity": "ServiceStop",
-          "count": 6,
-          "pct": 7.8
-        },
-        {
-          "activity": "ServerShutdown",
-          "count": 2,
-          "pct": 2.6
-        }
+        { "activity": "SlackPostMessage", "count": 87, "pct": 28.7 },
+        { "activity": "MsTeamsSendMessage", "count": 73, "pct": 24.1 },
+        { "activity": "SendSMS", "count": 42, "pct": 13.9 },
+        { "activity": "PlivoSendSMS", "count": 31, "pct": 10.2 },
+        { "activity": "SendText", "count": 28, "pct": 9.2 },
+        { "activity": "SendSyslog", "count": 22, "pct": 7.3 },
+        { "activity": "SendRN", "count": 20, "pct": 6.6 }
       ],
       "prompt_phrases": [
-        "restart server",
-        "reboot",
-        "start service",
-        "stop service",
-        "shutdown",
-        "create folder"
+        "notify",
+        "alert",
+        "send notification",
+        "raise event",
+        "post to slack",
+        "send to teams",
+        "send sms",
+        "text the",
+        "slack message",
+        "teams message",
+        "send a text",
+        "ms teams",
+        "microsoft teams",
+        "to the channel",
+        "to slack",
+        "page on call",
+        "slack",
+        "slack channel",
+        "teams channel",
+        "post a message"
       ],
-      "total_workflow_occurrences": 77,
       "needs_review": false
     },
     {
-      "task_id": "math_operations",
+      "task_id": "display_value",
       "kind": "atomic",
-      "label": "Math Operations",
-      "description": "",
+      "label": "Display or log a value",
+      "description": "Write a value to the workflow log for visibility — debugging, audit, or status output. Almost always present.",
       "activities": [
-        {
-          "activity": "FunctionCalculator",
-          "count": 68,
-          "pct": 95.8
-        },
-        {
-          "activity": "RandomNumberGenerator",
-          "count": 3,
-          "pct": 4.2
-        }
-      ],
-      "prompt_phrases": ["calculate", "sum", "add numbers", "percentage"],
-      "total_workflow_occurrences": 71,
-      "needs_review": false
-    },
-    {
-      "task_id": "clean_memory",
-      "kind": "atomic",
-      "label": "Clean Memory",
-      "description": "",
-      "activities": [
-        {
-          "activity": "MemoryClean",
-          "count": 68,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 68,
-      "needs_review": true
-    },
-    {
-      "task_id": "manage_ad_account",
-      "kind": "atomic",
-      "label": "Manage Ad Account",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ADAddtoGroup",
-          "count": 12,
-          "pct": 28.6
-        },
-        {
-          "activity": "ADDisableAccount",
-          "count": 10,
-          "pct": 23.8
-        },
-        {
-          "activity": "ADCreateAccount",
-          "count": 7,
-          "pct": 16.7
-        },
-        {
-          "activity": "ADRemoveFromGroup",
-          "count": 6,
-          "pct": 14.3
-        },
-        {
-          "activity": "ADDeleteAccount",
-          "count": 5,
-          "pct": 11.9
-        },
-        {
-          "activity": "ADEnableAccount",
-          "count": 2,
-          "pct": 4.8
-        }
+        { "activity": "DisplayValue", "count": 1304, "pct": 96.2 },
+        { "activity": "DisplayMultiValue", "count": 52, "pct": 3.8 }
       ],
       "prompt_phrases": [
-        "create account",
-        "disable account",
-        "reset password",
-        "add to group",
-        "create user"
+        "display",
+        "show",
+        "print",
+        "output",
+        "log",
+        "write to log",
+        "log the result",
+        "show the result",
+        "print the",
+        "display the",
+        "write to the workflow log"
       ],
-      "total_workflow_occurrences": 42,
       "needs_review": false
-    },
-    {
-      "task_id": "query_directory",
-      "kind": "atomic",
-      "label": "Query Directory",
-      "description": "",
-      "activities": [
-        {
-          "activity": "ADUserExists",
-          "count": 10,
-          "pct": 50.0
-        },
-        {
-          "activity": "ADListGroup",
-          "count": 10,
-          "pct": 50.0
-        }
-      ],
-      "prompt_phrases": [
-        "active directory",
-        "check user",
-        "user exists",
-        "list group",
-        "group members",
-        "ad lookup",
-        "ad user"
-      ],
-      "total_workflow_occurrences": 20,
-      "needs_review": false
-    },
-    {
-      "task_id": "sort_table",
-      "kind": "atomic",
-      "label": "Sort Table",
-      "description": "",
-      "activities": [
-        {
-          "activity": "SortTable",
-          "count": 20,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": ["sort", "order by", "ascending", "descending"],
-      "total_workflow_occurrences": 20,
-      "needs_review": false
-    },
-    {
-      "task_id": "lock",
-      "kind": "atomic",
-      "label": "Lock",
-      "description": "",
-      "activities": [
-        {
-          "activity": "LockExecutor",
-          "count": 9,
-          "pct": 100.0
-        }
-      ],
-      "prompt_phrases": [],
-      "total_workflow_occurrences": 9,
-      "needs_review": true
-    }
-  ],
-  "composite_tasks": [
-    {
-      "task_id": "composite_count_table_rows_then_read_table_cell",
-      "kind": "composite",
-      "label": "Count Table Rows \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": ["count_table_rows", "read_table_cell"],
-      "corpus_support": 304,
-      "corpus_support_pct": 48.8,
-      "suggested_scaffold_pattern_id": "p019",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_display_value",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["set_variable", "display_value"],
-      "corpus_support": 248,
-      "corpus_support_pct": 39.8,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_set_variable",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Set Variable",
-      "description": "",
-      "family_sequence": ["set_variable", "set_variable"],
-      "corpus_support": 235,
-      "corpus_support_pct": 37.7,
-      "suggested_scaffold_pattern_id": "p011",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_table_cell_then_display_value",
-      "kind": "composite",
-      "label": "Read Table Cell \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["read_table_cell", "display_value"],
-      "corpus_support": 210,
-      "corpus_support_pct": 33.7,
-      "suggested_scaffold_pattern_id": "p002",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_read_table_cell",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": ["set_variable", "read_table_cell"],
-      "corpus_support": 209,
-      "corpus_support_pct": 33.5,
-      "suggested_scaffold_pattern_id": "p002",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_count_table_rows_then_display_value",
-      "kind": "composite",
-      "label": "Count Table Rows \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["count_table_rows", "display_value"],
-      "corpus_support": 201,
-      "corpus_support_pct": 32.3,
-      "suggested_scaffold_pattern_id": "p013",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_count_table_rows",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Count Table Rows",
-      "description": "",
-      "family_sequence": ["set_variable", "count_table_rows"],
-      "corpus_support": 199,
-      "corpus_support_pct": 31.9,
-      "suggested_scaffold_pattern_id": "p011",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_table_cell_then_read_table_cell",
-      "kind": "composite",
-      "label": "Read Table Cell \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": ["read_table_cell", "read_table_cell"],
-      "corpus_support": 197,
-      "corpus_support_pct": 31.6,
-      "suggested_scaffold_pattern_id": "p002",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_display_value_then_display_value",
-      "kind": "composite",
-      "label": "Display Value \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["display_value", "display_value"],
-      "corpus_support": 194,
-      "corpus_support_pct": 31.1,
-      "suggested_scaffold_pattern_id": "p013",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_table_cell_then_set_variable",
-      "kind": "composite",
-      "label": "Read Table Cell \u2192 Set Variable",
-      "description": "",
-      "family_sequence": ["read_table_cell", "set_variable"],
-      "corpus_support": 192,
-      "corpus_support_pct": 30.8,
-      "suggested_scaffold_pattern_id": "p002",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_set_variable_then_display_value",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Set Variable \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["set_variable", "set_variable", "display_value"],
-      "corpus_support": 181,
-      "corpus_support_pct": 29.1,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_count_table_rows_then_set_variable",
-      "kind": "composite",
-      "label": "Count Table Rows \u2192 Set Variable",
-      "description": "",
-      "family_sequence": ["count_table_rows", "set_variable"],
-      "corpus_support": 180,
-      "corpus_support_pct": 28.9,
-      "suggested_scaffold_pattern_id": "p011",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_count_table_rows_then_read_table_cell_then_display_value",
-      "kind": "composite",
-      "label": "Count Table Rows \u2192 Read Table Cell \u2192 Display Value",
-      "description": "",
-      "family_sequence": [
-        "count_table_rows",
-        "read_table_cell",
-        "display_value"
-      ],
-      "corpus_support": 176,
-      "corpus_support_pct": 28.3,
-      "suggested_scaffold_pattern_id": "p019",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_table_cell_then_count_table_rows",
-      "kind": "composite",
-      "label": "Read Table Cell \u2192 Count Table Rows",
-      "description": "",
-      "family_sequence": ["read_table_cell", "count_table_rows"],
-      "corpus_support": 172,
-      "corpus_support_pct": 27.6,
-      "suggested_scaffold_pattern_id": "p019",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_display_value_then_display_value",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Display Value \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["set_variable", "display_value", "display_value"],
-      "corpus_support": 168,
-      "corpus_support_pct": 27.0,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_count_table_rows_then_read_table_cell",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Count Table Rows \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": [
-        "set_variable",
-        "count_table_rows",
-        "read_table_cell"
-      ],
-      "corpus_support": 166,
-      "corpus_support_pct": 26.6,
-      "suggested_scaffold_pattern_id": "p019",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_create_table_then_read_table_cell",
-      "kind": "composite",
-      "label": "Create Table \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": ["create_table", "read_table_cell"],
-      "corpus_support": 164,
-      "corpus_support_pct": 26.3,
-      "suggested_scaffold_pattern_id": "p002",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_read_table_cell_then_display_value",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Read Table Cell \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["set_variable", "read_table_cell", "display_value"],
-      "corpus_support": 164,
-      "corpus_support_pct": 26.3,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_set_variable_then_set_variable",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Set Variable \u2192 Set Variable",
-      "description": "",
-      "family_sequence": ["set_variable", "set_variable", "set_variable"],
-      "corpus_support": 164,
-      "corpus_support_pct": 26.3,
-      "suggested_scaffold_pattern_id": "p011",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_file_then_read_table_cell",
-      "kind": "composite",
-      "label": "Read File \u2192 Read Table Cell",
-      "description": "",
-      "family_sequence": ["read_file", "read_table_cell"],
-      "corpus_support": 163,
-      "corpus_support_pct": 26.2,
-      "suggested_scaffold_pattern_id": "p012",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_count_table_rows_then_count_table_rows",
-      "kind": "composite",
-      "label": "Count Table Rows \u2192 Count Table Rows",
-      "description": "",
-      "family_sequence": ["count_table_rows", "count_table_rows"],
-      "corpus_support": 162,
-      "corpus_support_pct": 26.0,
-      "suggested_scaffold_pattern_id": "p026",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_create_table_then_count_table_rows",
-      "kind": "composite",
-      "label": "Create Table \u2192 Count Table Rows",
-      "description": "",
-      "family_sequence": ["create_table", "count_table_rows"],
-      "corpus_support": 162,
-      "corpus_support_pct": 26.0,
-      "suggested_scaffold_pattern_id": "p020",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_display_value_then_set_variable",
-      "kind": "composite",
-      "label": "Display Value \u2192 Set Variable",
-      "description": "",
-      "family_sequence": ["display_value", "set_variable"],
-      "corpus_support": 162,
-      "corpus_support_pct": 26.0,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_set_variable_then_count_table_rows_then_display_value",
-      "kind": "composite",
-      "label": "Set Variable \u2192 Count Table Rows \u2192 Display Value",
-      "description": "",
-      "family_sequence": ["set_variable", "count_table_rows", "display_value"],
-      "corpus_support": 158,
-      "corpus_support_pct": 25.4,
-      "suggested_scaffold_pattern_id": "p015",
-      "prompt_phrases": [],
-      "needs_review": true
-    },
-    {
-      "task_id": "composite_read_file_then_count_table_rows",
-      "kind": "composite",
-      "label": "Read File \u2192 Count Table Rows",
-      "description": "",
-      "family_sequence": ["read_file", "count_table_rows"],
-      "corpus_support": 149,
-      "corpus_support_pct": 23.9,
-      "suggested_scaffold_pattern_id": "p023",
-      "prompt_phrases": [],
-      "needs_review": true
     }
   ]
 }

@@ -1,0 +1,976 @@
+{
+  "prompt": "For each server in serverTable, ping it and email admin if down",
+  "telemetry_session_id": "sess_33dd830ca5be",
+  "decomposition": "```json\n{\n  \"steps\": [\n    {\n      \"step_id\": \"s1\",\n      \"description\": \"Initialize a counter variable for iterating through the server table.\",\n      \"intent\": \"initialize_variable\",\n      \"control_flow\": \"linear\",\n      \"zone\": \"pre_container\"\n    },\n    {\n      \"step_id\": \"s2\",\n      \"description\": \"Get the total number of rows in the serverTable to control the loop.\",\n      \"intent\": \"count_rows\",\n      \"control_flow\": \"linear\",\n      \"zone\": \"pre_container\"\n    },\n    {\n      \"step_id\": \"s3\",\n      \"description\": \"Begin a While loop to process each server in the table.\",\n      \"intent\": \"loop\",\n      \"control_flow\": \"while\",\n      \"zone\": \"container\"\n    },\n    {\n      \"step_id\": \"s4\",\n      \"description\": \"Exit the loop if the counter exceeds the total number of rows.\",\n      \"intent\": \"exit_loop\",\n      \"control_flow\": \"while\",\n      \"zone\": \"container_body\"\n    },\n    {\n      \"step_id\": \"s5\",\n      \"description\": \"Get the server name from the current row of the serverTable.\",\n      \"intent\": \"get_cell\",\n      \"control_flow\": \"while\",\n      \"zone\": \"container_body\"\n    },\n    {\n      \"step_id\": \"s6\",\n      \"description\": \"Ping the retrieved server to check its status.\",\n      \"intent\": \"other\",\n      \"control_flow\": \"while\",\n      \"zone\": \"container_body\"\n    },\n    {\n      \"step_id\": \"s7\",\n      \"description\": \"Check the result of the ping to determine if the server is down.\",\n      \"intent\": \"branch\",\n      \"control_flow\": \"ifelse\",\n      \"zone\": \"container_body\"\n    },\n    {\n      \"step_id\": \"s8\",\n      \"description\": \"If the server is down, send an email notification to the administrator.\",\n      \"intent\": \"send_email\",\n      \"control_flow\": \"ifelse\",\n      \"zone\": \"container_body\"\n    },\n    {\n      \"step_id\": \"s9\",\n      \"description\": \"Increment the loop counter to move to the next server.\",\n      \"intent\": \"set_variable\",\n      \"control_flow\": \"while\",\n      \"zone\": \"container_body\"\n    }\n  ],\n  \"variable_contract\": {\n    \"variables\": [\n      {\n        \"name\": \"serverTable\",\n        \"type\": \"table\",\n        \"source\": \"external — must exist before workflow runs\"\n      },\n      {\n        \"name\": \"memorySet1\",\n        \"type\": \"string\",\n        \"source\": \"initialized to 0 for loop counter\"\n      },\n      {\n        \"name\": \"getRowsCount1\",\n        \"type\": \"string\",\n        \"source\": \"result of GetRowsCount activity\"\n      },\n      {\n        \"name\": \"getCellValue1\",\n        \"type\": \"string\",\n        \"source\": \"result of GetCellValue activity for server name\"\n      },\n      {\n        \"name\": \"ping1\",\n        \"type\": \"string\",\n        \"source\": \"result of Ping activity\"\n      }\n    ],\n    \"loop_type\": \"While\",\n    \"loop_source\": \"serverTable\"\n  },\n  \"complexity\": \"moderate\",\n  \"estimated_activity_count\": 9\n}\n```",
+  "pattern_match": {
+    "match_status": "MATCHED",
+    "pattern_id": "p018",
+    "pattern_name": "IfElse",
+    "score": 1.414,
+    "scaffold": {
+      "PARAM_xname_runworkflow": {
+        "xName": "PARAM_xname_runworkflow",
+        "CustomTypeName": "RunWorkflow",
+        "activityLicenseType": "1",
+        "id": "433",
+        "name": "RunWorkflow",
+        "visible": "True",
+        "disabled": "False",
+        "isJsonValid": "True",
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": "{x:Null}",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "Path": "{x:Null}",
+        "DisplayName": "Run Workflow",
+        "Description": "Runs a \"child\" Workflow within the current one",
+        "WorkflowID": "PARAM_WorkflowID",
+        "WorkflowName": "PARAM_WorkflowName",
+        "variables": "PARAM_variables",
+        "RunInBackground": "PARAM_RunInBackground",
+        "TypeName": "RunWorkflow",
+        "label": "Run Workflow",
+        "description": "Runs a \"child\" Workflow within the current one"
+      },
+      "PARAM_xname_tsqlquery": {
+        "xName": "PARAM_xname_tsqlquery",
+        "CustomTypeName": "TSQLQuery",
+        "activityLicenseType": "1",
+        "id": "82",
+        "name": "TSQLQuery",
+        "visible": "True",
+        "disabled": "False",
+        "isJsonValid": "True",
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": "{x:Null}",
+        "Path": "{x:Null}",
+        "DisplayName": "TSQL Query",
+        "Description": "Executes a \"Select\" query on a Microsoft SQL database ",
+        "Query": "PARAM_Query",
+        "ConnectionStringTextBox": "PARAM_ConnectionStringTextBox",
+        "isUserAuthenticate": "PARAM_isUserAuthenticate",
+        "UserName": "",
+        "Password": "",
+        "SiteId": "PARAM_SiteId",
+        "SiteName": "PARAM_SiteName",
+        "ConnectionString": "PARAM_ConnectionString",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "TSQLQuery"
+      },
+      "PARAM_xname_getrowscount": {
+        "xName": "PARAM_xname_getrowscount",
+        "CustomTypeName": "GetRowsCount",
+        "activityLicenseType": "1",
+        "id": "287",
+        "name": "GetRowsCount",
+        "visible": "True",
+        "disabled": "False",
+        "isJsonValid": "True",
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": "{x:Null}",
+        "Path": "{x:Null}",
+        "DisplayName": "Get Rows Count",
+        "Description": "Counts the number of rows in a table",
+        "ResultSet": "PARAM_ResultSet",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "GetRowsCount"
+      },
+      "PARAM_xname_ifelseactivity": {
+        "xName": "PARAM_xname_ifelseactivity",
+        "CustomTypeName": "IfElseActivity",
+        "activityLicenseType": "1",
+        "id": "429",
+        "name": "IfElseActivity",
+        "visible": "True",
+        "disabled": "False",
+        "isJsonValid": "True",
+        "ifElseBranchActivity1": {
+          "xName": "PARAM_xname_ifelsebranchactivity",
+          "CustomTypeName": "IfElseBranchActivity",
+          "id": "{x:Null}",
+          "name": "IfElseBranchActivity",
+          "visible": "True",
+          "disabled": "False",
+          "isJsonValid": "True",
+          "label": "IfElseBranchActivity",
+          "description": "Executes the activities following this branch when the conditions are met",
+          "returnValue1": {
+            "xName": "PARAM_xname_returnvalue",
+            "CustomTypeName": "ReturnValue",
+            "Formula": "PARAM_Formula",
+            "UseStoredValue": "False",
+            "ConditionNumber": "0",
+            "IsValid": "True",
+            "Value": "PARAM_Value",
+            "ConditionType": "PARAM_ConditionType",
+            "Description": "",
+            "Type": "PARAM_Type",
+            "RecoveryMethodSelection": "{x:Null}",
+            "UseCustomeCondition": "False",
+            "UseBranchWhenTimeout": "PARAM_UseBranchWhenTimeout",
+            "name": "ReturnValue",
+            "DisplayName": "Return Value",
+            "TypeName": "ReturnValue",
+            "Disabled": "False",
+            "ClusterID": "{x:Null}",
+            "ClusterName": "{x:Null}"
+          },
+          "runWorkflow3": {
+            "xName": "PARAM_xname_runworkflow",
+            "CustomTypeName": "RunWorkflow",
+            "activityLicenseType": "1",
+            "id": "433",
+            "name": "RunWorkflow",
+            "visible": "True",
+            "disabled": "False",
+            "isJsonValid": "True",
+            "IsValid": "True",
+            "Timeout": "00:01:00",
+            "TimeInSeconds": "60",
+            "RecoveryMethodSelection": "{x:Null}",
+            "Path": "{x:Null}",
+            "DisplayName": "Run Workflow",
+            "Description": "Runs a \"child\" Workflow within the current one",
+            "WorkflowID": "PARAM_WorkflowID",
+            "WorkflowName": "PARAM_WorkflowName",
+            "variables": "PARAM_variables",
+            "RunInBackground": "PARAM_RunInBackground",
+            "TargetModuleID": "",
+            "TargetModuleName": "",
+            "TypeName": "RunWorkflow"
+          }
+        },
+        "ifElseBranchActivity2": {
+          "xName": "PARAM_xname_ifelsebranchactivity",
+          "CustomTypeName": "IfElseBranchActivity",
+          "id": "{x:Null}",
+          "name": "IfElseBranchActivity",
+          "visible": "True",
+          "disabled": "False",
+          "isJsonValid": "True",
+          "label": "IfElseBranchActivity",
+          "isDefault": "True",
+          "description": "Executes the activities following this branch when the conditions are met",
+          "returnValue3": {
+            "xName": "PARAM_xname_returnvalue",
+            "CustomTypeName": "ReturnValue",
+            "Formula": "PARAM_Formula",
+            "ConditionNumber": "0",
+            "IsValid": "False",
+            "Description": "",
+            "Type": "PARAM_Type",
+            "RecoveryMethodSelection": "{x:Null}",
+            "UseBranchWhenTimeout": "PARAM_UseBranchWhenTimeout",
+            "name": "ReturnValue",
+            "DisplayName": "Return Value",
+            "TypeName": "ReturnValue",
+            "Disabled": "False",
+            "ClusterID": "{x:Null}",
+            "ClusterName": "{x:Null}"
+          }
+        }
+      }
+    },
+    "fallback_examples": []
+  },
+  "activity_manifest": [
+    {
+      "step_id": "s1",
+      "selected_activity": "MemorySet",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high"
+    },
+    {
+      "step_id": "s2",
+      "selected_activity": "GetRowsCount",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high",
+      "missing_prerequisites": [
+        {
+          "step_id": "s2",
+          "activity": "GetRowsCount",
+          "field": "ResultSet",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ResultSetFilter",
+            "CreateMemoryTable",
+            "TSQLQuery"
+          ],
+          "note": "GetRowsCount.ResultSet requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        },
+        {
+          "step_id": "s2",
+          "activity": "GetRowsCount",
+          "field": "TableName",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ReadXLS"
+          ],
+          "note": "GetRowsCount.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        }
+      ],
+      "prerequisite_note": "PREREQUISITE WARNING: GetRowsCount requires a preceding activity for: ResultSet (table, needs one of: ['ResultSetFilter', 'CreateMemoryTable', 'TSQLQuery']); TableName (table, needs one of: ['ReadXLS']). Add the appropriate source activity before this step."
+    },
+    {
+      "step_id": "s3",
+      "selected_activity": "WhileActivity",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "low"
+    },
+    {
+      "step_id": "s4",
+      "selected_activity": "ExitWhile",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "low"
+    },
+    {
+      "step_id": "s5",
+      "selected_activity": "GetCellValue",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high",
+      "missing_prerequisites": [
+        {
+          "step_id": "s5",
+          "activity": "GetCellValue",
+          "field": "ResultSet",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ResultSetFilter",
+            "JsonToTable",
+            "SNGetRecord"
+          ],
+          "note": "GetCellValue.ResultSet requires a table variable produced by ResultSetFilter (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        },
+        {
+          "step_id": "s5",
+          "activity": "GetCellValue",
+          "field": "TableName",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ReadXLS"
+          ],
+          "note": "GetCellValue.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        }
+      ],
+      "prerequisite_note": "PREREQUISITE WARNING: GetCellValue requires a preceding activity for: ResultSet (table, needs one of: ['ResultSetFilter', 'JsonToTable', 'SNGetRecord']); TableName (table, needs one of: ['ReadXLS']). Add the appropriate source activity before this step."
+    },
+    {
+      "step_id": "s6",
+      "selected_activity": "Ping",
+      "status": "MATCHED",
+      "frequency_tier": "low",
+      "confidence": 1.0023
+    },
+    {
+      "step_id": "s7",
+      "selected_activity": "IfElseActivity",
+      "status": "CONTROL_FLOW",
+      "frequency_tier": "high"
+    },
+    {
+      "step_id": "s8",
+      "selected_activity": "IfElseActivity",
+      "status": "CONTROL_FLOW",
+      "frequency_tier": "high"
+    },
+    {
+      "step_id": "s9",
+      "selected_activity": "MemorySet",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high"
+    }
+  ],
+  "placed_skeleton": {
+    "workflow_raw_data": {
+      "memorySet1": {
+        "xName": "memorySet1",
+        "CustomTypeName": "MemorySet"
+      },
+      "getRowsCount1": {
+        "xName": "getRowsCount1",
+        "CustomTypeName": "GetRowsCount"
+      },
+      "whileActivity1": {
+        "xName": "whileActivity1",
+        "CustomTypeName": "WhileActivity",
+        "Condition": "{x:Null}",
+        "sequenceActivity1": {
+          "xName": "sequenceActivity1",
+          "CustomTypeName": "SequenceActivity",
+          "exitWhile1": {
+            "xName": "exitWhile1",
+            "CustomTypeName": "ExitWhile"
+          },
+          "getCellValue1": {
+            "xName": "getCellValue1",
+            "CustomTypeName": "GetCellValue"
+          },
+          "ping1": {
+            "xName": "ping1",
+            "CustomTypeName": "Ping"
+          },
+          "ifElseActivity1": {
+            "xName": "ifElseActivity1",
+            "CustomTypeName": "IfElseActivity",
+            "ifElseBranchActivity1": {
+              "xName": "ifElseBranchActivity1",
+              "CustomTypeName": "IfElseBranchActivity",
+              "returnValue1": {
+                "xName": "returnValue1",
+                "CustomTypeName": "ReturnValue"
+              }
+            },
+            "ifElseBranchActivity2": {
+              "xName": "ifElseBranchActivity2",
+              "CustomTypeName": "IfElseBranchActivity",
+              "returnValue2": {
+                "xName": "returnValue2",
+                "CustomTypeName": "ReturnValue"
+              },
+              "memorySet2": {
+                "xName": "memorySet2",
+                "CustomTypeName": "MemorySet"
+              }
+            }
+          }
+        }
+      }
+    },
+    "variable_contracts": {
+      "variables": [
+        {
+          "name": "serverTable",
+          "type": "table",
+          "source": "external — must exist before workflow runs"
+        },
+        {
+          "name": "memorySet1",
+          "type": "string",
+          "source": "initialized to 0 for loop counter"
+        },
+        {
+          "name": "getRowsCount1",
+          "type": "string",
+          "source": "result of GetRowsCount activity"
+        },
+        {
+          "name": "getCellValue1",
+          "type": "string",
+          "source": "result of GetCellValue activity for server name"
+        },
+        {
+          "name": "ping1",
+          "type": "string",
+          "source": "result of Ping activity"
+        }
+      ],
+      "loop_type": "While",
+      "loop_source": "serverTable"
+    }
+  },
+  "enriched_workflow": {
+    "workflow_raw_data": {
+      "memorySet1": {
+        "xName": "memorySet1",
+        "activityLicenseType": "1",
+        "id": "430",
+        "name": "MemorySet",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "MemorySet",
+        "Description": "MemorySet",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "MemorySet",
+        "label": "MemorySet",
+        "description": "MemorySet",
+        "notes": "",
+        "CustomTypeName": "MemorySet",
+        "VariableScope": "Workflow",
+        "IsSaved": "False",
+        "VariableName": "VariableName_value",
+        "VariableValue": "VariableValue_value",
+        "IsAppend": "False"
+      },
+      "getRowsCount1": {
+        "xName": "getRowsCount1",
+        "activityLicenseType": "1",
+        "id": "287",
+        "name": "GetRowsCount",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "GetRowsCount",
+        "Description": "GetRowsCount",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "GetRowsCount",
+        "label": "GetRowsCount",
+        "description": "GetRowsCount",
+        "notes": "",
+        "CustomTypeName": "GetRowsCount",
+        "ResultSet": ""
+      },
+      "whileActivity1": {
+        "xName": "whileActivity1",
+        "activityLicenseType": "1",
+        "id": "432",
+        "name": "WhileActivity",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "WhileActivity",
+        "Description": "WhileActivity",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "WhileActivity",
+        "label": "WhileActivity",
+        "description": "WhileActivity",
+        "notes": "",
+        "CustomTypeName": "WhileActivity",
+        "Condition": "{x:Null}",
+        "sequenceActivity1": {
+          "exitWhile1": {
+            "xName": "exitWhile1",
+            "activityLicenseType": "1",
+            "id": "446",
+            "name": "ExitWhile",
+            "visible": "True",
+            "disabled": "False",
+            "isFavorite": "False",
+            "isJsonValid": "True",
+            "readPermission": true,
+            "writePermission": true,
+            "modulePermissions": null,
+            "IsValid": "True",
+            "Timeout": "00:01:00",
+            "TimeInSeconds": "60",
+            "RecoveryMethodSelection": null,
+            "Path": null,
+            "DisplayName": "ExitWhile",
+            "Description": "ExitWhile",
+            "TargetModuleID": "",
+            "TargetModuleName": "",
+            "TypeName": "ExitWhile",
+            "label": "ExitWhile",
+            "description": "ExitWhile",
+            "notes": "",
+            "CustomTypeName": "ExitWhile",
+            "Counter": "%getRowsCount1%",
+            "message": "",
+            "exitWhileInsideWhile": "True",
+            "isValid": "True",
+            "whileSequenceActivity": "sequenceActivity1"
+          },
+          "xName": "sequenceActivity1",
+          "CustomTypeName": "SequenceActivity",
+          "getCellValue1": {
+            "xName": "getCellValue1",
+            "activityLicenseType": "1",
+            "id": "276",
+            "name": "GetCellValue",
+            "visible": "True",
+            "disabled": "False",
+            "isFavorite": "False",
+            "isJsonValid": "True",
+            "readPermission": true,
+            "writePermission": true,
+            "modulePermissions": null,
+            "IsValid": "True",
+            "Timeout": "00:01:00",
+            "TimeInSeconds": "60",
+            "RecoveryMethodSelection": null,
+            "Path": null,
+            "DisplayName": "GetCellValue",
+            "Description": "GetCellValue",
+            "TargetModuleID": "",
+            "TargetModuleName": "",
+            "TypeName": "GetCellValue",
+            "label": "GetCellValue",
+            "description": "GetCellValue",
+            "notes": "",
+            "CustomTypeName": "GetCellValue",
+            "ResultSet": "",
+            "ResultSetName": "",
+            "RowNumber": "%whileActivity1%",
+            "ColumnType": "Name",
+            "ColumnNumber": "1"
+          },
+          "ping1": {
+            "xName": "ping1",
+            "activityLicenseType": "1",
+            "id": "229",
+            "name": "Ping",
+            "visible": "True",
+            "disabled": "False",
+            "isFavorite": "False",
+            "isJsonValid": "True",
+            "readPermission": true,
+            "writePermission": true,
+            "modulePermissions": null,
+            "IsValid": "True",
+            "Timeout": "00:01:00",
+            "TimeInSeconds": "60",
+            "RecoveryMethodSelection": null,
+            "Path": null,
+            "DisplayName": "Ping",
+            "Description": "Ping",
+            "TargetModuleID": "",
+            "TargetModuleName": "",
+            "TypeName": "Ping",
+            "label": "Ping",
+            "description": "Ping",
+            "notes": "",
+            "CustomTypeName": "Ping",
+            "HostName": "HostName_value",
+            "HostId": "-2"
+          },
+          "ifElseActivity1": {
+            "xName": "ifElseActivity1",
+            "CustomTypeName": "IfElseActivity",
+            "ifElseBranchActivity1": {
+              "xName": "ifElseBranchActivity1",
+              "CustomTypeName": "IfElseBranchActivity",
+              "returnValue1": {
+                "xName": "returnValue1",
+                "CustomTypeName": "ReturnValue",
+                "Type": "StoredValue",
+                "UseBranchWhenTimeout": "True",
+                "ConditionType": "",
+                "Value": "",
+                "ConditionNumber": "0",
+                "ConditionName": "",
+                "UseCustomeCondition": "False",
+                "Description": "Return Value",
+                "description": "Return Value",
+                "RecoveryMethodSelection": "{x:Null}",
+                "Disabled": "False",
+                "ClusterID": "{x:Null}",
+                "ClusterName": "{x:Null}",
+                "DisplayName": "Return Value",
+                "TypeName": "ReturnValue",
+                "name": "ReturnValue",
+                "UseStoredValue": "True",
+                "IsValid": "True",
+                "Formula": "{x:Null}"
+              }
+            },
+            "ifElseBranchActivity2": {
+              "xName": "ifElseBranchActivity2",
+              "CustomTypeName": "IfElseBranchActivity",
+              "returnValue2": {
+                "xName": "returnValue2",
+                "CustomTypeName": "ReturnValue",
+                "Type": "StoredValue",
+                "UseBranchWhenTimeout": "True",
+                "ConditionType": "",
+                "Value": "",
+                "ConditionNumber": "0",
+                "ConditionName": "",
+                "UseCustomeCondition": "False",
+                "Description": "Return Value",
+                "description": "Return Value",
+                "RecoveryMethodSelection": "{x:Null}",
+                "Disabled": "False",
+                "ClusterID": "{x:Null}",
+                "ClusterName": "{x:Null}",
+                "DisplayName": "Return Value",
+                "TypeName": "ReturnValue",
+                "name": "ReturnValue",
+                "UseStoredValue": "True",
+                "IsValid": "True",
+                "Formula": "{x:Null}"
+              },
+              "memorySet2": {
+                "xName": "memorySet2",
+                "activityLicenseType": "1",
+                "id": "430",
+                "name": "MemorySet",
+                "visible": "True",
+                "disabled": "False",
+                "isFavorite": "False",
+                "isJsonValid": "True",
+                "readPermission": true,
+                "writePermission": true,
+                "modulePermissions": null,
+                "IsValid": "True",
+                "Timeout": "00:01:00",
+                "TimeInSeconds": "60",
+                "RecoveryMethodSelection": null,
+                "Path": null,
+                "DisplayName": "MemorySet",
+                "Description": "MemorySet",
+                "TargetModuleID": "",
+                "TargetModuleName": "",
+                "TypeName": "MemorySet",
+                "label": "MemorySet",
+                "description": "MemorySet",
+                "notes": "",
+                "CustomTypeName": "MemorySet",
+                "VariableScope": "Workflow",
+                "IsSaved": "False",
+                "VariableName": "VariableName_value",
+                "VariableValue": "VariableValue_value",
+                "IsAppend": "False"
+              }
+            },
+            "Description": "IfElseActivity",
+            "description": "IfElseActivity"
+          }
+        }
+      }
+    },
+    "variable_contracts": {
+      "variables": [
+        {
+          "name": "serverTable",
+          "type": "table",
+          "source": "external — must exist before workflow runs"
+        },
+        {
+          "name": "memorySet1",
+          "type": "string",
+          "source": "initialized to 0 for loop counter"
+        },
+        {
+          "name": "getRowsCount1",
+          "type": "string",
+          "source": "result of GetRowsCount activity"
+        },
+        {
+          "name": "getCellValue1",
+          "type": "string",
+          "source": "result of GetCellValue activity for server name"
+        },
+        {
+          "name": "ping1",
+          "type": "string",
+          "source": "result of Ping activity"
+        }
+      ],
+      "loop_type": "While",
+      "loop_source": "serverTable"
+    }
+  },
+  "workflow_json": {
+    "workflow_raw_data": {
+      "getRowsCount1": {
+        "xName": "getRowsCount1",
+        "CustomTypeName": "GetRowsCount",
+        "Description": "Get the total number of rows in the serverTable to control the loop.",
+        "description": "Get the total number of rows in the serverTable to control the loop.",
+        "DisplayName": "GetRowsCount1",
+        "Name": "GetRowsCount1",
+        "TypeName": "GetRowsCount",
+        "activityLicenseType": "1",
+        "Advanced": "False",
+        "Asynchronous": "False",
+        "ContinueOnError": "False",
+        "ErrorHandling": "False",
+        "External": "False",
+        "Ignore": "False",
+        "Result": null,
+        "ResultSet": "%serverTable%",
+        "ResultType": "Number",
+        "RunOn": "Server",
+        "RunOnServer": "",
+        "RunOnUser": "",
+        "RunOnZone": "",
+        "RunOnZoneAndServer": "False",
+        "RunType": "Inherit",
+        "Timeout": "0",
+        "TimeoutHandling": "False",
+        "TimeoutValue": "0",
+        "UseActiveUser": "False",
+        "Variable": null,
+        "VariableName": null,
+        "VariableScope": "Workflow",
+        "Wait": "False",
+        "WaitInterval": "0",
+        "WaitTimeout": "0",
+        "WaitType": "None"
+      },
+      "whileActivity1": {
+        "xName": "whileActivity1",
+        "CustomTypeName": "WhileActivity",
+        "Description": "Begin a While loop to process each server in the table.",
+        "description": "Begin a While loop to process each server in the table.",
+        "DisplayName": "whileActivity1",
+        "Name": "whileActivity1",
+        "TypeName": "WhileActivity",
+        "activityLicenseType": "1",
+        "Condition": "{x:Null}",
+        "sequenceActivity1": {
+          "xName": "sequenceActivity1",
+          "CustomTypeName": "SequenceActivity",
+          "exitWhile1": {
+            "xName": "exitWhile1",
+            "CustomTypeName": "ExitWhile",
+            "Description": "Exit the loop if the counter exceeds the total number of rows.",
+            "description": "Exit the loop if the counter exceeds the total number of rows.",
+            "DisplayName": "exitWhile1",
+            "Name": "exitWhile1",
+            "TypeName": "ExitWhile",
+            "activityLicenseType": "1",
+            "Condition": null,
+            "Counter": "%getRowsCount1%",
+            "exitWhileInsideWhile": "True",
+            "isValid": "True",
+            "whileSequenceActivity": "sequenceActivity1"
+          },
+          "getCellValue1": {
+            "xName": "getCellValue1",
+            "CustomTypeName": "GetCellValue",
+            "Description": "Get the server name from the current row of the serverTable.",
+            "description": "Get the server name from the current row of the serverTable.",
+            "DisplayName": "GetCellValue1",
+            "Name": "GetCellValue1",
+            "TypeName": "GetCellValue",
+            "activityLicenseType": "1",
+            "Advanced": "False",
+            "Asynchronous": "False",
+            "ColumnName": "serverName",
+            "ContinueOnError": "False",
+            "ErrorHandling": "False",
+            "External": "False",
+            "Ignore": "False",
+            "Result": null,
+            "ResultSet": "%serverTable%",
+            "ResultType": "Text",
+            "RowNumber": "%whileActivity1%",
+            "RunOn": "Server",
+            "RunOnServer": "",
+            "RunOnUser": "",
+            "RunOnZone": "",
+            "RunOnZoneAndServer": "False",
+            "RunType": "Inherit",
+            "Timeout": "0",
+            "TimeoutHandling": "False",
+            "TimeoutValue": "0",
+            "UseActiveUser": "False",
+            "Variable": null,
+            "VariableName": null,
+            "VariableScope": "Workflow",
+            "Wait": "False",
+            "WaitInterval": "0",
+            "WaitTimeout": "0",
+            "WaitType": "None"
+          },
+          "ping1": {
+            "xName": "ping1",
+            "CustomTypeName": "Ping",
+            "Description": "Ping the retrieved server to check its status.",
+            "description": "Ping the retrieved server to check its status.",
+            "DisplayName": "Ping1",
+            "Name": "Ping1",
+            "TypeName": "Ping",
+            "activityLicenseType": "1",
+            "Advanced": "False",
+            "Asynchronous": "False",
+            "BufferSize": "32",
+            "ContinueOnError": "False",
+            "ErrorHandling": "False",
+            "External": "False",
+            "Fragment": "False",
+            "HostName": "%getCellValue1%",
+            "Ignore": "False",
+            "PingTimeout": "1000",
+            "Result": null,
+            "ResultType": "Text",
+            "RunOn": "Server",
+            "RunOnServer": "",
+            "RunOnUser": "",
+            "RunOnZone": "",
+            "RunOnZoneAndServer": "False",
+            "RunType": "Inherit",
+            "Timeout": "0",
+            "TimeoutHandling": "False",
+            "TimeoutValue": "0",
+            "TTL": "128",
+            "UseActiveUser": "False",
+            "Variable": null,
+            "VariableName": null,
+            "VariableScope": "Workflow",
+            "Wait": "False",
+            "WaitInterval": "0",
+            "WaitTimeout": "0",
+            "WaitType": "None"
+          },
+          "ifElseActivity1": {
+            "xName": "ifElseActivity1",
+            "CustomTypeName": "IfElseActivity",
+            "Description": "Check the result of the ping to determine if the server is down.",
+            "description": "Check the result of the ping to determine if the server is down.",
+            "DisplayName": "ifElseActivity1",
+            "Name": "ifElseActivity1",
+            "TypeName": "IfElseActivity",
+            "activityLicenseType": "1",
+            "ifElseBranchActivity1": {
+              "xName": "ifElseBranchActivity1",
+              "CustomTypeName": "IfElseBranchActivity",
+              "Description": "If the server is down, send an email notification.",
+              "description": "If the server is down, send an email notification.",
+              "DisplayName": "Failure",
+              "Name": "Failure",
+              "TypeName": "IfElseBranchActivity",
+              "activityLicenseType": "1",
+              "returnValue1": {
+                "xName": "returnValue1",
+                "CustomTypeName": "ReturnValue",
+                "ConditionType": "Equals",
+                "Formula": null,
+                "IsExpression": "False",
+                "IsValid": "True",
+                "Type": "None",
+                "UseBranchWhenTimeout": "False",
+                "UseStoredValue": "False",
+                "Value": "Failure"
+              },
+              "sendEmail1": {
+                "xName": "sendEmail1",
+                "CustomTypeName": "SendEmail",
+                "Description": "If the server is down, send an email notification to the administrator.",
+                "description": "If the server is down, send an email notification to the administrator.",
+                "DisplayName": "SendEmail1",
+                "Name": "SendEmail1",
+                "TypeName": "SendEmail",
+                "activityLicenseType": "1",
+                "Advanced": "False",
+                "Asynchronous": "False",
+                "Attachment": "",
+                "Bcc": "",
+                "Body": "The server %getCellValue1% is not responding to ping requests. Ping result: %ping1%.",
+                "Cc": "",
+                "ContinueOnError": "False",
+                "ErrorHandling": "False",
+                "External": "False",
+                "From": "",
+                "Html": "False",
+                "Ignore": "False",
+                "Port": "25",
+                "Result": null,
+                "ResultType": "Text",
+                "RunOn": "Server",
+                "RunOnServer": "",
+                "RunOnUser": "",
+                "RunOnZone": "",
+                "RunOnZoneAndServer": "False",
+                "RunType": "Inherit",
+                "SmtpServer": "",
+                "Subject": "Server Down Alert: %getCellValue1%",
+                "Timeout": "0",
+                "TimeoutHandling": "False",
+                "TimeoutValue": "0",
+                "To": "admin@example.com",
+                "UseActiveUser": "False",
+                "UseCredentials": "False",
+                "UseSSL": "False",
+                "Variable": null,
+                "VariableName": null,
+                "VariableScope": "Workflow",
+                "Wait": "False",
+                "WaitInterval": "0",
+                "WaitTimeout": "0",
+                "WaitType": "None"
+              }
+            },
+            "ifElseBranchActivity2": {
+              "xName": "ifElseBranchActivity2",
+              "CustomTypeName": "IfElseBranchActivity",
+              "Description": "Default branch if the ping does not fail.",
+              "description": "Default branch if the ping does not fail.",
+              "DisplayName": "Else",
+              "Name": "Else",
+              "TypeName": "IfElseBranchActivity",
+              "activityLicenseType": "1",
+              "returnValue2": {
+                "xName": "returnValue2",
+                "CustomTypeName": "ReturnValue",
+                "ConditionType": "",
+                "Formula": null,
+                "IsExpression": "False",
+                "IsValid": "True",
+                "Type": "None",
+                "UseBranchWhenTimeout": "False",
+                "UseStoredValue": "False",
+                "Value": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "variable_contracts": {
+      "xName": "variable_contracts",
+      "CustomTypeName": "VariableContracts",
+      "variables": [
+        {
+          "xName": "getRowsCount1",
+          "Expression": null,
+          "Scope": "Workflow",
+          "Type": "Text"
+        },
+        {
+          "xName": "getCellValue1",
+          "Expression": null,
+          "Scope": "Workflow",
+          "Type": "Text"
+        },
+        {
+          "xName": "ping1",
+          "Expression": null,
+          "Scope": "Workflow",
+          "Type": "Text"
+        },
+        {
+          "xName": "serverTable",
+          "Expression": null,
+          "Scope": "Workflow",
+          "Type": "Table"
+        }
+      ]
+    }
+  },
+  "output_result": {
+    "status": "failed",
+    "errors": [
+      "WirerAgent truncated: returned 2 top-level activities, expected at least 2 (70% of 3)."
+    ]
+  }
+}

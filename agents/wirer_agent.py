@@ -109,6 +109,78 @@ Boolean producers (IsEmpty, Contains):
 Default/else branch: ConditionType="" and Value="" (pipeline handles it).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NESTED SUB-OBJECT xName UNIQUENESS — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Activities contain nested typed sub-objects: Advanced, Result, ReturnValue,
+and similar. EVERY such sub-object needs a UNIQUE xName across the entire
+workflow tree. Validation rejects workflows with duplicate xNames anywhere.
+
+The naming pattern is the CustomTypeName with the first character lowercased,
+followed by a counter that increments across the WHOLE workflow (not reset
+per parent activity):
+
+  First  Advanced sub-object encountered: xName="advanced1"
+  Second Advanced sub-object encountered: xName="advanced2"
+  Third  Advanced sub-object encountered: xName="advanced3"
+  Fourth Advanced sub-object encountered: xName="advanced4"
+  ...
+  First  Result   sub-object encountered: xName="result1"
+  Second Result   sub-object encountered: xName="result2"
+  ...
+
+NEVER set xName equal to the CustomTypeName for these sub-objects:
+  WRONG: "xName": "Advanced",  "CustomTypeName": "Advanced"
+  WRONG: "xName": "Result",    "CustomTypeName": "Result"
+  RIGHT: "xName": "advanced1", "CustomTypeName": "Advanced"
+  RIGHT: "xName": "result1",   "CustomTypeName": "Result"
+
+Walk the workflow in document order; track a separate counter per
+CustomTypeName; each new sub-object of that type gets the next number.
+
+If enriched_workflow already contains correctly-numbered xNames for these
+sub-objects, preserve them exactly — do not renumber. Only assign new
+numbered xNames if the input has xName missing or xName=CustomTypeName.
+
+This rule applies ONLY to nested sub-objects. Top-level activity xNames
+(getRowsCount1, whileActivity1, ping1, sequenceActivity1, exitWhile1,
+ifElseActivity1, ifElseBranchActivity1, returnValue1, sendEmail1, etc.)
+are already correctly set in enriched_workflow — preserve them as-is.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NESTED SUB-OBJECT Description / description — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every nested Advanced and Result sub-object must have BOTH 'Description'
+(uppercase D) AND 'description' (lowercase d) populated. Validation rejects
+workflows where these are missing on Advanced or Result blocks.
+
+enriched_workflow contains the structural fields for these sub-objects but
+does NOT pre-populate Description / description — that is YOUR job.
+
+Use this generic pattern keyed off the parent activity's CustomTypeName:
+
+  Advanced under <ParentType>:
+    "Description": "Advanced settings for <ParentType>."
+    "description": "Advanced settings for <ParentType>."
+
+  Result under <ParentType>:
+    "Description": "Result of <ParentType>."
+    "description": "Result of <ParentType>."
+
+Concrete examples:
+  Advanced under GetRowsCount → "Advanced settings for GetRowsCount."
+  Advanced under GetCellValue → "Advanced settings for GetCellValue."
+  Advanced under Ping         → "Advanced settings for Ping."
+  Advanced under SendEmail    → "Advanced settings for SendEmail."
+  Advanced under ExitWhile    → "Advanced settings for ExitWhile."
+  Result   under GetRowsCount → "Result of GetRowsCount."
+  Result   under GetCellValue → "Result of GetCellValue."
+  Result   under Ping         → "Result of Ping."
+
+Both spellings are required — the validator checks each one independently.
+Setting only Description (uppercase) and not description (lowercase) is a
+validation FAILURE. Same the other way around. ALWAYS set BOTH.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT — READ THIS CAREFULLY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Return this exact structure:
@@ -139,6 +211,10 @@ Write "Ping" not "Resolve.Activities.Ping, Resolve.Core".
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXAMPLE — correct workflow_raw_data structure
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Note how nested Advanced and Result sub-objects use numbered xNames
+(advanced1, advanced2, ..., result1, result2, ...) that increment across
+the entire workflow, AND have BOTH Description and description fields set.
+
 {
   "workflow_raw_data": {
     "createMemoryTable1": {
@@ -147,6 +223,13 @@ EXAMPLE — correct workflow_raw_data structure
       "TableName": "serverList",
       "Description": "Create a memory table to store the list of servers to ping.",
       "description": "Create a memory table to store the list of servers to ping.",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for CreateMemoryTable.",
+        "description": "Advanced settings for CreateMemoryTable.",
+        ...all other Advanced fields unchanged from enriched_workflow...
+      },
       ...all other fields from enriched_workflow unchanged...
     },
     "getRowsCount1": {
@@ -154,6 +237,20 @@ EXAMPLE — correct workflow_raw_data structure
       "CustomTypeName": "GetRowsCount",
       "Description": "Count the total number of servers in the serverList table.",
       "description": "Count the total number of servers in the serverList table.",
+      "Advanced": {
+        "xName": "advanced2",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for GetRowsCount.",
+        "description": "Advanced settings for GetRowsCount.",
+        ...all other Advanced fields unchanged...
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Result of GetRowsCount.",
+        "description": "Result of GetRowsCount.",
+        ...all other Result fields unchanged...
+      },
       ...all other fields unchanged...
     },
     "whileActivity1": {
@@ -168,13 +265,34 @@ EXAMPLE — correct workflow_raw_data structure
         "exitWhile1": {
           "xName": "exitWhile1",
           "CustomTypeName": "ExitWhile",
-          ...all ExitWhile fields unchanged...
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for ExitWhile.",
+            "description": "Advanced settings for ExitWhile.",
+            ...all other Advanced fields unchanged...
+          },
+          ...all other ExitWhile fields unchanged...
         },
         "getCellValue1": {
           "xName": "getCellValue1",
           "CustomTypeName": "GetCellValue",
           "Description": "Get the server name from the current row.",
           "description": "Get the server name from the current row.",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for GetCellValue.",
+            "description": "Advanced settings for GetCellValue.",
+            ...all other Advanced fields unchanged...
+          },
+          "Result": {
+            "xName": "result2",
+            "CustomTypeName": "Result",
+            "Description": "Result of GetCellValue.",
+            "description": "Result of GetCellValue.",
+            ...all other Result fields unchanged...
+          },
           ...all other fields unchanged...
         },
         "ping1": {
@@ -183,6 +301,20 @@ EXAMPLE — correct workflow_raw_data structure
           "HostName": "%getCellValue1%",
           "Description": "Ping the server retrieved from the table.",
           "description": "Ping the server retrieved from the table.",
+          "Advanced": {
+            "xName": "advanced5",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for Ping.",
+            "description": "Advanced settings for Ping.",
+            ...all other Advanced fields unchanged...
+          },
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Result of Ping.",
+            "description": "Result of Ping.",
+            ...all other Result fields unchanged...
+          },
           ...all other fields unchanged...
         },
         "ifElseActivity1": {
@@ -206,6 +338,13 @@ EXAMPLE — correct workflow_raw_data structure
               "ValueToDisplay": "Successfully pinged server: %getCellValue1%",
               "Description": "Display success message for the pinged server.",
               "description": "Display success message for the pinged server.",
+              "Advanced": {
+                "xName": "advanced6",
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced settings for DisplayValue.",
+                "description": "Advanced settings for DisplayValue.",
+                ...all other Advanced fields unchanged...
+              },
               ...all other fields unchanged...
             }
           },
@@ -225,6 +364,13 @@ EXAMPLE — correct workflow_raw_data structure
               "ValueToDisplay": "Failed to ping server: %getCellValue1%. Result: %ping1%",
               "Description": "Display failure message with server name and ping result.",
               "description": "Display failure message with server name and ping result.",
+              "Advanced": {
+                "xName": "advanced7",
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced settings for DisplayValue.",
+                "description": "Advanced settings for DisplayValue.",
+                ...all other Advanced fields unchanged...
+              },
               ...all other fields unchanged...
             }
           }

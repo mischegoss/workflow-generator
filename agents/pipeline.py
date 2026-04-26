@@ -28,7 +28,7 @@ DETERMINISTIC STAGES (3, 4a-4c.6):
 
 MODEL CONFIGURATION:
   _model_decomposer()  Flash  temp=0.1  top_p=0.8  max_tokens=4096
-  _model_wirer()       Pro    temp=0.1  top_p=0.7  max_tokens=8192
+  _model_wirer()       Pro    temp=0.1  top_p=0.7  max_tokens=16384
 
 RETRY ARCHITECTURE:
   On validation failure, main.py calls build_correction_pipeline().
@@ -41,10 +41,27 @@ ADK STATE NOTE:
   Python-stage mutations do NOT persist through get_session().
   decomposition and workflow_json survive retry; activity_manifest and
   enriched_workflow must be recomputed.
+
+TELEMETRY (Phase E):
+  ctx.session.state["telemetry_session_id"] is read at the top of each
+  pipeline run. main.py is responsible for setting it before invoking
+  the runner. When unset, the literal string "unknown" is used so events
+  still log (joinable later via the prompt or session timestamps).
+
+  Events emitted per successful run:
+    decomposer_call         once after Stage 1 (Path B: mode="freeform_fallback")
+    deterministic_middle    once after Stage 4c.6 with cumulative duration
+    wirer_call              once after Stage 4d
+    validation_result       once after Stage 6 (status=valid|invalid)
+
+  Errors on fatal stage failures emit log_error which writes both a
+  detailed errors record and a generation_failed event referencing
+  the state dump.
 """
 
 import os
 import re
+import time
 from typing import AsyncGenerator
 
 from google.adk.agents import BaseAgent, LlmAgent
@@ -55,6 +72,7 @@ from google.adk.models.lite_llm import LiteLlm
 from agents.decomposer_agent import INSTRUCTION as DECOMPOSER_INSTRUCTION
 from agents.wirer_agent import INSTRUCTION as WIRER_INSTRUCTION
 
+from tools import telemetry
 from tools.decompose_tools import assess_complexity, decompose_workflow, estimate_activity_count
 from tools.build_tools import load_activity_template
 
@@ -95,9 +113,36 @@ def _model_wirer() -> LiteLlm:
         model=os.getenv("MODEL", "gemini/gemini-2.5-pro"),
         temperature=0.1,
         top_p=0.7,
-        max_tokens=8192,
+        max_tokens=16384,
         api_key=os.getenv("GOOGLE_API_KEY"),
     )
+
+
+# ---------------------------------------------------------------------------
+# Telemetry helpers
+# ---------------------------------------------------------------------------
+
+def _sid(ctx: InvocationContext) -> str:
+    """Pulls the telemetry session_id out of ADK session state. Falls back
+    to a literal so events still emit when main.py forgot to set it."""
+    return str(ctx.session.state.get("telemetry_session_id") or "unknown")
+
+
+def _log_fatal(ctx: InvocationContext, stage: str, exception: Exception) -> None:
+    """Emit a structured error + generation_failed event for a fatal stage
+    failure. State dump is included so the failure can be reproduced."""
+    try:
+        telemetry.log_error(
+            stage=stage,
+            error_type=type(exception).__name__,
+            error_message=str(exception),
+            session_id=_sid(ctx),
+            state=dict(ctx.session.state),
+            exception=exception,
+        )
+    except Exception as telem_err:
+        # Telemetry itself should never break the pipeline. Print and continue.
+        print(f"  [pipeline] telemetry.log_error failed (swallowed): {telem_err}")
 
 
 # ---------------------------------------------------------------------------
@@ -139,18 +184,21 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
     validation/output. No fallback to enriched_workflow — if Wirer returns
     empty the outer retry fires and CorrectionPipeline reruns with a better prompt.
     """
+    sid = _sid(ctx)
+
     _raw_wj = ctx.session.state.get("workflow_json")
     workflow_json = _ensure_dict(_raw_wj)
 
     if not workflow_json:
-        print(f"  [pipeline] WirerAgent output empty — "
-              f"type={type(_raw_wj).__name__} "
-              f"len={len(str(_raw_wj)) if _raw_wj is not None else 0}")
+        msg = (f"WirerAgent output empty — type={type(_raw_wj).__name__} "
+               f"len={len(str(_raw_wj)) if _raw_wj is not None else 0}")
+        print(f"  [pipeline] {msg}")
         ctx.session.state["_empty_response_error"] = True
         ctx.session.state["output_result"] = {
             "status": "failed",
             "errors": ["WirerAgent returned empty or unparseable output."],
         }
+        _log_fatal(ctx, "wirer_output", RuntimeError(msg))
         return
 
     # Normalize Wirer output — fast no-op for clean xName-keyed responses.
@@ -159,6 +207,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         ctx.session.state["workflow_json"] = workflow_json
     except Exception as e:
         print(f"  [pipeline] normalize failed: {e}")
+        _log_fatal(ctx, "normalize", e)
         ctx.session.state["output_result"] = {
             "status": "failed",
             "errors": [f"Wirer output normalization failed: {e}"],
@@ -178,6 +227,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [truncation_error],
         }
+        _log_fatal(ctx, "activity_count_guard", RuntimeError(truncation_error))
         return
 
     # Stage 4f: Re-apply fragments + scaffold on Wirer output (idempotent)
@@ -211,6 +261,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         print(f"  [pipeline] annotation ok — {n_notes} placeholder/verify items")
     except Exception as e:
         print(f"  [pipeline] annotation failed: {e}")
+        _log_fatal(ctx, "annotation", e)
         ctx.session.state["output_result"] = {
             "status": "failed",
             "errors": [f"Annotation failed: {e}"],
@@ -227,11 +278,25 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
                 print(f"    - {err}")
     except Exception as e:
         print(f"  [pipeline] validation failed: {e}")
+        _log_fatal(ctx, "validation", e)
         ctx.session.state["output_result"] = {
             "status": "failed",
             "errors": [f"Validation failed: {e}"],
         }
         return
+
+    # Emit validation outcome event regardless of status (valid OR invalid).
+    # invalid is intentional retry signal, not an unexpected error, so no
+    # log_error emitted — log_validation_result captures the failure shape.
+    try:
+        telemetry.log_validation_result(
+            sid,
+            status=validation_result.get("status", "unknown"),
+            errors=validation_result.get("errors", []),
+            verify_notes=validation_result.get("verify_notes", []),
+        )
+    except Exception as telem_err:
+        print(f"  [pipeline] telemetry.log_validation_result failed: {telem_err}")
 
     if validation_result["status"] == "invalid":
         print(f"  [pipeline] validation failed — returning for outer retry")
@@ -249,6 +314,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         print(f"  [pipeline] output written: {output_result.get('output_file')}")
     except Exception as e:
         print(f"  [pipeline] output stage failed: {e}")
+        _log_fatal(ctx, "output", e)
         ctx.session.state["output_result"] = {
             "status": "failed",
             "errors": [f"Output stage failed: {e}"],
@@ -268,9 +334,20 @@ class WorkflowPipeline(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
 
-        # Stage 1: Decompose
+        sid = _sid(ctx)
+
+        # Stage 1: Decompose (LLM)
+        decomposer_start = time.time()
         async for event in self.decomposer.run_async(ctx):
             yield event
+        try:
+            telemetry.log_decomposer_call(
+                sid,
+                duration_ms=round((time.time() - decomposer_start) * 1000, 1),
+                mode="freeform_fallback",   # Path B: always freeform
+            )
+        except Exception as telem_err:
+            print(f"  [pipeline] telemetry.log_decomposer_call failed: {telem_err}")
 
         raw = ctx.session.state.get("decomposition")
         print(f"  [pipeline] decomposition raw type: {type(raw).__name__}")
@@ -283,7 +360,13 @@ class WorkflowPipeline(BaseAgent):
                 "status": "failed",
                 "errors": ["DecomposerAgent returned empty or unparseable output."],
             }
+            _log_fatal(ctx, "decomposer_output",
+                       RuntimeError("DecomposerAgent returned empty output."))
             return
+
+        # Begin deterministic middle timing (Stages 2 through 4c.6)
+        middle_start = time.time()
+        middle_warnings: list = []
 
         # Stage 2: Pattern match
         try:
@@ -292,6 +375,7 @@ class WorkflowPipeline(BaseAgent):
             print(f"  [pipeline] pattern_match: {pattern_match.get('match_status')}")
         except Exception as e:
             print(f"  [pipeline] pattern_match failed (non-fatal): {e}")
+            middle_warnings.append(f"pattern_match: {e}")
 
         # Stage 3: Retrieve
         try:
@@ -300,6 +384,7 @@ class WorkflowPipeline(BaseAgent):
             print(f"  [pipeline] retrieval ok — {len(activity_manifest)} entries")
         except Exception as e:
             print(f"  [pipeline] retrieval failed: {e}")
+            _log_fatal(ctx, "retrieval", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Retrieval failed: {e}"],
@@ -314,6 +399,7 @@ class WorkflowPipeline(BaseAgent):
                   f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
         except Exception as e:
             print(f"  [pipeline] skeleton builder failed: {e}")
+            _log_fatal(ctx, "skeleton_builder", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Skeleton builder failed: {e}"],
@@ -328,6 +414,7 @@ class WorkflowPipeline(BaseAgent):
                   f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities enriched")
         except Exception as e:
             print(f"  [pipeline] enrichment failed: {e}")
+            _log_fatal(ctx, "enrichment", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Enrichment failed: {e}"],
@@ -339,6 +426,7 @@ class WorkflowPipeline(BaseAgent):
             _backfill_table_vars(enriched_workflow)
         except Exception as e:
             print(f"  [pipeline] table var backfill failed (non-fatal): {e}")
+            middle_warnings.append(f"table_backfill: {e}")
 
         # Stage 4c: Fragments
         try:
@@ -348,6 +436,7 @@ class WorkflowPipeline(BaseAgent):
                   f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities")
         except Exception as e:
             print(f"  [pipeline] fragments failed: {e}")
+            _log_fatal(ctx, "fragments", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Fragment application failed: {e}"],
@@ -362,6 +451,7 @@ class WorkflowPipeline(BaseAgent):
                   f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities")
         except Exception as e:
             print(f"  [pipeline] scaffold failed (non-fatal): {e}")
+            middle_warnings.append(f"scaffold: {e}")
 
         # Stage 4c.6: Deterministic wiring pass (wiring_map.json rules)
         try:
@@ -370,10 +460,30 @@ class WorkflowPipeline(BaseAgent):
             print(f"  [pipeline] wiring pass ok")
         except Exception as e:
             print(f"  [pipeline] wiring pass failed (non-fatal): {e}")
+            middle_warnings.append(f"wiring: {e}")
+
+        # End of deterministic middle — emit cumulative event
+        try:
+            telemetry.log_deterministic_middle(
+                sid,
+                duration_ms=round((time.time() - middle_start) * 1000, 1),
+                stage_timings=None,  # boundary timing only; per-stage TODO
+                warnings=middle_warnings,
+            )
+        except Exception as telem_err:
+            print(f"  [pipeline] telemetry.log_deterministic_middle failed: {telem_err}")
 
         # Stage 4d: WirerAgent — semantic fills only
+        wirer_start = time.time()
         async for event in self.wirer.run_async(ctx):
             yield event
+        try:
+            telemetry.log_wirer_call(
+                sid,
+                duration_ms=round((time.time() - wirer_start) * 1000, 1),
+            )
+        except Exception as telem_err:
+            print(f"  [pipeline] telemetry.log_wirer_call failed: {telem_err}")
 
         # Stages 4f-7
         await _run_post_wirer_stages(ctx, activity_manifest)
@@ -397,6 +507,8 @@ class CorrectionPipeline(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
 
+        sid = _sid(ctx)
+
         decomposition = _ensure_dict(ctx.session.state.get("decomposition"))
 
         if not decomposition:
@@ -406,11 +518,17 @@ class CorrectionPipeline(BaseAgent):
                 "status": "failed",
                 "errors": ["CorrectionPipeline: decomposition not found in session state."],
             }
+            _log_fatal(ctx, "correction_decomposition_missing",
+                       RuntimeError("CorrectionPipeline: decomposition not found."))
             return
 
         print(f"  [correction] reusing decomposition "
               f"({len(decomposition.get('steps', []))} steps) — "
               f"rebuilding skeleton and enrichment deterministically")
+
+        # Begin deterministic middle timing (correction skips Stage 1)
+        middle_start = time.time()
+        middle_warnings: list = []
 
         # Stage 2: Pattern match
         try:
@@ -419,6 +537,7 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] pattern_match: {pattern_match.get('match_status')}")
         except Exception as e:
             print(f"  [correction] pattern_match failed (non-fatal): {e}")
+            middle_warnings.append(f"pattern_match: {e}")
 
         # Stage 3: Retrieve
         try:
@@ -427,6 +546,7 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] retrieval ok — {len(activity_manifest)} entries")
         except Exception as e:
             print(f"  [correction] retrieval failed: {e}")
+            _log_fatal(ctx, "retrieval", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Correction retrieval failed: {e}"],
@@ -441,6 +561,7 @@ class CorrectionPipeline(BaseAgent):
                   f"{len(placed_skeleton.get('workflow_raw_data', {}))} activities placed")
         except Exception as e:
             print(f"  [correction] skeleton builder failed: {e}")
+            _log_fatal(ctx, "skeleton_builder", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Skeleton builder failed: {e}"],
@@ -455,6 +576,7 @@ class CorrectionPipeline(BaseAgent):
                   f"{len(enriched_workflow.get('workflow_raw_data', {}))} activities")
         except Exception as e:
             print(f"  [correction] enrichment failed: {e}")
+            _log_fatal(ctx, "enrichment", e)
             ctx.session.state["output_result"] = {
                 "status": "failed",
                 "errors": [f"Correction enrichment failed: {e}"],
@@ -466,6 +588,7 @@ class CorrectionPipeline(BaseAgent):
             _backfill_table_vars(enriched_workflow)
         except Exception as e:
             print(f"  [correction] table var backfill failed (non-fatal): {e}")
+            middle_warnings.append(f"table_backfill: {e}")
 
         # Stage 4c: Fragments
         try:
@@ -474,6 +597,7 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] fragments ok")
         except Exception as e:
             print(f"  [correction] fragments failed (non-fatal): {e}")
+            middle_warnings.append(f"fragments: {e}")
 
         # Stage 4c.5: Content scaffold
         try:
@@ -482,6 +606,7 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] scaffold ok")
         except Exception as e:
             print(f"  [correction] scaffold failed (non-fatal): {e}")
+            middle_warnings.append(f"scaffold: {e}")
 
         # Stage 4c.6: Deterministic wiring pass
         try:
@@ -490,10 +615,30 @@ class CorrectionPipeline(BaseAgent):
             print(f"  [correction] wiring pass ok")
         except Exception as e:
             print(f"  [correction] wiring pass failed (non-fatal): {e}")
+            middle_warnings.append(f"wiring: {e}")
+
+        # End of deterministic middle — emit cumulative event
+        try:
+            telemetry.log_deterministic_middle(
+                sid,
+                duration_ms=round((time.time() - middle_start) * 1000, 1),
+                stage_timings=None,
+                warnings=middle_warnings,
+            )
+        except Exception as telem_err:
+            print(f"  [correction] telemetry.log_deterministic_middle failed: {telem_err}")
 
         # Stage 4d: WirerAgent
+        wirer_start = time.time()
         async for event in self.wirer.run_async(ctx):
             yield event
+        try:
+            telemetry.log_wirer_call(
+                sid,
+                duration_ms=round((time.time() - wirer_start) * 1000, 1),
+            )
+        except Exception as telem_err:
+            print(f"  [correction] telemetry.log_wirer_call failed: {telem_err}")
 
         # Stages 4f-7
         await _run_post_wirer_stages(ctx, activity_manifest)

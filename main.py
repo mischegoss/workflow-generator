@@ -4,6 +4,7 @@ main.py — entry point for the workflow generator.
 Retry logic:
   Attempt 1: full pipeline (Decomposer → Placer → Enrichment → Wirer)
   Attempt 2 on validation failure: CorrectionPipeline (Wirer only)
+  Attempt 2 on Wirer truncation/drop: CorrectionPipeline (Wirer only)
   Attempt 2 on empty response: full pipeline retry with fresh session
 
 ADK SESSION STATE NOTE:
@@ -13,6 +14,20 @@ ADK SESSION STATE NOTE:
   persist — ADK reads from the session service, not the local object.
   The correction pipeline therefore passes all required state via the
   state= parameter, not via post-create mutation.
+
+TELEMETRY (Phase E):
+  One telemetry_session_id is generated per run() call and survives across
+  retry attempts — the user's session is one logical thing even if the
+  pipeline runs twice. It's set in initial_state for both _run_pipeline
+  and _run_correction_pipeline, where agents/pipeline.py reads it.
+
+  Events emitted by main.py:
+    session_start         once at the top of run()
+    correction_fired      once when attempt 2 fires, with resolution status
+    session_complete      once via try/finally, regardless of exit path
+
+  All other events (decomposer_call, deterministic_middle, wirer_call,
+  validation_result, generation_failed) come from agents/pipeline.py.
 """
 
 import argparse
@@ -29,6 +44,7 @@ from google.genai.types import Content, Part
 
 from agents import build_pipeline, WorkflowPipeline
 from agents.pipeline import build_correction_pipeline, CorrectionPipeline
+from tools import telemetry
 from tools.retrieval_tools import load_activity_list
 from tools.decompose_tools import assess_complexity, estimate_activity_count
 
@@ -89,8 +105,35 @@ def _find_output_file(run_start: float) -> pathlib.Path | None:
 
 
 def _check_needs_retry(state: dict) -> tuple:
+    """
+    Returns (needs_retry, reason_string).
+
+    Retry triggers, in priority order:
+      1. Empty LLM response  →  full pipeline retry (fresh session)
+      2. Wirer truncation / dropped activities  →  correction pipeline
+      3. Validation status invalid  →  correction pipeline
+
+    Trigger 2 was added after Phase E verified that activity count guard
+    failures were silently terminating runs. The CorrectionPipeline already
+    receives "do NOT omit any activities" guidance in its prompt, so giving
+    the Wirer a second swing usually resolves truncation.
+    """
     if state.get("_empty_response_error"):
         return True, "Model returned empty response mid-pipeline. Retrying with fresh session."
+
+    # Catch activity count guard failures (Wirer truncated or dropped activities).
+    # The guard writes its diagnostic into output_result.errors before exiting.
+    output = _ensure_dict(state.get("output_result", {}))
+    if output.get("status") == "failed":
+        for err in output.get("errors", []):
+            err_str = str(err)
+            if "truncated" in err_str or "returned 0 activities" in err_str:
+                error_lines = "\n".join(f"- {e}" for e in output["errors"])
+                return True, (
+                    f"WirerAgent output incomplete:\n{error_lines}\n"
+                    f"On retry, return ALL top-level activities from the input — "
+                    f"do not omit any."
+                )
 
     validation = _ensure_dict(state.get("validation_result", {}))
     if validation.get("status") == "invalid":
@@ -103,8 +146,31 @@ def _check_needs_retry(state: dict) -> tuple:
     return False, ""
 
 
-async def _run_pipeline(prompt: str, run_id: str) -> tuple:
-    """Full pipeline run (Attempt 1)."""
+def _llm_calls_in_attempt(state: dict, was_correction: bool) -> int:
+    """
+    Approximate LLM call count from a single pipeline attempt's session state.
+
+    For full pipeline: decomposer + wirer = up to 2 calls. We count what
+    actually produced output (decomposition present means decomposer ran;
+    workflow_json present means wirer ran, even if output was empty).
+
+    For correction pipeline: only wirer runs; decomposer is reused via
+    initial state. Count the wirer call only.
+    """
+    if was_correction:
+        return 1 if state.get("workflow_json") is not None else 0
+    n = 0
+    if state.get("decomposition"):
+        n += 1
+    if state.get("workflow_json") is not None:
+        n += 1
+    return n
+
+
+async def _run_pipeline(prompt: str, run_id: str,
+                        telemetry_session_id: str) -> tuple:
+    """Full pipeline run (Attempt 1). The telemetry_session_id is propagated
+    into initial_state so agents/pipeline.py can read it via _sid()."""
     app_name  = f"wf_gen_{run_id}"
     user_id   = f"system_{run_id}"
     run_start = time.time()
@@ -112,11 +178,15 @@ async def _run_pipeline(prompt: str, run_id: str) -> tuple:
     pipeline = build_pipeline()
     runner   = InMemoryRunner(agent=pipeline, app_name=app_name)
 
-    # Pass prompt in initial state so it survives get_session()
+    # Pass prompt + telemetry session id in initial state so they survive
+    # get_session() and are readable inside the pipeline.
     session = await runner.session_service.create_session(
         app_name=app_name,
         user_id=user_id,
-        state={"prompt": prompt},
+        state={
+            "prompt":               prompt,
+            "telemetry_session_id": telemetry_session_id,
+        },
     )
 
     user_message = Content(role="user", parts=[Part(text=prompt)])
@@ -173,9 +243,10 @@ async def _run_correction_pipeline(
     error_summary: str,
     original_prompt: str,
     run_id: str,
+    telemetry_session_id: str,
 ) -> tuple:
     """
-    Correction pipeline run (Attempt 2 on validation failure).
+    Correction pipeline run (Attempt 2 on validation failure or Wirer drop).
 
     KEY: all required state is passed via state=initial_state to create_session().
     Post-create mutations (session.state[x] = y) are NOT visible inside the
@@ -214,9 +285,10 @@ async def _run_correction_pipeline(
 
     # All state passed here — the only way to make it visible inside the pipeline
     initial_state = {
-        "prompt":          original_prompt,
-        "decomposition":   _ensure_dict(prior_state.get("decomposition", {})),
-        "placed_skeleton": _ensure_dict(prior_state.get("placed_skeleton", {})),
+        "prompt":               original_prompt,
+        "decomposition":        _ensure_dict(prior_state.get("decomposition", {})),
+        "placed_skeleton":      _ensure_dict(prior_state.get("placed_skeleton", {})),
+        "telemetry_session_id": telemetry_session_id,
     }
 
     session = await runner.session_service.create_session(
@@ -265,62 +337,128 @@ async def run(prompt: str) -> tuple:
     """Returns (output_file_path: str | None, chat_response: str)."""
     load_activity_list()
 
-    complexity = assess_complexity(prompt)
-    estimate   = estimate_activity_count(prompt, complexity)
+    # Telemetry session setup. One sid for the entire user run, even if we
+    # retry. session_complete fires in the finally block at every exit path.
+    telemetry_session_id = f"sess_{uuid.uuid4().hex[:12]}"
+    session_start_time   = time.time()
+    total_llm_calls      = 0
+    final_state          = "unknown"
 
-    if estimate["estimated_total"] > MVP_CEILING:
-        msg = (
-            f"This workflow exceeds the 25-activity MVP limit. "
-            f"Estimated: ~{estimate['estimated_total']} activities.\n\n"
-            f"Suggested approach: break this into focused sub-workflows of "
-            f"25 activities or fewer. Each can be generated and imported independently.\n"
-            f"{estimate.get('suggested_split', '')}"
+    try:
+        try:
+            telemetry.log_session_start(
+                telemetry_session_id,
+                prompt=prompt,
+                user_agent="cli",
+            )
+        except Exception as telem_err:
+            print(f"  [main] telemetry.log_session_start failed: {telem_err}")
+
+        complexity = assess_complexity(prompt)
+        estimate   = estimate_activity_count(prompt, complexity)
+
+        if estimate["estimated_total"] > MVP_CEILING:
+            msg = (
+                f"This workflow exceeds the 25-activity MVP limit. "
+                f"Estimated: ~{estimate['estimated_total']} activities.\n\n"
+                f"Suggested approach: break this into focused sub-workflows of "
+                f"25 activities or fewer. Each can be generated and imported independently.\n"
+                f"{estimate.get('suggested_split', '')}"
+            )
+            final_state = "rejected_oversized"
+            return None, msg
+
+        # Attempt 1
+        run_id = uuid.uuid4().hex[:12]
+        print(f"\n[attempt 1] run_id={run_id}")
+        output_file, state = await _run_pipeline(
+            prompt, run_id, telemetry_session_id
         )
+        total_llm_calls += _llm_calls_in_attempt(state, was_correction=False)
+
+        if output_file:
+            final_state = "success"
+            return str(output_file), _build_chat_response(output_file, state)
+
+        needs_retry, error_summary = _check_needs_retry(state)
+
+        if not needs_retry:
+            final_state = "failed_no_retry"
+            return None, "Workflow generation failed — no output produced and no error captured."
+
+        # Attempt 2
+        print(f"\n[attempt 2] First attempt failed. Retrying...")
+        print(f"  Reason: {error_summary[:200]}")
+
+        retry_run_id = uuid.uuid4().hex[:12]
+        print(f"  retry run_id={retry_run_id}")
+
+        was_empty_response = bool(state.get("_empty_response_error"))
+        retry_reason = "empty_response" if was_empty_response else "validation_errors"
+        retry_errors: list = []
+        if not was_empty_response:
+            # For both validation-invalid and Wirer-truncation paths, the
+            # error list comes from output_result first, falling back to
+            # validation_result.
+            output     = _ensure_dict(state.get("output_result", {}))
+            validation = _ensure_dict(state.get("validation_result", {}))
+            retry_errors = list(output.get("errors", []) or
+                                validation.get("errors", []))
+
+        if was_empty_response:
+            print(f"  Strategy: full pipeline retry (empty response)")
+            retry_output_file, retry_state = await _run_pipeline(
+                prompt, retry_run_id, telemetry_session_id
+            )
+            total_llm_calls += _llm_calls_in_attempt(retry_state, was_correction=False)
+        else:
+            print(f"  Strategy: correction pipeline (WirerAgent only)")
+            retry_output_file, retry_state = await _run_correction_pipeline(
+                prior_state=state,
+                error_summary=error_summary,
+                original_prompt=prompt,
+                run_id=retry_run_id,
+                telemetry_session_id=telemetry_session_id,
+            )
+            total_llm_calls += _llm_calls_in_attempt(retry_state, was_correction=True)
+
+        # Emit correction_fired with resolution status known.
+        # Fired AFTER the retry so resolved_after_correction reflects reality
+        # rather than being null.
+        try:
+            telemetry.log_correction_fired(
+                telemetry_session_id,
+                reason=retry_reason,
+                errors=retry_errors,
+                resolved_after_correction=bool(retry_output_file),
+            )
+        except Exception as telem_err:
+            print(f"  [main] telemetry.log_correction_fired failed: {telem_err}")
+
+        if retry_output_file:
+            final_state = "success_after_retry"
+            return str(retry_output_file), _build_chat_response(retry_output_file, retry_state)
+
+        _, retry_error = _check_needs_retry(retry_state)
+        msg = (
+            f"Workflow generation failed after 2 attempts.\n\n"
+            f"Attempt 1: {error_summary}\n\n"
+            f"Attempt 2: {retry_error if retry_error else 'No output produced.'}\n\n"
+            f"Try breaking the workflow into smaller pieces or simplifying the prompt."
+        )
+        final_state = "failed_after_retry"
         return None, msg
 
-    # Attempt 1
-    run_id = uuid.uuid4().hex[:12]
-    print(f"\n[attempt 1] run_id={run_id}")
-    output_file, state = await _run_pipeline(prompt, run_id)
-
-    if output_file:
-        return str(output_file), _build_chat_response(output_file, state)
-
-    needs_retry, error_summary = _check_needs_retry(state)
-
-    if not needs_retry:
-        return None, "Workflow generation failed — no output produced and no error captured."
-
-    # Attempt 2
-    print(f"\n[attempt 2] First attempt failed. Retrying...")
-    print(f"  Reason: {error_summary[:200]}")
-
-    retry_run_id = uuid.uuid4().hex[:12]
-    print(f"  retry run_id={retry_run_id}")
-
-    if state.get("_empty_response_error"):
-        print(f"  Strategy: full pipeline retry (empty response)")
-        retry_output_file, retry_state = await _run_pipeline(prompt, retry_run_id)
-    else:
-        print(f"  Strategy: correction pipeline (WirerAgent only)")
-        retry_output_file, retry_state = await _run_correction_pipeline(
-            prior_state=state,
-            error_summary=error_summary,
-            original_prompt=prompt,
-            run_id=retry_run_id,
-        )
-
-    if retry_output_file:
-        return str(retry_output_file), _build_chat_response(retry_output_file, retry_state)
-
-    _, retry_error = _check_needs_retry(retry_state)
-    msg = (
-        f"Workflow generation failed after 2 attempts.\n\n"
-        f"Attempt 1: {error_summary}\n\n"
-        f"Attempt 2: {retry_error if retry_error else 'No output produced.'}\n\n"
-        f"Try breaking the workflow into smaller pieces or simplifying the prompt."
-    )
-    return None, msg
+    finally:
+        try:
+            telemetry.log_session_complete(
+                telemetry_session_id,
+                total_duration_sec=round(time.time() - session_start_time, 2),
+                final_state=final_state,
+                total_llm_calls=total_llm_calls,
+            )
+        except Exception as telem_err:
+            print(f"  [main] telemetry.log_session_complete failed: {telem_err}")
 
 
 def _build_chat_response(output_file: pathlib.Path, state: dict) -> str:
