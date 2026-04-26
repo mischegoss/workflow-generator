@@ -1,0 +1,1472 @@
+{
+  "generated_at": "2026-04-25T21:14:57",
+  "csv_rows": 7350,
+  "csv_unique_names": 6418,
+  "frequency_total": 714,
+  "enriched": 707,
+  "within_group_conflicts": [
+    {
+      "name": "snUpdateRecord",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "ServiceNow"
+      ],
+      "resolution": "chose ServiceNow over INTERNAL"
+    },
+    {
+      "name": "slnpmAcknowledgeAlert",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "SolarWinds NPM"
+      ],
+      "resolution": "chose SolarWinds NPM over INTERNAL"
+    },
+    {
+      "name": "snCreateRecord",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "ServiceNow"
+      ],
+      "resolution": "chose ServiceNow over INTERNAL"
+    },
+    {
+      "name": "snGetRecord",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "ServiceNow"
+      ],
+      "resolution": "chose ServiceNow over INTERNAL"
+    },
+    {
+      "name": "cherwellUpdateRecord",
+      "field": "module_type",
+      "values": [
+        "Cherwell",
+        "INTERNAL"
+      ],
+      "resolution": "chose Cherwell over INTERNAL"
+    },
+    {
+      "name": "jiraGenericCommand",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "Jira"
+      ],
+      "resolution": "chose Jira over INTERNAL"
+    },
+    {
+      "name": "CreateRITM",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "ServiceNow"
+      ],
+      "resolution": "chose ServiceNow over INTERNAL"
+    },
+    {
+      "name": "cherwellCreateRecord",
+      "field": "module_type",
+      "values": [
+        "Cherwell",
+        "INTERNAL"
+      ],
+      "resolution": "chose Cherwell over INTERNAL"
+    },
+    {
+      "name": "esmGetEvent",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "McAfee ESM"
+      ],
+      "resolution": "chose McAfee ESM over INTERNAL"
+    },
+    {
+      "name": "slnpmGetNode",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "SolarWinds NPM"
+      ],
+      "resolution": "chose SolarWinds NPM over INTERNAL"
+    },
+    {
+      "name": "slnpmManageNode",
+      "field": "module_type",
+      "values": [
+        "INTERNAL",
+        "SolarWinds NPM"
+      ],
+      "resolution": "chose SolarWinds NPM over INTERNAL"
+    }
+  ],
+  "evidence_based_prefix_rules": {
+    "sn": {
+      "system": "ServiceNow",
+      "witnesses": 29,
+      "consistency": 1.0,
+      "system_coverage": 0.46,
+      "confidence": "medium"
+    },
+    "cherwell": {
+      "system": "Cherwell",
+      "witnesses": 7,
+      "consistency": 1.0,
+      "system_coverage": 0.39,
+      "confidence": "high"
+    },
+    "slnpm": {
+      "system": "SolarWinds NPM",
+      "witnesses": 7,
+      "consistency": 1.0,
+      "system_coverage": 0.88,
+      "confidence": "high"
+    },
+    "ms": {
+      "system": "MsTeams",
+      "witnesses": 9,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "jira": {
+      "system": "Jira",
+      "witnesses": 14,
+      "consistency": 1.0,
+      "system_coverage": 0.44,
+      "confidence": "high"
+    },
+    "salesforce": {
+      "system": "Salesforce",
+      "witnesses": 4,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "scom": {
+      "system": "Microsoft System Center - Operations Manager",
+      "witnesses": 5,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "high"
+    },
+    "remedy": {
+      "system": "BMC Remedyforce",
+      "witnesses": 4,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "hpom": {
+      "system": "HP - Operations Manager",
+      "witnesses": 13,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "high"
+    },
+    "ibmto": {
+      "system": "IBM - Tivoli/Omnibus",
+      "witnesses": 3,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "cas": {
+      "system": "CA Spectrum",
+      "witnesses": 6,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "aws": {
+      "system": "AWS",
+      "witnesses": 19,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "esm": {
+      "system": "McAfee ESM",
+      "witnesses": 5,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "medium"
+    },
+    "slack": {
+      "system": "Slack",
+      "witnesses": 7,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "high"
+    },
+    "splunk": {
+      "system": "Splunk",
+      "witnesses": 6,
+      "consistency": 1.0,
+      "system_coverage": 1.0,
+      "confidence": "high"
+    }
+  },
+  "prefix_overrides_applied": [
+    {
+      "name": "msWfResult",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "jiraTicketCount",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "snUploadAttachmentStandalone",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    },
+    {
+      "name": "msWfFailResult",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "jiraTicketStatus",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "snUpdate_Failure",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    },
+    {
+      "name": "snDownloadAttachmentStandalone",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    },
+    {
+      "name": "msWfResultFailed",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "jiraAttachmentsCount",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraCommentExistsInCorrigo",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraTIcketNumber",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraTicketNumLength",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraUploadAttachment",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAddComment_DCO",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAddComment_NETOP",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAddComment_PEOS",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAddComment_UCC",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAttachCount",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraAttachFilename",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraGetIssuePlaces",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraGetIssueUCC",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraListAttachments",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraProject",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraServiceLocation",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraStatusCount",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraSubTask",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "jiraDownloadAttachment",
+      "prefix": "jira",
+      "from": "INTERNAL",
+      "to": "Jira",
+      "confidence": "high"
+    },
+    {
+      "name": "msWfResultsFailure",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msWfResultsSuccess",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msFullName",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msHpTemplatePayload",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msMacAddress",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msPhoneConfig",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msResults",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "msToken",
+      "prefix": "ms",
+      "from": "INTERNAL",
+      "to": "MsTeams",
+      "confidence": "medium"
+    },
+    {
+      "name": "snTicketNum",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    },
+    {
+      "name": "snRESTrequest",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    },
+    {
+      "name": "snStatusUpdateApproved",
+      "prefix": "sn",
+      "from": "INTERNAL",
+      "to": "ServiceNow",
+      "confidence": "medium"
+    }
+  ],
+  "no_evidence_flags": [
+    {
+      "name": "tsqlStatement",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelWrite",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerState",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmExists",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlQuery",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adListOU",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserExists",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerCLI",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmName",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmList",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerOff",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmExistsError",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmServerName",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpGetFile",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUnlockAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpListFolder",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpDeleteFile",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerOn",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetProperty",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adPassExpDaysLeft",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adPasswordReset",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adAddtoGroup",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adCreateNewUser",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adDeleteAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adCreateAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adDisableAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adDisableNewAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adIsAccountDisabled",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adIsAccountLocked",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adGroupExists",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetNewUserProperties",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUpdateUser",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketDocs",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoUploadAttachment",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoAddComment",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCreateTicket",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerOn1Failure",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPowerOff1Failure",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmListSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmInfo",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmSnapshotInfo",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmExistsORPowerStateError",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmHostList",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmDelete",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmDeleteSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmAndTicket",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmBackupTemplateName",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmBuildCount",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmClone",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCount",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreate",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreateFromTemplate",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreateSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmEventDBCount",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmTemplateName",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmMarkTemplate",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmReboot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_DataCenter",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_Network",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelWriteWithColoredHeaders",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelWriteWithDropdown",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelAttachmentList",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelAttachmentPath",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpRenameFile",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketNum",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketStatus",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoUpdateStatus",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserLoggedInDate",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUsersSynchronization",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetPasswordProperties",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetProfileandHomeFolders",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetManagerProperty",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSetNewUserManagerProperty",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUpdateManagerAttribute",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUpdateManagerProperty",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adPermissionsRemoteFolder",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adListGroup",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSearchManagerAttribute",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adGroupListCount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adGetManagerInfo",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adEnableAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adCreateGroupAdvanced",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adComputerLoggedInDate",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "mfsmaxAddComment",
+      "prefix": "mfsmax",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapActivateUser",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapAssignRole",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapCreateNewUser",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapDeactivateUser",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapPasswordReset",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapRemoveRole",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapReprocessIDocs",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "sapUpdateUser",
+      "prefix": "sap",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "oracleQuery",
+      "prefix": "oracle",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "oracleStatement",
+      "prefix": "oracle",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "mfsmaxGetTicket",
+      "prefix": "mfsmax",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "mfsmaxUpdateTicket",
+      "prefix": "mfsmax",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adCopyUser",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adAccountsCount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adAccountsExpiring",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adDeleteGroup",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adCreateGroup",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adFindNewAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adFullName",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adGetProperty",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adListUserGroups",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adMoveAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSearchUserLogonName",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adRemoveFromGroup",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adRenameAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adSearchAccount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserResult",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserData",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserDataCount",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "adUserListDisabled",
+      "prefix": "ad",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketList",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketNotesCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTenantCode",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTenantCodeCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTenantCodeInfo",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketDesc",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoTicketDocCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoWoField",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCompletionNote",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCompNoteJson",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCompNoteTable",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoAssetTaskCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoAssetAndTaskInfo",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCustomFields",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCustomFieldsJson",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoCustomFieldsTable",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoDownloadedCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoDownloadedDocs",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoGetTicketsByDate",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoGetTicketsByDesc",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoGetTicketsByWO",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoGetToken",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoItems",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoItemsJson",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoItemsTable",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "corrigoMappingCount",
+      "prefix": "corrigo",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpRenameFolder",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpDeleteFolder",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpFileExists",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpPutFile",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "ftpCreateFolder",
+      "prefix": "ftp",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "excelManagerList",
+      "prefix": "excel",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_NetworkENT",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_NetworkPRD",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_DataCenterENT",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "tsqlVC_DataCenterPRD",
+      "prefix": "tsql",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmRename",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmRenameSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmReset",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmResizeDisk",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmReverttoCurrentSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmReverttoSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmRowsCount",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmPrecheckFailure",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmModifyCPU",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmModifyMemory",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmMountISO",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmListTemplates",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmNetworkAdapterDisable",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmNetworkAdapterEnable",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmTemplateRename",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmUnmarkTemplate",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmShutdown",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmSnapShotCount",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmSuspend",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmTemplateDelete",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmStandby",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmSnapShotList",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmHostReboot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmFolderCreate",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmHostEnterMaintenanceMode",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmHostExitMaintenanceMode",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCurrentSnapshot",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreateResponse",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmDiskInfo",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmDeleteAllSnapshots",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmDeleteConfigurationSpec",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreateConfigurationSpec",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmCreateFailure",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    },
+    {
+      "name": "vmChangeVlan",
+      "prefix": "vm",
+      "note": "name suggests external system but no in-data evidence to fix"
+    }
+  ],
+  "in_csv_but_not_frequency": [
+    "absolutetimedifference",
+    "accesskey",
+    "accountapprovalcount",
+    "accountapprovalspreadsheet",
+    "accountcounter",
+    "accountcountry",
+    "accountdatacount",
+    "accountdisplayname",
+    "accountemail",
+    "accountidcount",
+    "accountidscount",
+    "accountlist",
+    "accountmanager",
+    "accountmanagercn",
+    "accountmanagercnold",
+    "accountname",
+    "accountnamelist",
+    "accountoutputcount",
+    "accountrecordscount",
+    "accountscount",
+    "accountslistcount",
+    "accountstatus",
+    "accounttableforspreadsheet",
+    "accounttablerowlength",
+    "ackalertlm",
+    "acknowledgenewuser",
+    "activitiesinfo",
+    "activitycategories",
+    "activitydatajsonsession",
+    "activitygroups",
+    "activityinfo",
+    "activityinfocount",
+    "activityinfohtml",
+    "activityinstancecounter",
+    "activitylist",
+    "activitylistjson",
+    "activitylistjsonarray",
+    "activitylisttable",
+    "activitylisttablecount",
+    "activitysettingsjsontable",
+    "activitysubgroupsession",
+    "activitytype",
+    "activtyname",
+    "adaccountscount",
+    "adaccountsexpiring",
+    "adaddmembertogroup",
+    "adcreatenewuser",
+    "add_count_in_keys",
+    "add_date_in_keys",
+    "add_extra_pon_row"
+  ],
+  "in_csv_but_not_frequency_total": 5711,
+  "in_frequency_but_not_csv": [
+    "MFSMAXGetComments",
+    "MFSMAXListAttachments",
+    "MFSMAXListTickets",
+    "MFSMAXDownloadAttachment",
+    "MFSMAXCreateTicket",
+    "ReadExcel",
+    "LogicMonitorCreateAPIToken"
+  ]
+}

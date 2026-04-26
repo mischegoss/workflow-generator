@@ -1,0 +1,251 @@
+{
+  "branch_decision": [
+    "if",
+    "when",
+    "depending on",
+    "check if",
+    "decide",
+    "branch on",
+    "based on"
+  ],
+  "set_variable": [
+    "set variable",
+    "store in variable",
+    "assign",
+    "save to",
+    "put in"
+  ],
+  "parallel_execution": [],
+  "read_table_cell": [
+    "get cell",
+    "read column",
+    "get column value",
+    "get value from"
+  ],
+  "display_value": [
+    "display",
+    "show",
+    "print",
+    "output"
+  ],
+  "count_table_rows": [
+    "count rows",
+    "number of rows",
+    "how many rows",
+    "row count"
+  ],
+  "string_operations": [
+    "split",
+    "substring",
+    "contains",
+    "is empty",
+    "replace",
+    "trim"
+  ],
+  "terminate": [
+    "stop workflow",
+    "terminate",
+    "exit",
+    "end workflow"
+  ],
+  "modify_table": [
+    "set cell",
+    "update row",
+    "add row",
+    "delete row",
+    "update the column"
+  ],
+  "sequence_control": [],
+  "iterate_rows": [
+    "for each",
+    "loop through",
+    "iterate over",
+    "for every",
+    "go through each",
+    "repeat for each"
+  ],
+  "query_database": [
+    "query database",
+    "run sql",
+    "select from",
+    "sql query",
+    "query the db",
+    "run a query",
+    "database lookup"
+  ],
+  "invoke_subworkflow": [],
+  "create_table": [
+    "create table",
+    "make a table",
+    "new memory table"
+  ],
+  "read_file": [
+    "read excel",
+    "read spreadsheet",
+    "read csv",
+    "read file",
+    "load file",
+    "import data from",
+    "parse json",
+    "parse xml",
+    "extract data from",
+    "read the excel",
+    "read the csv"
+  ],
+  "filter_table": [
+    "filter",
+    "exclude",
+    "only keep",
+    "where",
+    "remove rows where",
+    "keep only"
+  ],
+  "date_operations": [
+    "current date",
+    "today",
+    "days between",
+    "add days",
+    "subtract days",
+    "date difference",
+    "how old",
+    "expiry",
+    "expiration"
+  ],
+  "query_itsm": [
+    "servicenow",
+    "get ticket",
+    "get incident",
+    "jira",
+    "get record",
+    "update ticket",
+    "create incident",
+    "look up incident"
+  ],
+  "run_script": [
+    "run script",
+    "powershell",
+    "execute command",
+    "run command"
+  ],
+  "read_structured_input": [],
+  "send_email": [
+    "send email",
+    "email",
+    "notify via email",
+    "email admin",
+    "send a mail",
+    "send message"
+  ],
+  "goto": [],
+  "query_api": [
+    "call api",
+    "http request",
+    "rest call",
+    "fetch from api",
+    "call endpoint",
+    "hit the api",
+    "web request"
+  ],
+  "query_system_state": [
+    "ping",
+    "check server",
+    "service status",
+    "check service",
+    "is running",
+    "health check",
+    "is up",
+    "wmi",
+    "check cpu",
+    "check memory",
+    "file exists",
+    "folder exists"
+  ],
+  "wait": [
+    "wait",
+    "pause",
+    "delay",
+    "sleep"
+  ],
+  "write_file": [
+    "write to file",
+    "save file",
+    "export to",
+    "download file"
+  ],
+  "convert_table": [
+    "convert to html",
+    "convert to json",
+    "format as table",
+    "html table"
+  ],
+  "send_notification": [
+    "notify",
+    "alert",
+    "send notification",
+    "raise event"
+  ],
+  "password_operations": [],
+  "server_action": [
+    "restart server",
+    "reboot",
+    "start service",
+    "stop service",
+    "shutdown",
+    "create folder"
+  ],
+  "math_operations": [
+    "calculate",
+    "sum",
+    "add numbers",
+    "percentage"
+  ],
+  "clean_memory": [],
+  "manage_ad_account": [
+    "create account",
+    "disable account",
+    "reset password",
+    "add to group",
+    "create user"
+  ],
+  "query_directory": [
+    "active directory",
+    "check user",
+    "user exists",
+    "list group",
+    "group members",
+    "ad lookup",
+    "ad user"
+  ],
+  "sort_table": [
+    "sort",
+    "order by",
+    "ascending",
+    "descending"
+  ],
+  "lock": [],
+  "composite_count_table_rows_then_read_table_cell": [],
+  "composite_set_variable_then_display_value": [],
+  "composite_set_variable_then_set_variable": [],
+  "composite_read_table_cell_then_display_value": [],
+  "composite_set_variable_then_read_table_cell": [],
+  "composite_count_table_rows_then_display_value": [],
+  "composite_set_variable_then_count_table_rows": [],
+  "composite_read_table_cell_then_read_table_cell": [],
+  "composite_display_value_then_display_value": [],
+  "composite_read_table_cell_then_set_variable": [],
+  "composite_set_variable_then_set_variable_then_display_value": [],
+  "composite_count_table_rows_then_set_variable": [],
+  "composite_count_table_rows_then_read_table_cell_then_display_value": [],
+  "composite_read_table_cell_then_count_table_rows": [],
+  "composite_set_variable_then_display_value_then_display_value": [],
+  "composite_set_variable_then_count_table_rows_then_read_table_cell": [],
+  "composite_create_table_then_read_table_cell": [],
+  "composite_set_variable_then_read_table_cell_then_display_value": [],
+  "composite_set_variable_then_set_variable_then_set_variable": [],
+  "composite_read_file_then_read_table_cell": [],
+  "composite_count_table_rows_then_count_table_rows": [],
+  "composite_create_table_then_count_table_rows": [],
+  "composite_display_value_then_set_variable": [],
+  "composite_set_variable_then_count_table_rows_then_display_value": [],
+  "composite_read_file_then_count_table_rows": []
+}

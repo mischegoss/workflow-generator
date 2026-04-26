@@ -6,4 +6,5 @@ output/
 *.xml
 workflows_raw/
 *.bak
+scripts/
 

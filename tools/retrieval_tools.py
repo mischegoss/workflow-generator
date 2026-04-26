@@ -34,10 +34,25 @@ Four layers applied in order, each independent and composable:
       "Ping" (all name words match) from "PingLatency" (name word "latency"
       absent) when both contain "ping".
 
+Post-scoring modulations (applied after Layers 1-4):
+
+  Co-occurrence re-rank
+      Boosts candidates that frequently appear with already-confirmed
+      activities in the corpus.
+
+  System bias (NEW)
+      When the step's text identifies a target external system (via
+      extract_system_from_step), candidates whose module_type matches
+      that system get SYSTEM_MATCH_BOOST applied to combined_score, and
+      candidates whose module_type is INTERNAL get INTERNAL_PENALTY.
+      Reads module_type from the merged activity_frequency.json. No-op
+      when the step does not identify a system — most steps won't.
+
 Confidence gate:
       If the top candidate's combined_score is below CONFIDENCE_THRESHOLD
-      after co-occurrence re-ranking, the step is marked UNCERTAIN with
-      top-3 candidates passed through for StructureBuilder to judge.
+      after co-occurrence re-ranking and system bias, the step is marked
+      UNCERTAIN with top-3 candidates passed through for StructureBuilder
+      to judge.
 """
 
 import csv
@@ -47,6 +62,8 @@ import os
 import re
 from collections import defaultdict
 from typing import Annotated
+
+from tools.system_extraction import extract_system_from_step
 
 # ---------------------------------------------------------------------------
 # Module-level state
@@ -68,6 +85,9 @@ _activity_ranks: list | None          = None
 _rank_lookup:    dict[str, int] | None = None
 _rank_scores:    dict[str, int] | None = None
 
+# System bias: activity name -> module_type from merged activity_frequency.json
+_module_types: dict[str, str | None] | None = None
+
 # ---------------------------------------------------------------------------
 # Tuning constants
 # ---------------------------------------------------------------------------
@@ -76,6 +96,11 @@ ALIAS_BONUS:          float = 6.0   # additive; intentionally large vs IDF scale
 NAME_BOOST:           float = 2.5   # multiplier when all name words in query
 CONFIDENCE_THRESHOLD: float = 0.35  # below this -> UNCERTAIN
 _COOCCURRENCE_LAMBDA: float = 0.3
+
+# System bias multipliers — applied to combined_score in retrieve_all_steps
+# after co-occurrence re-rank, only when the step identifies a target system.
+SYSTEM_MATCH_BOOST:   float = 1.5   # candidate.module_type == step.system
+INTERNAL_PENALTY:     float = 0.7   # step has system, candidate is INTERNAL
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +237,41 @@ def _load_rank_data() -> tuple[dict, dict]:
     return _rank_lookup, _rank_scores
 
 
+def _load_module_types() -> dict[str, str | None]:
+    """
+    Loads the activity name -> module_type lookup from the merged
+    activity_frequency.json. Safe to call multiple times — no-op if
+    already loaded. Returns an empty dict if the file is missing or
+    if no entries carry module_type (i.e. merge has not been run yet).
+    """
+    global _module_types
+    if _module_types is not None:
+        return _module_types
+
+    data_dir = os.getenv("DATA_DIR", "/app/data")
+    path = os.path.join(data_dir, "activity_frequency.json")
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        entries = data.get("individual_activities", [])
+        _module_types = {
+            entry["activity"]: entry.get("module_type")
+            for entry in entries
+            if entry.get("activity")
+        }
+    except Exception as e:
+        print(f"[retrieval] Warning: could not load module_types from {path}: {e}")
+        _module_types = {}
+
+    enriched = sum(1 for v in _module_types.values() if v)
+    print(f"[retrieval] Loaded module_type for {enriched} of {len(_module_types)} activities.")
+    if enriched == 0 and _module_types:
+        print(f"[retrieval] Warning: no module_type values present — "
+              f"run scripts/merge_activity_info.py to enrich the catalog.")
+    return _module_types
+
+
 # ---------------------------------------------------------------------------
 # Per-activity scoring (Layers 2, 3, 4)
 # ---------------------------------------------------------------------------
@@ -316,6 +376,44 @@ def _rerank_candidates(
 
 
 # ---------------------------------------------------------------------------
+# System bias
+# ---------------------------------------------------------------------------
+
+def _apply_system_bias(
+    candidates:    list[dict],
+    step_system:   str | None,
+    module_types:  dict[str, str | None],
+) -> list[dict]:
+    """
+    Applies multiplicative system bias to combined_score and re-sorts.
+
+    No-op when step_system is None (most steps don't target a specific
+    external system). Tags each candidate with system_match (True when
+    candidate's module_type matches step_system, False when it's INTERNAL
+    while step_system is set, None otherwise) for debugging visibility.
+    """
+    if not candidates or not step_system:
+        for c in candidates:
+            c.setdefault("system_match", None)
+        return candidates
+
+    for c in candidates:
+        cand_module = module_types.get(c["activity_name"])
+        if cand_module == step_system:
+            c["combined_score"] = round(c["combined_score"] * SYSTEM_MATCH_BOOST, 4)
+            c["system_match"]   = True
+        elif cand_module == "INTERNAL":
+            c["combined_score"] = round(c["combined_score"] * INTERNAL_PENALTY, 4)
+            c["system_match"]   = False
+        else:
+            # Unknown module_type, or matches a different external system —
+            # leave the score alone, mark as neither boost nor penalty
+            c["system_match"] = None
+
+    return sorted(candidates, key=lambda x: x["combined_score"], reverse=True)
+
+
+# ---------------------------------------------------------------------------
 # Public tool: retrieve_activities
 # ---------------------------------------------------------------------------
 
@@ -375,7 +473,9 @@ def retrieve_all_steps(
       1. Intent map             Layer 1 — deterministic, no keyword work
       2. Scored keyword match   Layers 2-4 — IDF + alias + name boost
       3. Co-occurrence re-rank  boosts platform-common activities
-      4. Confidence gate        below CONFIDENCE_THRESHOLD -> UNCERTAIN
+      4. System bias            boost module-matched candidates, penalize
+                                INTERNAL when step targets external system
+      5. Confidence gate        below CONFIDENCE_THRESHOLD -> UNCERTAIN
 
     status values:
       CONTROL_FLOW  — structural scaffold, no activity retrieved
@@ -385,8 +485,9 @@ def retrieve_all_steps(
       UNAVAILABLE   — no candidates found
     """
     load_activity_list()
-    alias_map, _ = _load_alias_map()
+    alias_map, _   = _load_alias_map()
     _, rank_scores = _load_rank_data()
+    module_types   = _load_module_types()
 
     CONTROL_FLOW_INTENTS = {"branch", "parallel"}
     CONTROL_FLOW_CF      = {"ifelse", "parallel"}
@@ -446,7 +547,11 @@ def retrieve_all_steps(
             })
             continue
 
-        reranked = _rerank_candidates(raw_candidates, confirmed_activities, rank_scores)
+        # Co-occurrence re-rank, then system bias
+        reranked    = _rerank_candidates(raw_candidates, confirmed_activities, rank_scores)
+        step_system = extract_system_from_step(step)
+        reranked    = _apply_system_bias(reranked, step_system, module_types)
+
         top      = reranked[0]
         top_name = top["activity_name"]
 
@@ -470,31 +575,29 @@ def retrieve_all_steps(
                 "combined_score": c.get("combined_score", 0.0),
                 "alias_match":    c.get("alias_match", False),
                 "name_boosted":   c.get("name_boosted", False),
+                "system_match":   c.get("system_match"),
             }
             for c in reranked[:3]
         ]
 
+        entry = {
+            "step_id":           step_id,
+            "query":             description,
+            "candidates":        candidates_out,
+            "selected_activity": top_name,
+            "frequency_tier":    tier,
+            "confidence":        round(confidence, 4),
+        }
+        if step_system:
+            entry["step_system"] = step_system
+
         if confidence < CONFIDENCE_THRESHOLD:
             # Best guess included but flagged — don't add to confirmed_activities
-            manifest.append({
-                "step_id":           step_id,
-                "query":             description,
-                "candidates":        candidates_out,
-                "selected_activity": top_name,
-                "status":            "UNCERTAIN",
-                "frequency_tier":    tier,
-                "confidence":        round(confidence, 4),
-            })
+            entry["status"] = "UNCERTAIN"
+            manifest.append(entry)
         else:
-            manifest.append({
-                "step_id":           step_id,
-                "query":             description,
-                "candidates":        candidates_out,
-                "selected_activity": top_name,
-                "status":            "MATCHED",
-                "frequency_tier":    tier,
-                "confidence":        round(confidence, 4),
-            })
+            entry["status"] = "MATCHED"
+            manifest.append(entry)
             confirmed_activities.add(top_name)
 
     return manifest
