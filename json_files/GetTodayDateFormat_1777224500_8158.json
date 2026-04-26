@@ -1,0 +1,68 @@
+{
+  "name": "GetTodayDateFormat_1777224500_8158",
+  "pnumber": "93612",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "getDate1": {
+      "xName": "getDate1",
+      "CustomTypeName": "GetDate",
+      "Description": "Get the current date and time.",
+      "description": "Get the current date and time.",
+      "DateFormat": "MM/dd/yyyy HH:mm:ss",
+      "TimeInterval": "Days",
+      "FuturePast": "1",
+      "TimeZoneName": "UTC",
+      "TimeToAdd": "0",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "description": "Advanced settings for GetDate.",
+        "Description": "Advanced settings for GetDate."
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "description": "Result of GetDate.",
+        "Description": "Result of GetDate."
+      }
+    },
+    "formatDate1": {
+      "xName": "formatDate1",
+      "CustomTypeName": "FormatDate",
+      "Description": "Format the retrieved date into yyyy-MM-dd format.",
+      "description": "Format the retrieved date into yyyy-MM-dd format.",
+      "InputTime": "%getDate1%",
+      "SourceFormat": "MM/dd/yyyy HH:mm:ss",
+      "TargetFormat": "yyyy-MM-dd",
+      "Advanced": {
+        "xName": "advanced2",
+        "CustomTypeName": "Advanced",
+        "description": "Advanced settings for FormatDate.",
+        "Description": "Advanced settings for FormatDate."
+      },
+      "Result": {
+        "xName": "result2",
+        "CustomTypeName": "Result",
+        "description": "Result of FormatDate.",
+        "Description": "Result of FormatDate."
+      }
+    },
+    "displayValue1": {
+      "xName": "displayValue1",
+      "CustomTypeName": "DisplayValue",
+      "Description": "Display the formatted date in the workflow log.",
+      "description": "Display the formatted date in the workflow log.",
+      "ValueToDisplay": "Formatted Date: %formatDate1%",
+      "Advanced": {
+        "xName": "advanced3",
+        "CustomTypeName": "Advanced",
+        "description": "Advanced settings for DisplayValue.",
+        "Description": "Advanced settings for DisplayValue."
+      }
+    }
+  },
+  "placeholder_summary": [],
+  "pipeline_notes": [],
+  "errors": []
+}

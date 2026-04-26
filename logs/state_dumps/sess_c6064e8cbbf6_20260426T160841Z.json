@@ -1,0 +1,820 @@
+{
+  "prompt": "Read certificates from cert.csv and email each owner with their cert details",
+  "decomposition": {
+    "steps": [
+      {
+        "step_id": "s1",
+        "description": "Access the certificate data from cert.csv as a table.",
+        "intent": "other",
+        "control_flow": "linear",
+        "zone": "linear"
+      },
+      {
+        "step_id": "s2",
+        "description": "Get the first row from the certificate table.",
+        "intent": "other",
+        "control_flow": "linear",
+        "zone": "linear"
+      },
+      {
+        "step_id": "s3",
+        "description": "Extract the owner's email address from the current row.",
+        "intent": "get_cell",
+        "control_flow": "linear",
+        "zone": "linear"
+      },
+      {
+        "step_id": "s4",
+        "description": "Extract the certificate details from the current row.",
+        "intent": "get_cell",
+        "control_flow": "linear",
+        "zone": "linear"
+      },
+      {
+        "step_id": "s5",
+        "description": "Send an email to the owner with their certificate details.",
+        "intent": "send_email",
+        "control_flow": "linear",
+        "zone": "linear"
+      }
+    ],
+    "variable_contract": {
+      "variables": [
+        {
+          "name": "certTable",
+          "type": "table",
+          "source": "external — must exist before workflow runs (from cert.csv)"
+        },
+        {
+          "name": "getCellValue1",
+          "type": "string",
+          "source": "owner email from certTable"
+        },
+        {
+          "name": "getCellValue2",
+          "type": "string",
+          "source": "certificate details from certTable"
+        }
+      ],
+      "loop_type": "none",
+      "loop_source": null
+    },
+    "complexity": "simple",
+    "estimated_activity_count": 6
+  },
+  "placed_skeleton": {
+    "workflow_raw_data": {
+      "readCSV1": {
+        "xName": "readCSV1",
+        "CustomTypeName": "ReadCSV"
+      },
+      "sNGetRecord1": {
+        "xName": "sNGetRecord1",
+        "CustomTypeName": "SNGetRecord"
+      },
+      "getCellValue1": {
+        "xName": "getCellValue1",
+        "CustomTypeName": "GetCellValue"
+      },
+      "getCellValue2": {
+        "xName": "getCellValue2",
+        "CustomTypeName": "GetCellValue"
+      },
+      "sendEmail1": {
+        "xName": "sendEmail1",
+        "CustomTypeName": "SendEmail"
+      }
+    },
+    "variable_contracts": {
+      "variables": [
+        {
+          "name": "certTable",
+          "type": "table",
+          "source": "external — must exist before workflow runs (from cert.csv)"
+        },
+        {
+          "name": "getCellValue1",
+          "type": "string",
+          "source": "owner email from certTable"
+        },
+        {
+          "name": "getCellValue2",
+          "type": "string",
+          "source": "certificate details from certTable"
+        }
+      ],
+      "loop_type": "none",
+      "loop_source": null
+    }
+  },
+  "telemetry_session_id": "sess_c6064e8cbbf6",
+  "pattern_match": {
+    "match_status": "MATCHED",
+    "pattern_id": "p001",
+    "pattern_name": "Linear",
+    "score": 0.756,
+    "scaffold": {
+      "PARAM_xname_startciscosession": {
+        "xName": "PARAM_xname_startciscosession",
+        "CustomTypeName": "StartCiscoSession",
+        "IsValid": "True",
+        "MaxSessionTime": "00:10:00",
+        "TimeInSeconds": "0",
+        "Timeout": "00:01:00",
+        "HostName": "PARAM_HostName",
+        "SecureConnection": "1",
+        "DisplayName": "Start Cisco Session",
+        "Password": "",
+        "Description": "Starts Cisco Session.",
+        "HostId": "PARAM_HostId",
+        "TypeName": "StartCiscoSession",
+        "UserName": "",
+        "StartSession": "{x:Null}"
+      },
+      "PARAM_xname_getinterfacesstatus": {
+        "xName": "PARAM_xname_getinterfacesstatus",
+        "CustomTypeName": "GetInterfacesStatus",
+        "SessionName": "startCiscoSession1",
+        "HostName": "PARAM_HostName",
+        "IsValid": "True",
+        "Timeout": "00:00:20",
+        "InterfaceName": "e0",
+        "DisplayName": "Get Interfaces Status",
+        "OSType": "0",
+        "TimeInSeconds": "0",
+        "Description": "Returns a list of cisco interfaces with their status.",
+        "HostId": "PARAM_HostId",
+        "TypeName": "GetInterfacesStatus"
+      },
+      "PARAM_xname_terminateciscosession": {
+        "xName": "PARAM_xname_terminateciscosession",
+        "CustomTypeName": "TerminateCiscoSession",
+        "SessionName": "startCiscoSession1",
+        "TimeInSeconds": "0",
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "HostName": "PARAM_HostName",
+        "DisplayName": "Terminate Cisco Session",
+        "Description": "Terminate Cisco session.",
+        "HostId": "PARAM_HostId",
+        "TypeName": "TerminateCiscoSession"
+      },
+      "PARAM_xname_converttohtmltable": {
+        "xName": "PARAM_xname_converttohtmltable",
+        "CustomTypeName": "ConvertToHTMLTable",
+        "DisplayName": "Convert to HTML     Table",
+        "TypeName": "ConvertToHTMLTable",
+        "Description": "Convert a ResultSet     to an HTML table.",
+        "IsValid": "True",
+        "Value": "PARAM_Value"
+      },
+      "PARAM_xname_sendemail": {
+        "xName": "PARAM_xname_sendemail",
+        "CustomTypeName": "SendEmail",
+        "Channel": "0",
+        "TimeInSeconds": "0",
+        "Subject": "PARAM_Subject",
+        "DestinationNumber": "PARAM_DestinationNumber",
+        "TemplateNumber": "PARAM_TemplateNumber",
+        "ShiftLevel": "",
+        "IsValid": "True",
+        "HostId": "PARAM_HostId",
+        "TemplateName": "{x:Null}",
+        "TypeName": "SendEmail",
+        "SendRN": "False",
+        "DestinationTypeCc": "User",
+        "DestinationType": "User",
+        "HostName": "PARAM_HostName",
+        "Timeout": "00:00:00",
+        "DisplayName": "Send Email",
+        "Description": "Send     an email to a user, a group or a duty.",
+        "Continue": "False",
+        "DestinationNumberCc": "0",
+        "Body": "PARAM_Body",
+        "To": "PARAM_To",
+        "ShiftLevelCc": "",
+        "MessageType": "PARAM_MessageType"
+      }
+    },
+    "fallback_examples": []
+  },
+  "activity_manifest": [
+    {
+      "step_id": "s1",
+      "selected_activity": "ReadCSV",
+      "status": "MATCHED",
+      "frequency_tier": "low",
+      "confidence": 1.0054
+    },
+    {
+      "step_id": "s2",
+      "selected_activity": "SNGetRecord",
+      "status": "MATCHED",
+      "frequency_tier": "low",
+      "confidence": 1.0107
+    },
+    {
+      "step_id": "s3",
+      "selected_activity": "GetCellValue",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high",
+      "missing_prerequisites": [
+        {
+          "step_id": "s3",
+          "activity": "GetCellValue",
+          "field": "TableName",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ReadXLS"
+          ],
+          "note": "GetCellValue.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        }
+      ],
+      "prerequisite_note": "PREREQUISITE WARNING: GetCellValue requires a preceding activity for: TableName (table, needs one of: ['ReadXLS']). Add the appropriate source activity before this step."
+    },
+    {
+      "step_id": "s4",
+      "selected_activity": "GetCellValue",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "high",
+      "missing_prerequisites": [
+        {
+          "step_id": "s4",
+          "activity": "GetCellValue",
+          "field": "TableName",
+          "dependency_type": "table",
+          "expected_providers": [
+            "ReadXLS"
+          ],
+          "note": "GetCellValue.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
+        }
+      ],
+      "prerequisite_note": "PREREQUISITE WARNING: GetCellValue requires a preceding activity for: TableName (table, needs one of: ['ReadXLS']). Add the appropriate source activity before this step."
+    },
+    {
+      "step_id": "s5",
+      "selected_activity": "SendEmail",
+      "status": "INTENT_MATCH",
+      "frequency_tier": "medium"
+    }
+  ],
+  "enriched_workflow": {
+    "workflow_raw_data": {
+      "readCSV1": {
+        "xName": "readCSV1",
+        "activityLicenseType": "1",
+        "id": "122",
+        "name": "ReadCSV",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": "",
+        "DisplayName": "ReadCSV",
+        "Description": "ReadCSV",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "ReadCSV",
+        "label": "ReadCSV",
+        "description": "ReadCSV",
+        "notes": "",
+        "CustomTypeName": "ReadCSV",
+        "HostId": "",
+        "HostName": "",
+        "UserName": "",
+        "Password": "",
+        "Delimiter": ""
+      },
+      "sNGetRecord1": {
+        "xName": "sNGetRecord1",
+        "activityLicenseType": "1",
+        "id": "245",
+        "name": "SNGetRecord",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "SNGetRecord",
+        "Description": "SNGetRecord",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "SNGetRecord",
+        "label": "SNGetRecord",
+        "description": "SNGetRecord",
+        "notes": "",
+        "CustomTypeName": "SNGetRecord",
+        "SelectedModuleName": "ServiceNow",
+        "FormName_UI": "",
+        "FormName": "",
+        "outputFormat_UI": "Display name and values",
+        "outputType_UI": "ResultSet"
+      },
+      "getCellValue1": {
+        "xName": "getCellValue1",
+        "activityLicenseType": "1",
+        "id": "276",
+        "name": "GetCellValue",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "GetCellValue",
+        "Description": "GetCellValue",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "GetCellValue",
+        "label": "GetCellValue",
+        "description": "GetCellValue",
+        "notes": "",
+        "CustomTypeName": "GetCellValue",
+        "ResultSet": "%sNGetRecord1%",
+        "ResultSetName": "sNGetRecord1",
+        "RowNumber": "1",
+        "ColumnType": "Name",
+        "ColumnNumber": "1"
+      },
+      "getCellValue2": {
+        "xName": "getCellValue2",
+        "activityLicenseType": "1",
+        "id": "276",
+        "name": "GetCellValue",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "GetCellValue",
+        "Description": "GetCellValue",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "GetCellValue",
+        "label": "GetCellValue",
+        "description": "GetCellValue",
+        "notes": "",
+        "CustomTypeName": "GetCellValue",
+        "ResultSet": "%sNGetRecord1%",
+        "ResultSetName": "sNGetRecord1",
+        "RowNumber": "1",
+        "ColumnType": "Name",
+        "ColumnNumber": "1"
+      },
+      "sendEmail1": {
+        "xName": "sendEmail1",
+        "activityLicenseType": "1",
+        "id": "69",
+        "name": "SendEmail",
+        "visible": "True",
+        "disabled": "False",
+        "isFavorite": "False",
+        "isJsonValid": "True",
+        "readPermission": true,
+        "writePermission": true,
+        "modulePermissions": null,
+        "IsValid": "True",
+        "Timeout": "00:01:00",
+        "TimeInSeconds": "60",
+        "RecoveryMethodSelection": null,
+        "Path": null,
+        "DisplayName": "SendEmail",
+        "Description": "SendEmail",
+        "TargetModuleID": "",
+        "TargetModuleName": "",
+        "TypeName": "SendEmail",
+        "label": "SendEmail",
+        "description": "SendEmail",
+        "notes": "",
+        "CustomTypeName": "SendEmail"
+      }
+    },
+    "variable_contracts": {
+      "variables": [
+        {
+          "name": "certTable",
+          "type": "table",
+          "source": "external — must exist before workflow runs (from cert.csv)"
+        },
+        {
+          "name": "getCellValue1",
+          "type": "string",
+          "source": "owner email from certTable"
+        },
+        {
+          "name": "getCellValue2",
+          "type": "string",
+          "source": "certificate details from certTable"
+        }
+      ],
+      "loop_type": "none",
+      "loop_source": null
+    }
+  },
+  "workflow_json": {
+    "workflow_raw_data": {
+      "getRowsCount1": {
+        "xName": "getRowsCount1",
+        "CustomTypeName": "GetRowsCount",
+        "Description": "Get the total number of rows in the certificate data table.",
+        "description": "Get the total number of rows in the certificate data table.",
+        "DisplayName": "Get Rows Count",
+        "Category": "Data",
+        "Group": "Memory",
+        "Color": "Orange",
+        "UseStatus": true,
+        "ResultSet": "%certTable%",
+        "Result": {
+          "xName": "result1",
+          "CustomTypeName": "Result",
+          "Description": "The result of the activity.",
+          "description": "The result of the activity.",
+          "DisplayName": "Result",
+          "Name": "Result",
+          "Text": "Result",
+          "TextOnFailure": "Failure",
+          "Value": "Success"
+        },
+        "Advanced": {
+          "xName": "advanced1",
+          "CustomTypeName": "Advanced",
+          "Description": "Advanced settings for the activity.",
+          "description": "Advanced settings for the activity.",
+          "DisplayName": "Advanced",
+          "ErrorHandling": {
+            "xName": "errorHandling1",
+            "CustomTypeName": "ErrorHandling",
+            "MaxAttempts": 1,
+            "RetryInterval": 10,
+            "ThrowError": true,
+            "StopWorkflow": true,
+            "Description": "The error handling settings for the activity.",
+            "description": "The error handling settings for the activity.",
+            "DisplayName": "Error Handling"
+          },
+          "activityLicenseType": "1"
+        },
+        "TypeName": "GetRowsCount",
+        "ResultCode": "Success",
+        "Id": "a1",
+        "Name": "Get Rows Count",
+        "Text": "Get the total number of rows in the certificate data table."
+      },
+      "ifElseActivity1": {
+        "xName": "ifElseActivity1",
+        "CustomTypeName": "IfElseActivity",
+        "Description": "If the certificate table is not empty, loop through the rows; otherwise, display a message.",
+        "description": "If the certificate table is not empty, loop through the rows; otherwise, display a message.",
+        "DisplayName": "If/Else",
+        "Category": "Control Flow",
+        "Group": "Control Flow",
+        "Color": "Gray",
+        "ifElseBranchActivity1": {
+          "xName": "ifElseBranchActivity1",
+          "CustomTypeName": "IfElseBranchActivity",
+          "Description": "Branch taken if the certificate table contains data.",
+          "description": "Branch taken if the certificate table contains data.",
+          "DisplayName": "If",
+          "IsDefault": false,
+          "returnValue1": {
+            "xName": "returnValue1",
+            "CustomTypeName": "ReturnValue",
+            "Description": "The return value of the activity.",
+            "DisplayName": "Return Value",
+            "IsExpression": true,
+            "UseStoredValue": false,
+            "Name": "getRowsCount1",
+            "Value": "",
+            "ConditionType": "",
+            "IsValid": true,
+            "Formula": "[%getRowsCount1% > 0]",
+            "Type": "GetRowsCount",
+            "UseBranchWhenTimeout": false
+          },
+          "whileActivity1": {
+            "xName": "whileActivity1",
+            "CustomTypeName": "WhileActivity",
+            "Description": "Loop through each row of the certificate table.",
+            "description": "Loop through each row of the certificate table.",
+            "DisplayName": "While",
+            "Category": "Control Flow",
+            "Group": "Control Flow",
+            "Color": "Gray",
+            "Condition": "{x:Null}",
+            "sequenceActivity1": {
+              "xName": "sequenceActivity1",
+              "CustomTypeName": "SequenceActivity",
+              "Description": "A sequence of activities.",
+              "DisplayName": "Sequence",
+              "exitWhile1": {
+                "xName": "exitWhile1",
+                "CustomTypeName": "ExitWhile",
+                "Description": "Exit the while loop.",
+                "DisplayName": "Exit While",
+                "Category": "Control Flow",
+                "Group": "Control Flow",
+                "Color": "Gray",
+                "Condition": null,
+                "exitWhileInsideWhile": true,
+                "Counter": "%getRowsCount1%",
+                "Advanced": {
+                  "xName": "advanced2",
+                  "CustomTypeName": "Advanced",
+                  "Description": "Advanced settings for the activity.",
+                  "description": "Advanced settings for the activity.",
+                  "DisplayName": "Advanced",
+                  "ErrorHandling": {
+                    "xName": "errorHandling2",
+                    "CustomTypeName": "ErrorHandling",
+                    "MaxAttempts": 1,
+                    "RetryInterval": 10,
+                    "ThrowError": true,
+                    "StopWorkflow": true,
+                    "Description": "The error handling settings for the activity.",
+                    "description": "The error handling settings for the activity.",
+                    "DisplayName": "Error Handling"
+                  },
+                  "activityLicenseType": "1"
+                },
+                "TypeName": "ExitWhile",
+                "ResultCode": "Success",
+                "Id": "a4",
+                "Name": "Exit While",
+                "Text": "Exit the while loop."
+              },
+              "getCellValue1": {
+                "xName": "getCellValue1",
+                "CustomTypeName": "GetCellValue",
+                "Description": "Extract the owner's email address from the current row of the certificate table.",
+                "description": "Extract the owner's email address from the current row of the certificate table.",
+                "DisplayName": "Get Cell Value",
+                "Category": "Data",
+                "Group": "Memory",
+                "Color": "Orange",
+                "UseStatus": true,
+                "ResultSet": "%certTable%",
+                "RowNumber": "%whileActivity1%",
+                "ColumnName": "owner_email",
+                "Result": {
+                  "xName": "result2",
+                  "CustomTypeName": "Result",
+                  "Description": "The result of the activity.",
+                  "description": "The result of the activity.",
+                  "DisplayName": "Result",
+                  "Name": "Result",
+                  "Text": "Result",
+                  "TextOnFailure": "Failure",
+                  "Value": "Success"
+                },
+                "Advanced": {
+                  "xName": "advanced3",
+                  "CustomTypeName": "Advanced",
+                  "Description": "Advanced settings for the activity.",
+                  "description": "Advanced settings for the activity.",
+                  "DisplayName": "Advanced",
+                  "ErrorHandling": {
+                    "xName": "errorHandling3",
+                    "CustomTypeName": "ErrorHandling",
+                    "MaxAttempts": 1,
+                    "RetryInterval": 10,
+                    "ThrowError": true,
+                    "StopWorkflow": true,
+                    "Description": "The error handling settings for the activity.",
+                    "description": "The error handling settings for the activity.",
+                    "DisplayName": "Error Handling"
+                  },
+                  "activityLicenseType": "1"
+                },
+                "TypeName": "GetCellValue",
+                "ResultCode": "Success",
+                "Id": "a5",
+                "Name": "Get Cell Value",
+                "Text": "Extract the owner's email address from the current row of the certificate table."
+              },
+              "getCellValue2": {
+                "xName": "getCellValue2",
+                "CustomTypeName": "GetCellValue",
+                "Description": "Extract the certificate details from the current row of the certificate table.",
+                "description": "Extract the certificate details from the current row of the certificate table.",
+                "DisplayName": "Get Cell Value",
+                "Category": "Data",
+                "Group": "Memory",
+                "Color": "Orange",
+                "UseStatus": true,
+                "ResultSet": "%certTable%",
+                "RowNumber": "%whileActivity1%",
+                "ColumnName": "certificate_details",
+                "Result": {
+                  "xName": "result3",
+                  "CustomTypeName": "Result",
+                  "Description": "The result of the activity.",
+                  "description": "The result of the activity.",
+                  "DisplayName": "Result",
+                  "Name": "Result",
+                  "Text": "Result",
+                  "TextOnFailure": "Failure",
+                  "Value": "Success"
+                },
+                "Advanced": {
+                  "xName": "advanced4",
+                  "CustomTypeName": "Advanced",
+                  "Description": "Advanced settings for the activity.",
+                  "description": "Advanced settings for the activity.",
+                  "DisplayName": "Advanced",
+                  "ErrorHandling": {
+                    "xName": "errorHandling4",
+                    "CustomTypeName": "ErrorHandling",
+                    "MaxAttempts": 1,
+                    "RetryInterval": 10,
+                    "ThrowError": true,
+                    "StopWorkflow": true,
+                    "Description": "The error handling settings for the activity.",
+                    "description": "The error handling settings for the activity.",
+                    "DisplayName": "Error Handling"
+                  },
+                  "activityLicenseType": "1"
+                },
+                "TypeName": "GetCellValue",
+                "ResultCode": "Success",
+                "Id": "a6",
+                "Name": "Get Cell Value",
+                "Text": "Extract the certificate details from the current row of the certificate table."
+              },
+              "sendEmail1": {
+                "xName": "sendEmail1",
+                "CustomTypeName": "SendEmail",
+                "Description": "Send an email to the certificate owner with their details.",
+                "description": "Send an email to the certificate owner with their details.",
+                "DisplayName": "Send Email",
+                "Category": "Messaging",
+                "Group": "Messaging",
+                "Color": "Green",
+                "UseStatus": true,
+                "To": "%getCellValue1%",
+                "Subject": "Your Certificate Details",
+                "Body": "Hello,\n\nHere are your certificate details: %getCellValue2%",
+                "Result": {
+                  "xName": "result4",
+                  "CustomTypeName": "Result",
+                  "Description": "The result of the activity.",
+                  "description": "The result of the activity.",
+                  "DisplayName": "Result",
+                  "Name": "Result",
+                  "Text": "Result",
+                  "TextOnFailure": "Failure",
+                  "Value": "Success"
+                },
+                "Advanced": {
+                  "xName": "advanced5",
+                  "CustomTypeName": "Advanced",
+                  "Description": "Advanced settings for the activity.",
+                  "description": "Advanced settings for the activity.",
+                  "DisplayName": "Advanced",
+                  "ErrorHandling": {
+                    "xName": "errorHandling5",
+                    "CustomTypeName": "ErrorHandling",
+                    "MaxAttempts": 1,
+                    "RetryInterval": 10,
+                    "ThrowError": true,
+                    "StopWorkflow": true,
+                    "Description": "The error handling settings for the activity.",
+                    "description": "The error handling settings for the activity.",
+                    "DisplayName": "Error Handling"
+                  },
+                  "activityLicenseType": "1"
+                },
+                "TypeName": "SendEmail",
+                "ResultCode": "Success",
+                "Id": "a7",
+                "Name": "Send Email",
+                "Text": "Send an email to the certificate owner with their details."
+              }
+            }
+          }
+        },
+        "ifElseBranchActivity2": {
+          "xName": "ifElseBranchActivity2",
+          "CustomTypeName": "IfElseBranchActivity",
+          "Description": "Branch taken if the certificate table is empty.",
+          "description": "Branch taken if the certificate table is empty.",
+          "DisplayName": "Else",
+          "IsDefault": true,
+          "returnValue2": {
+            "xName": "returnValue2",
+            "CustomTypeName": "ReturnValue",
+            "Description": "The return value of the activity.",
+            "DisplayName": "Return Value",
+            "IsExpression": false,
+            "UseStoredValue": false,
+            "Name": "",
+            "Value": "",
+            "ConditionType": "",
+            "IsValid": true,
+            "Formula": "",
+            "Type": "",
+            "UseBranchWhenTimeout": false
+          },
+          "displayValue1": {
+            "xName": "displayValue1",
+            "CustomTypeName": "DisplayValue",
+            "Description": "Display a message indicating that the certificate data table is empty.",
+            "description": "Display a message indicating that the certificate data table is empty.",
+            "DisplayName": "Display Value",
+            "Category": "General",
+            "Group": "System",
+            "Color": "Gray",
+            "UseStatus": true,
+            "ValueToDisplay": "The certificate data table is empty.",
+            "Advanced": {
+              "xName": "advanced6",
+              "CustomTypeName": "Advanced",
+              "Description": "Advanced settings for the activity.",
+              "description": "Advanced settings for the activity.",
+              "DisplayName": "Advanced",
+              "ErrorHandling": {
+                "xName": "errorHandling6",
+                "CustomTypeName": "ErrorHandling",
+                "MaxAttempts": 1,
+                "RetryInterval": 10,
+                "ThrowError": true,
+                "StopWorkflow": true,
+                "Description": "The error handling settings for the activity.",
+                "description": "The error handling settings for the activity.",
+                "DisplayName": "Error Handling"
+              },
+              "activityLicenseType": "1"
+            },
+            "TypeName": "DisplayValue",
+            "ResultCode": "Success",
+            "Id": "a8",
+            "Name": "Display Value",
+            "Text": "Display a message indicating that the certificate data table is empty."
+          }
+        }
+      }
+    },
+    "variable_contracts": {
+      "xName": "variableContracts1",
+      "CustomTypeName": "VariableContracts",
+      "variables": [
+        {
+          "xName": "certTable",
+          "Description": "external — must exist before workflow runs (from cert.csv)",
+          "DisplayName": "certTable",
+          "Name": "certTable",
+          "Type": "Table",
+          "Value": null
+        },
+        {
+          "xName": "getCellValue1",
+          "Description": "owner email from certTable",
+          "DisplayName": "getCellValue1",
+          "Name": "getCellValue1",
+          "Type": "Text",
+          "Value": null
+        },
+        {
+          "xName": "getCellValue2",
+          "Description": "certificate details from certTable",
+          "DisplayName": "getCellValue2",
+          "Name": "getCellValue2",
+          "Type": "Text",
+          "Value": null
+        }
+      ]
+    }
+  },
+  "output_result": {
+    "status": "failed",
+    "errors": [
+      "WirerAgent truncated: returned 2 top-level activities, expected at least 3 (70% of 5)."
+    ]
+  }
+}

@@ -19,6 +19,11 @@ CONTAINER_TYPES = {
     # Wirer sometimes includes the top-level Workflow node in workflow_raw_data;
     # it has no Description/description requirement.
     "Workflow",
+    # Synthetic template-injected sub-objects. Confirmed absent from the
+    # real-workflow corpus (26-file diagnostic, 0 occurrences) — they exist
+    # only because activity templates add them during enrichment. Skip
+    # required-field checks on these so the validator stops enforcing a fiction.
+    "Advanced", "Result", "ErrorHandling",
 }
 
 # All propertiesControl fields across all activities are opaque UI blobs
@@ -33,10 +38,15 @@ EXCLUDED_REQUIRED_FIELDS = {
     "TargetModuleName",
     "TemplateName",
     "ColumnType",
-    # CreateMemoryTable grid-sizing fields — configured post-import in the platform UI.
-    # The platform accepts these as empty and lets the user define columns/rows there.
     "ColumnNumber",
     "RowNumber",
+    "TimeZoneName",
+    # FormatDate.InputTime — must reference an upstream date variable that
+    # the user identifies after import. There's no deterministic way to
+    # know which prior activity provides the input time. The repair pass
+    # annotates this; this exemption lets the workflow validate so the
+    # user can act on the annotation.
+    "InputTime",
 }
 
 # Formula pattern: =ConditionType(&&&,Value) — no quotes on either operand
@@ -421,7 +431,20 @@ def validate_control_flow_rules(
 def validate_required_fields(
     workflow_json: Annotated[dict, "Workflow JSON dict"],
 ) -> dict:
-    """Checks every leaf activity has both Description (uppercase) and description (lowercase)."""
+    """
+    Checks every leaf activity has 'Description' (uppercase D).
+
+    The lowercase 'description' check was removed after a corpus diagnostic
+    (26 example workflows) confirmed that the synthetic sub-object types
+    Advanced, Result, and ErrorHandling — which the validator was
+    enforcing this on — do not exist in real workflows. Those types are
+    activity-template enrichment artifacts that the platform never sees.
+    The lowercase field is also inconsistently present on real activities
+    even when those activities ARE in the corpus.
+
+    Synthetic sub-object types are now treated as containers and exempted
+    from required-field checks entirely (see CONTAINER_TYPES).
+    """
     workflow_json = _ensure_dict(workflow_json)
     errors = []
 
@@ -431,10 +454,6 @@ def validate_required_fields(
             if "Description" not in node:
                 errors.append(
                     f"[{path}] '{type_name}' missing 'Description' (uppercase D)."
-                )
-            if "description" not in node:
-                errors.append(
-                    f"[{path}] '{type_name}' missing 'description' (lowercase d)."
                 )
         for key, value in node.items():
             if isinstance(value, dict):

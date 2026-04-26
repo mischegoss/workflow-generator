@@ -1,0 +1,287 @@
+{
+  "name": "UserAdusersCheckTheir_1777221650_3327",
+  "pnumber": "82953",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "createMemoryTable1": {
+      "xName": "createMemoryTable1",
+      "CustomTypeName": "CreateMemoryTable",
+      "Description": "Create an in-memory table to hold user data.",
+      "description": "Create an in-memory table to hold user data.",
+      "DisplayName": "Create adUsersTable",
+      "TableName": "adUsersTable",
+      "Variable": null,
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Default advanced settings.",
+        "description": "Default advanced settings.",
+        "ContinueOnError": false,
+        "Enabled": true,
+        "RunParallel": false,
+        "Timeout": null,
+        "activityLicenseType": "1"
+      },
+      "ColumnNumber": "1",
+      "RowNumber": "0",
+      "isEmptyGrid": "1",
+      "notes": "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'adUsersTable'. Confirm this matches the exact table or column name used at runtime."
+    },
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Get the total number of users in the adUsersTable.",
+      "description": "Get the total number of users in the adUsersTable.",
+      "DisplayName": "Get Row Count from adUsersTable",
+      "ResultSet": "%adUsersTable%",
+      "Advanced": {
+        "xName": "advanced2",
+        "CustomTypeName": "Advanced",
+        "Description": "Default advanced settings.",
+        "description": "Default advanced settings.",
+        "ContinueOnError": false,
+        "Enabled": true,
+        "RunParallel": false,
+        "Timeout": null,
+        "activityLicenseType": "1"
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Default result settings.",
+        "description": "Default result settings.",
+        "ResultType": "Overwrite",
+        "VariableName": null
+      }
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "Description": "Loop through each user in the adUsersTable.",
+      "description": "Loop through each user in the adUsersTable.",
+      "DisplayName": "Loop through adUsersTable",
+      "Condition": "{x:Null}",
+      "sequenceActivity1": {
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "Description": "Exit the loop when the counter reaches the total number of users.",
+          "description": "Exit the loop when the counter reaches the total number of users.",
+          "DisplayName": "Exit Loop",
+          "exitWhileInsideWhile": "True",
+          "Counter": "%getRowsCount1%",
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "ContinueOnError": false,
+            "Enabled": true,
+            "RunParallel": false,
+            "Timeout": null,
+            "activityLicenseType": "1"
+          },
+          "isValid": "True",
+          "TypeName": "ExitWhile",
+          "whileSequenceActivity": "sequenceActivity1"
+        },
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "Description": "Retrieve the current user's information from the table.",
+          "description": "Retrieve the current user's information from the table.",
+          "DisplayName": "Get User from Row",
+          "ColumnName": "UserName",
+          "ResultSet": "%adUsersTable%",
+          "ResultSetName": "adUsersTable",
+          "RowNumber": "%whileActivity1%",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "ContinueOnError": false,
+            "Enabled": true,
+            "RunParallel": false,
+            "Timeout": null,
+            "activityLicenseType": "1"
+          },
+          "Result": {
+            "xName": "result2",
+            "CustomTypeName": "Result",
+            "Description": "Default result settings.",
+            "description": "Default result settings.",
+            "ResultType": "Overwrite",
+            "VariableName": null
+          },
+          "ColumnType": "Name"
+        },
+        "other1": {
+          "xName": "other1",
+          "CustomTypeName": "ADGetAccountLockStatus",
+          "Description": "Check the account lock status for the current user.",
+          "description": "Check the account lock status for the current user.",
+          "DisplayName": "AD Get Account Lock Status",
+          "UserName": "%getCellValue1%",
+          "Advanced": {
+            "xName": "advanced5",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "ContinueOnError": false,
+            "Enabled": true,
+            "RunParallel": false,
+            "Timeout": null,
+            "activityLicenseType": "1"
+          },
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Default result settings.",
+            "description": "Default result settings.",
+            "ResultType": "Overwrite",
+            "VariableName": null
+          }
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "Description": "Check if the user's account is locked.",
+          "description": "Check if the user's account is locked.",
+          "DisplayName": "If Account Locked",
+          "Condition": "%other1%",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Branch for when the account is locked.",
+            "description": "Branch for when the account is locked.",
+            "DisplayName": "Locked",
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "Equals",
+              "Description": "Return value for the branch.",
+              "description": "Return value for the branch.",
+              "UseStoredValue": false,
+              "Value": "True",
+              "IsValid": null,
+              "Formula": "{x:Null}",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "DisplayName": "Return Value",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "displayValue1": {
+              "xName": "displayValue1",
+              "CustomTypeName": "DisplayValue",
+              "Description": "Log that the user's account is locked.",
+              "description": "Log that the user's account is locked.",
+              "DisplayName": "Log Account Locked",
+              "ValueToDisplay": "User account '%getCellValue1%' is locked.",
+              "Advanced": {
+                "xName": "advanced6",
+                "CustomTypeName": "Advanced",
+                "Description": "Default advanced settings.",
+                "description": "Default advanced settings.",
+                "ContinueOnError": false,
+                "Enabled": true,
+                "RunParallel": false,
+                "Timeout": null,
+                "activityLicenseType": "1"
+              }
+            }
+          },
+          "ifElseBranchActivity2": {
+            "xName": "ifElseBranchActivity2",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Branch for when the account is not locked.",
+            "description": "Branch for when the account is not locked.",
+            "DisplayName": "Not Locked",
+            "returnValue2": {
+              "xName": "returnValue2",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "Equals",
+              "Description": "Return value for the branch.",
+              "description": "Return value for the branch.",
+              "UseStoredValue": false,
+              "Value": "False",
+              "IsValid": null,
+              "Formula": "{x:Null}",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "DisplayName": "Return Value",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "displayValue2": {
+              "xName": "displayValue2",
+              "CustomTypeName": "DisplayValue",
+              "Description": "Log that the user's account is not locked.",
+              "description": "Log that the user's account is not locked.",
+              "DisplayName": "Log Account Not Locked",
+              "ValueToDisplay": "User account '%getCellValue1%' is not locked.",
+              "Advanced": {
+                "xName": "advanced7",
+                "CustomTypeName": "Advanced",
+                "Description": "Default advanced settings.",
+                "description": "Default advanced settings.",
+                "ContinueOnError": false,
+                "Enabled": true,
+                "RunParallel": false,
+                "Timeout": null,
+                "activityLicenseType": "1"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'adUsersTable'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "update"
+    },
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    },
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "VERIFY: 'TableName' is set to the literal value 'adUsersTable'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'adUsersTable'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'TableName' is set to the literal value 'adUsersTable'. Confirm this matches the exact table or column name used at runtime."
+  ],
+  "errors": []
+}

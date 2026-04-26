@@ -4,27 +4,37 @@ agents/pipeline.py
 WorkflowPipeline — BaseAgent subclass orchestrating all stages.
 
 STAGE MAP:
-  Stage 1    LLM   DecomposerAgent      → session state: decomposition
-  Stage 2    PY    run_pattern_match    → session state: pattern_match
-  Stage 3    PY    run_retrieval        → session state: activity_manifest
-  Stage 4a   PY    run_skeleton_builder → session state: placed_skeleton
-  Stage 4b   PY    run_enrichment       → session state: enriched_workflow
-  Stage 4b.5 PY    _backfill_table_vars → mutates enriched_workflow in place
-  Stage 4c   PY    run_fragments        → session state: enriched_workflow
-  Stage 4c.5 PY    run_content_scaffold → session state: enriched_workflow
-  Stage 4c.6 PY    run_wiring           → session state: enriched_workflow
-  Stage 4d   LLM   WirerAgent           → session state: workflow_json
-  Stage 4f   PY    run_fragments+scaffold → session state: workflow_json
-  Stage 4g   PY    run_cleanup          → session state: workflow_json
-  Stage 5    PY    run_annotation       → session state: annotation_result
-  Stage 6    PY    run_validation       → session state: validation_result
-  Stage 7    PY    run_output           → json_files/<n>.json
+  Stage 1     LLM   DecomposerAgent      → session state: decomposition
+  Stage 2     PY    run_pattern_match    → session state: pattern_match
+  Stage 3     PY    run_retrieval        → session state: activity_manifest
+  Stage 4a    PY    run_skeleton_builder → session state: placed_skeleton
+  Stage 4b    PY    run_enrichment       → session state: enriched_workflow
+  Stage 4b.5  PY    _backfill_table_vars → mutates enriched_workflow in place
+  Stage 4c    PY    run_fragments        → session state: enriched_workflow
+  Stage 4c.5  PY    run_content_scaffold → session state: enriched_workflow
+  Stage 4c.6  PY    run_wiring           → session state: enriched_workflow
+  Stage 4d    LLM   WirerAgent           → session state: workflow_json
+  Stage 4f    PY    run_fragments+scaffold → session state: workflow_json
+  Stage 4f.5  PY    repair_workflow      → session state: workflow_json
+  Stage 4g    PY    run_cleanup          → session state: workflow_json
+  Stage 5     PY    run_annotation       → session state: annotation_result
+  Stage 6     PY    run_validation       → session state: validation_result
+  Stage 7     PY    run_output           → json_files/<n>.json
 
 DETERMINISTIC STAGES (3, 4a-4c.6):
   By Stage 4c.6 the workflow has correct structure, template defaults,
   TableName backfilled, F1-F9 enforced, scaffold rules applied, and
   authoritative wiring from wiring_map.json. Wirer fills only semantics:
   descriptions, variable refs not covered by wiring_map, email/query content.
+
+POST-WIRER REPAIR (Stage 4f.5):
+  The Wirer occasionally overwrites enrichment-seeded enum values with
+  hallucinated alternatives, or drops required fields entirely. The repair
+  pass clamps out-of-enum values to the first allowed value, restores
+  missing fields from corpus defaults, and annotates fields with no
+  deterministic source as UPDATE BEFORE RUNNING. Runs after Stage 4f
+  scaffold (so the scaffold-injected baseline is included) and before
+  Stage 4g cleanup.
 
 MODEL CONFIGURATION:
   _model_decomposer()  Flash  temp=0.1  top_p=0.8  max_tokens=4096
@@ -92,6 +102,7 @@ from tools.pipeline_stages import (
 )
 from tools.output_tools import run_output
 from tools.annotation_tools import _ensure_dict
+from tools.post_wirer_repair import repair_workflow
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +183,7 @@ def _check_activity_count(workflow_json: dict, enriched_workflow: dict) -> str |
 
 
 # ---------------------------------------------------------------------------
-# Shared post-wirer stages (Stages 4f, 4g, 5, 6, 7)
+# Shared post-wirer stages (Stages 4f, 4f.5, 4g, 5, 6, 7)
 # ---------------------------------------------------------------------------
 
 async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list):
@@ -180,9 +191,10 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
     Runs Stages 4f-7 after WirerAgent completes.
 
     Normalizes Wirer output (Children-list → xName-keyed, metadata strip,
-    TableName backfill), then runs fragments/scaffold/cleanup/annotation/
-    validation/output. No fallback to enriched_workflow — if Wirer returns
-    empty the outer retry fires and CorrectionPipeline reruns with a better prompt.
+    TableName backfill), then runs fragments/scaffold/repair/cleanup/
+    annotation/validation/output. No fallback to enriched_workflow — if
+    Wirer returns empty the outer retry fires and CorrectionPipeline reruns
+    with a better prompt.
     """
     sid = _sid(ctx)
 
@@ -245,6 +257,21 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
         print(f"  [pipeline] stage 4f scaffold ok")
     except Exception as e:
         print(f"  [pipeline] stage 4f scaffold failed (non-fatal): {e}")
+
+    # Stage 4f.5: Post-Wirer repair (clamp / restore / annotate)
+    # Catches enum violations the Wirer introduced, restores dropped required
+    # fields from corpus defaults, and annotates anything we can't fix.
+    try:
+        workflow_json, repair_log = repair_workflow(workflow_json)
+        ctx.session.state["workflow_json"] = workflow_json
+        if repair_log:
+            print(f"  [pipeline] stage 4f.5 repair: {len(repair_log)} change(s)")
+            for entry in repair_log:
+                print(entry)
+        else:
+            print(f"  [pipeline] stage 4f.5 repair: no changes needed")
+    except Exception as e:
+        print(f"  [pipeline] stage 4f.5 repair failed (non-fatal): {e}")
 
     # Stage 4g: Post-Wirer cleanup
     try:

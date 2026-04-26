@@ -54,6 +54,25 @@ MANUAL_CONFIG_ACTIVITIES = {
     ),
 }
 
+# ---------------------------------------------------------------------------
+# Manual UI fields — fields whose value cannot be set deterministically and
+# must be picked from a platform UI dropdown after import. Validator exempts
+# these (see EXCLUDED_REQUIRED_FIELDS in validation_tools.py); annotation
+# fires an UPDATE BEFORE RUNNING note so the user knows to set them.
+#
+# Keyed by (CustomTypeName, fieldKey). The note text is generic — it tells
+# the user the field exists in the platform UI dropdown, without naming
+# specific values that might be wrong for their environment.
+# ---------------------------------------------------------------------------
+MANUAL_UI_FIELDS: dict[tuple[str, str], str] = {
+    ("GetDate", "TimeZoneName"): (
+        "UPDATE BEFORE RUNNING: 'TimeZoneName' must be set manually in the "
+        "platform UI. Open the GetDate activity and select your timezone "
+        "from the dropdown — defaulting to a guess could silently produce "
+        "wrong dates for users in other timezones."
+    ),
+}
+
 UNCONFIRMED_NAMESPACE_ACTIVITIES = set()
 
 TABLE_STRUCTURE_FIELDS = {
@@ -402,13 +421,15 @@ def add_verify_notes(
     """
     Adds VERIFY / UPDATE notes to activities requiring attention before running.
 
-    Category 1: Manual config activities (SNGetRecord XMLTableResult).
-    Category 2: Unconfirmed CLR namespaces.
+    Category 1:  Manual config activities (SNGetRecord XMLTableResult).
+    Category 1b: Manual UI fields (e.g. GetDate.TimeZoneName) — fields that
+                 must be selected from a platform UI dropdown after import.
+    Category 2:  Unconfirmed CLR namespaces.
     Category 3a: Hardcoded literal values in mandatory textbox fields.
     Category 3b: Plain word values in structural table/column reference fields.
-    Category 4: Empty mandatory textbox/textarea fields that are not credentials.
-    Category 5: Table variable prerequisite check.
-    Category 6: Output type mismatch check.
+    Category 4:  Empty mandatory textbox/textarea fields that are not credentials.
+    Category 5:  Table variable prerequisite check.
+    Category 6:  Output type mismatch check.
     """
     workflow_json = _ensure_dict(workflow_json)
     result        = copy.deepcopy(workflow_json)
@@ -426,6 +447,19 @@ def add_verify_notes(
         # ── Category 1: Manual config activities ────────────────────────────
         if custom_type in MANUAL_CONFIG_ACTIVITIES:
             _append_note(node, MANUAL_CONFIG_ACTIVITIES[custom_type])
+
+        # ── Category 1b: Manual UI fields (GetDate.TimeZoneName etc.) ───────
+        # Fires when the field is missing OR present-but-empty.
+        # The validator exempts these via EXCLUDED_REQUIRED_FIELDS, so the
+        # only reason the user would know they exist is via this note.
+        for (mui_ct, mui_field), mui_msg in MANUAL_UI_FIELDS.items():
+            if custom_type != mui_ct:
+                continue
+            current_val = node.get(mui_field, "")
+            if current_val == "" or (
+                isinstance(current_val, str) and current_val.endswith("_value")
+            ):
+                _append_note(node, mui_msg)
 
         # ── Category 2: Unconfirmed CLR namespaces ──────────────────────────
         if custom_type in UNCONFIRMED_NAMESPACE_ACTIVITIES:

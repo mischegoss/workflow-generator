@@ -224,6 +224,42 @@ the table source is the user's responsibility after review, not a reason to gene
 an incomplete workflow.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO MANUAL LOOP COUNTERS — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The Resolve Actions platform handles loop iteration natively. The pair
+WhileActivity + ExitWhile (with ExitWhile.Counter = %getRowsCount1%)
+exits the loop automatically when the counter reaches the row count.
+The platform increments and tracks the counter internally — no manual
+counter activity is needed, and adding one is platform-incorrect.
+
+NEVER emit any of these steps:
+  - intent="initialize_variable" with a description referring to a loop
+    counter, iterator, index, or "set i to 0"
+  - intent="set_variable" inside a loop body with a description referring
+    to incrementing, advancing, or moving to the next iteration
+
+NEVER add a counter variable to variable_contract.variables such as:
+  {"name": "memorySet1", "source": "initialized to 0 for loop counter"}
+  {"name": "counter",    "source": "iterator variable"}
+  {"name": "i",          "source": "loop index"}
+
+CORRECT step sequence for "for each row in table" — exactly 4 loop-related
+steps, no counter init before, no counter increment inside:
+
+  s1 CreateMemoryTable  zone="pre_container"   intent="create_table"
+  s2 GetRowsCount       zone="pre_container"   intent="count_rows"
+  s3 WhileActivity      zone="container"       intent="loop"
+  s4 ExitWhile          zone="container_body"  intent="exit_loop"
+  s5 GetCellValue       zone="container_body"  intent="get_cell"
+  s6+ (work steps)      zone="container_body"  intent="..."
+
+Note: NO MemorySet before the loop to initialize a counter. NO MemorySet
+at the end of the loop body to increment one. The WhileActivity + ExitWhile
+pair is the complete iteration mechanism on this platform.
+
+This rule applies to EVERY workflow that loops over a table — no exceptions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LOOP ROW ACCESS RULES — CRITICAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 When describing loop row access in the variable contract, note that GetCellValue RowNumber

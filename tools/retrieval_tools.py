@@ -502,7 +502,7 @@ def retrieve_all_steps(
         control_flow = step.get("control_flow", "linear")
 
         # ── Control-flow scaffold ────────────────────────────────────────────
-        if control_flow in CONTROL_FLOW_CF or intent in CONTROL_FLOW_INTENTS:
+        if intent in CONTROL_FLOW_INTENTS:
             manifest.append({
                 "step_id":           step_id,
                 "query":             description,

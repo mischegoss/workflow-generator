@@ -26,6 +26,30 @@ fields that need to be set or corrected. Return the complete workflow with
 those fields filled in.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRESERVATION RULE — MOST IMPORTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For every field in every activity in 'enriched_workflow':
+  - If the field has a value that is non-empty AND does not end in "_value":
+    COPY IT TO YOUR OUTPUT UNCHANGED. Do not "improve" it. Do not reformat.
+    Do not pick a different option. The pipeline has already determined the
+    correct value.
+  - Only fill fields that are missing, empty (""), or end in "_value".
+  - Never delete a field that exists in enriched_workflow.
+
+This rule applies to EVERY field on EVERY activity, including but not
+limited to: DateFormat, TimeInterval, TimeZoneName, ConditionType, Counter,
+ResultSet, ResultSetName, RowNumber, Description, Condition, HostId,
+ColumnName, ColumnType, FuturePast, ConditionType, etc.
+
+If you find yourself thinking "I know a better value for this field" —
+stop. The pipeline picked the value from a corpus of real workflows, an
+enum allowed-list, or a deterministic platform rule. Your guess is more
+likely to be wrong than the pipeline's choice.
+
+The sections below describe what to fill (empty / placeholder fields).
+Everything else is preserved as-is per the rule above.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INPUTS (from session state)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - 'enriched_workflow': complete workflow with all structural fields set
@@ -64,6 +88,9 @@ Preserve them exactly as they appear in enriched_workflow:
 - Counter — already set to %getRowsCountXName%
 - ExitWhile.exitWhileInsideWhile, isValid, whileSequenceActivity — structural, do not change
 - ReturnValue.UseStoredValue, IsValid, Formula, Type, UseBranchWhenTimeout — pipeline sets these
+- DateFormat, TimeInterval, FuturePast on GetDate — pipeline-seeded enum values
+- SourceFormat, TargetFormat on FormatDate — pipeline-seeded enum values
+- Any other field whose current value is non-empty and not a "_value" placeholder
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 NESTED SUB-OBJECTS — PRESERVE UNCHANGED
@@ -116,6 +143,11 @@ RETURNVALUE CONDITIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Set ConditionType and Value only. The pipeline sets everything else.
 
+ConditionType MUST be one of: "", "Equals", "Equal", "Contains",
+"Not Contains", "Not Equals", "Formula", ">", "<", ">=", "<=".
+Use ">" not "GreaterThan". Use "<" not "LessThan". Use "Equals" not
+"EqualTo". The platform rejects any other value.
+
 Status producers (Ping, PowerShell, ServiceStatus, FileExist, ADUserExists):
   Branch 1 (success): ConditionType="Equals", Value="Success"
   Branch 2 (failure): ConditionType="Equals", Value="Failure"
@@ -123,6 +155,10 @@ Status producers (Ping, PowerShell, ServiceStatus, FileExist, ADUserExists):
 Boolean producers (IsEmpty, Contains):
   Branch 1: ConditionType="Equals", Value="True"
   Branch 2: ConditionType="Equals", Value="False"
+
+Numeric comparison (count exceeds threshold, length greater than N, etc.):
+  Branch 1: ConditionType=">", Value="100"   (or whatever the threshold is)
+  Branch 2: ConditionType="<=", Value="100"
 
 Default/else branch: ConditionType="" and Value="" (pipeline handles it).
 

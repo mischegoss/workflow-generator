@@ -211,9 +211,7 @@
           "activity": "GetRowsCount",
           "field": "TableName",
           "dependency_type": "table",
-          "expected_providers": [
-            "ReadXLS"
-          ],
+          "expected_providers": ["ReadXLS"],
           "note": "GetRowsCount.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
         }
       ],
@@ -254,9 +252,7 @@
           "activity": "GetCellValue",
           "field": "TableName",
           "dependency_type": "table",
-          "expected_providers": [
-            "ReadXLS"
-          ],
+          "expected_providers": ["ReadXLS"],
           "note": "GetCellValue.TableName requires a table variable produced by ReadXLS (or similar). If no table-creating activity precedes this in the workflow, the table must be populated externally before execution."
         }
       ],

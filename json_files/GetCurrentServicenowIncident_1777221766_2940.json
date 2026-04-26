@@ -1,0 +1,219 @@
+{
+  "name": "GetCurrentServicenowIncident_1777221766_2940",
+  "pnumber": "96864",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "queryServiceNow1": {
+      "xName": "queryServiceNow1",
+      "CustomTypeName": "ServiceNowQuery",
+      "Description": "Query ServiceNow to retrieve a list of current incidents.",
+      "description": "Query ServiceNow to retrieve a list of current incidents.",
+      "DisplayName": "Query ServiceNow",
+      "TableName": "incident",
+      "Filter": "active=true",
+      "DisplayFields": "",
+      "UseDisplayValue": "False",
+      "UseAdmin": "False",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for the activity",
+        "ContinueOnError": "False",
+        "Timeout": "60",
+        "description": "Advanced settings for ServiceNowQuery."
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Result of the activity",
+        "Result": "",
+        "description": "Result of ServiceNowQuery."
+      },
+      "ResultCode": {
+        "xName": "resultcode1",
+        "CustomTypeName": "ResultCode",
+        "Description": "Result code of the activity",
+        "ResultCode": ""
+      },
+      "ResultSets": {
+        "xName": "resultsets1",
+        "CustomTypeName": "ResultSets",
+        "Description": "Result sets of the activity",
+        "ResultSets": "queryServiceNow1"
+      },
+      "notes": "VERIFY: 'TableName' is set to the literal value 'incident'. Confirm this matches the exact table or column name used at runtime."
+    },
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Count the number of incidents returned from the ServiceNow query.",
+      "description": "Count the number of incidents returned from the ServiceNow query.",
+      "DisplayName": "Get Rows Count",
+      "ResultSet": "%queryServiceNow1%",
+      "Advanced": {
+        "xName": "advanced2",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for the activity",
+        "ContinueOnError": "False",
+        "Timeout": "60",
+        "description": "Advanced settings for GetRowsCount."
+      },
+      "Result": {
+        "xName": "result2",
+        "CustomTypeName": "Result",
+        "Description": "Result of the activity",
+        "Result": "",
+        "description": "Result of GetRowsCount."
+      },
+      "notes": "VERIFY: 'ResultSet' references '%queryServiceNow1%' which is a Scalar output from ServiceNowQuery. This field expects a DataTable variable. Ensure the upstream activity produces a table."
+    },
+    "ifElseActivity1": {
+      "xName": "ifElseActivity1",
+      "CustomTypeName": "IfElseActivity",
+      "Description": "Check if the number of incidents is greater than 100.",
+      "description": "Check if the number of incidents is greater than 100.",
+      "DisplayName": "If/Else",
+      "Condition": "%getRowsCount1%",
+      "ifElseBranchActivity1": {
+        "xName": "ifElseBranchActivity1",
+        "CustomTypeName": "IfElseBranchActivity",
+        "Description": "Branch taken if the incident count is greater than 100.",
+        "DisplayName": "If",
+        "returnValue1": {
+          "xName": "returnValue1",
+          "CustomTypeName": "ReturnValue",
+          "Description": "Return value for the branch",
+          "UseStoredValue": "False",
+          "ConditionType": ">",
+          "Value": "100",
+          "IsValid": "True",
+          "Formula": "=>(&&&,100)",
+          "Type": "UserDefinedValue",
+          "UseBranchWhenTimeout": "False",
+          "ConditionNumber": "0",
+          "ConditionName": "",
+          "UseCustomeCondition": "False",
+          "description": "Return value for the branch",
+          "RecoveryMethodSelection": "{x:Null}",
+          "Disabled": "False",
+          "ClusterID": "{x:Null}",
+          "ClusterName": "{x:Null}",
+          "DisplayName": "Return Value",
+          "TypeName": "ReturnValue",
+          "name": "ReturnValue"
+        },
+        "sendEmail1": {
+          "xName": "sendEmail1",
+          "CustomTypeName": "SendEmail",
+          "Description": "Send an email notification about the high number of incidents.",
+          "description": "Send an email notification about the high number of incidents.",
+          "DisplayName": "Send Email",
+          "To": "admin@example.com",
+          "Cc": "",
+          "Bcc": "",
+          "Subject": "High Incident Count Alert",
+          "Body": "The number of active incidents has exceeded 100. Current count: %getRowsCount1%.",
+          "IsBodyHtml": "False",
+          "Attachments": "",
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for the activity",
+            "ContinueOnError": "False",
+            "Timeout": "60",
+            "description": "Advanced settings for SendEmail."
+          },
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Result of the activity",
+            "Result": "",
+            "description": "Result of SendEmail."
+          }
+        }
+      },
+      "ifElseBranchActivity2": {
+        "xName": "ifElseBranchActivity2",
+        "CustomTypeName": "IfElseBranchActivity",
+        "Description": "Default branch taken if the incident count is not greater than 100.",
+        "DisplayName": "Else",
+        "returnValue2": {
+          "xName": "returnValue2",
+          "CustomTypeName": "ReturnValue",
+          "Description": "Return value for the branch",
+          "ConditionType": "",
+          "Value": "",
+          "IsValid": "False",
+          "Formula": "{x:Null}",
+          "Type": "StoredValue",
+          "UseBranchWhenTimeout": "False",
+          "ConditionNumber": "0",
+          "ConditionName": "",
+          "UseCustomeCondition": "False",
+          "description": "Return value for the branch",
+          "RecoveryMethodSelection": "{x:Null}",
+          "Disabled": "False",
+          "ClusterID": "{x:Null}",
+          "ClusterName": "{x:Null}",
+          "DisplayName": "Return Value",
+          "TypeName": "ReturnValue",
+          "name": "ReturnValue"
+        },
+        "displayValue1": {
+          "xName": "displayValue1",
+          "CustomTypeName": "DisplayValue",
+          "Description": "Display a message indicating the incident count is within the normal range.",
+          "description": "Display a message indicating the incident count is within the normal range.",
+          "DisplayName": "Display Value",
+          "ValueToDisplay": "Incident count is %getRowsCount1%, which is within the acceptable threshold.",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for the activity",
+            "ContinueOnError": "False",
+            "Timeout": "60",
+            "description": "Advanced settings for DisplayValue."
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "queryServiceNow1",
+      "type": "ServiceNowQuery",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: 'TableName' is set to the literal value 'incident'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "update"
+    },
+    {
+      "activity": "queryServiceNow1",
+      "type": "ServiceNowQuery",
+      "field": "notes",
+      "message": "VERIFY: 'TableName' is set to the literal value 'incident'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    },
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: 'ResultSet' references '%queryServiceNow1%' which is a Scalar output from ServiceNowQuery. This field expects a DataTable variable. Ensure the upstream activity produces a table.",
+      "kind": "update"
+    },
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "VERIFY: 'ResultSet' references '%queryServiceNow1%' which is a Scalar output from ServiceNowQuery. This field expects a DataTable variable. Ensure the upstream activity produces a table.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: 'TableName' is set to the literal value 'incident'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'TableName' is set to the literal value 'incident'. Confirm this matches the exact table or column name used at runtime.",
+    "UPDATE BEFORE RUNNING: VERIFY: 'ResultSet' references '%queryServiceNow1%' which is a Scalar output from ServiceNowQuery. This field expects a DataTable variable. Ensure the upstream activity produces a table.",
+    "VERIFY: 'ResultSet' references '%queryServiceNow1%' which is a Scalar output from ServiceNowQuery. This field expects a DataTable variable. Ensure the upstream activity produces a table."
+  ],
+  "errors": []
+}

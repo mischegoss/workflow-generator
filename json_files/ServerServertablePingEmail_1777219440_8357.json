@@ -1,0 +1,272 @@
+{
+  "name": "ServerServertablePingEmail_1777219440_8357",
+  "pnumber": "92678",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Get the total number of rows in the serverTable to use as a loop boundary.",
+      "DisplayName": "GetRowsCount1",
+      "Name": "getRowsCount1",
+      "TypeName": "GetRowsCount",
+      "activityLicenseType": "1",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced properties for GetRowsCount",
+        "continueOnError": false,
+        "enabled": true,
+        "timeout": 600,
+        "description": "Advanced settings for GetRowsCount."
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Result of the GetRowsCount",
+        "description": "Result of GetRowsCount."
+      },
+      "ResultSet": "%serverTable%",
+      "description": "Get the total number of rows in the serverTable to use as a loop boundary.",
+      "notes": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "Description": "Loop through each row in the serverTable to process each server individually.",
+      "DisplayName": "whileActivity1",
+      "Name": "whileActivity1",
+      "TypeName": "WhileActivity",
+      "activityLicenseType": "1",
+      "Condition": "{x:Null}",
+      "sequenceActivity1": {
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "Description": "Exit the loop when all rows in the serverTable have been processed.",
+          "DisplayName": "exitWhile1",
+          "Name": "exitWhile1",
+          "TypeName": "ExitWhile",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced2",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced properties for ExitWhile",
+            "continueOnError": false,
+            "enabled": true,
+            "timeout": 600,
+            "description": "Advanced settings for ExitWhile."
+          },
+          "Counter": "%getRowsCount1%",
+          "exitWhileInsideWhile": "True",
+          "isValid": "True",
+          "whileSequenceActivity": "sequenceActivity1",
+          "description": "Exit the loop when all rows in the serverTable have been processed."
+        },
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "Description": "A sequence of activities to be performed.",
+        "DisplayName": "sequenceActivity1",
+        "Name": "sequenceActivity1",
+        "TypeName": "SequenceActivity",
+        "activityLicenseType": "1",
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "Description": "Get the server name from the current row of the serverTable.",
+          "DisplayName": "getCellValue1",
+          "Name": "getCellValue1",
+          "TypeName": "GetCellValue",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced properties for GetCellValue",
+            "continueOnError": false,
+            "enabled": true,
+            "timeout": 600,
+            "description": "Advanced settings for GetCellValue."
+          },
+          "ColumnName": "ServerName",
+          "Result": {
+            "xName": "result2",
+            "CustomTypeName": "Result",
+            "Description": "Result of the GetCellValue",
+            "description": "Result of GetCellValue."
+          },
+          "ResultSet": "%serverTable%",
+          "RowNumber": "%whileActivity1%",
+          "ColumnType": "Name",
+          "description": "Get the server name from the current row of the serverTable."
+        },
+        "ping1": {
+          "xName": "ping1",
+          "CustomTypeName": "Ping",
+          "Description": "Ping the server retrieved from the current row of the table.",
+          "DisplayName": "ping1",
+          "Name": "ping1",
+          "TypeName": "Ping",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced properties for Ping",
+            "continueOnError": false,
+            "enabled": true,
+            "timeout": 600,
+            "description": "Advanced settings for Ping."
+          },
+          "HostName": "%getCellValue1%",
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Result of the Ping",
+            "description": "Result of Ping."
+          },
+          "description": "Ping the server retrieved from the current row of the table.",
+          "HostId": "-2"
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "Description": "Check if the ping to the server was successful or not.",
+          "DisplayName": "ifElseActivity1",
+          "Name": "ifElseActivity1",
+          "TypeName": "IfElseActivity",
+          "activityLicenseType": "1",
+          "Condition": "%ping1%",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Branch taken if the ping fails.",
+            "DisplayName": "ifElseBranchActivity1",
+            "Name": "ifElseBranchActivity1",
+            "TypeName": "IfElseBranchActivity",
+            "activityLicenseType": "1",
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "Equals",
+              "Description": "Return value for the activity",
+              "Formula": "=Equals(&&&,Failure)",
+              "IsValid": "True",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "UseStoredValue": "True",
+              "Value": "Failure",
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "description": "Return value for the activity",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "DisplayName": "Return Value",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "sendEmail1": {
+              "xName": "sendEmail1",
+              "CustomTypeName": "SendEmail",
+              "Description": "Send an email notification to the administrator if the server ping fails.",
+              "DisplayName": "sendEmail1",
+              "Name": "sendEmail1",
+              "TypeName": "SendEmail",
+              "activityLicenseType": "1",
+              "Advanced": {
+                "xName": "advanced5",
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced properties for SendEmail",
+                "continueOnError": false,
+                "enabled": true,
+                "timeout": 600,
+                "description": "Advanced settings for SendEmail."
+              },
+              "Body": "The server %getCellValue1% is not responding to ping requests. Ping result: %ping1%.",
+              "Subject": "Server Down Alert: %getCellValue1%",
+              "To": "admin@example.com",
+              "description": "Send an email notification to the administrator if the server ping fails."
+            }
+          },
+          "ifElseBranchActivity2": {
+            "xName": "ifElseBranchActivity2",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Branch taken if the ping succeeds.",
+            "DisplayName": "ifElseBranchActivity2",
+            "Name": "ifElseBranchActivity2",
+            "TypeName": "IfElseBranchActivity",
+            "activityLicenseType": "1",
+            "returnValue2": {
+              "xName": "returnValue2",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "Equals",
+              "Description": "Return value for the activity",
+              "Formula": "=Equals(&&&,Success)",
+              "IsValid": "True",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "UseStoredValue": "True",
+              "Value": "Success",
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "description": "Return value for the activity",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "DisplayName": "Return Value",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "displayValue1": {
+              "xName": "displayValue1",
+              "CustomTypeName": "DisplayValue",
+              "Description": "Display a success message indicating the server is online.",
+              "DisplayName": "displayValue1",
+              "Name": "displayValue1",
+              "TypeName": "DisplayValue",
+              "activityLicenseType": "1",
+              "Advanced": {
+                "xName": "advanced6",
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced properties for DisplayValue",
+                "continueOnError": false,
+                "enabled": true,
+                "timeout": 600,
+                "description": "Advanced settings for DisplayValue."
+              },
+              "ValueToDisplay": "Server %getCellValue1% is online and responding to ping.",
+              "description": "Display a success message indicating the server is online."
+            }
+          },
+          "description": "Check if the ping to the server was successful or not."
+        }
+      },
+      "description": "Loop through each row in the serverTable to process each server individually."
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "update"
+    },
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+    "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+  ],
+  "errors": []
+}
