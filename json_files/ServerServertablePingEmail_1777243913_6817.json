@@ -1,0 +1,287 @@
+{
+  "name": "ServerServertablePingEmail_1777243913_6817",
+  "pnumber": "70004",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Get the total number of servers in the serverTable.",
+      "description": "Get the total number of servers in the serverTable.",
+      "DisplayName": "Get Rows Count",
+      "TypeName": "GetRowsCount",
+      "activityLicenseType": "1",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Default advanced settings.",
+        "description": "Default advanced settings.",
+        "DisplayName": "Advanced",
+        "ErrorHandling": {
+          "xName": "errorHandling1",
+          "CustomTypeName": "ErrorHandling",
+          "Description": "Default error handling settings.",
+          "description": "Default error handling settings.",
+          "DisplayName": "Error Handling",
+          "MaxRetryCount": "0",
+          "RetryInterval": "5"
+        },
+        "Logging": {
+          "xName": "logging1",
+          "CustomTypeName": "Logging",
+          "Description": "Default logging settings.",
+          "description": "Default logging settings.",
+          "DisplayName": "Logging",
+          "LogLevel": "Default"
+        }
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Default result settings.",
+        "description": "Default result settings.",
+        "DisplayName": "Result"
+      },
+      "ResultSet": "%serverTable%",
+      "notes": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "Description": "Loop through each server in the serverTable.",
+      "description": "Loop through each server in the serverTable.",
+      "DisplayName": "While",
+      "TypeName": "WhileActivity",
+      "activityLicenseType": "1",
+      "Condition": "{x:Null}",
+      "sequenceActivity1": {
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "Description": "Exit the loop when all servers have been processed.",
+          "description": "Exit the loop when all servers have been processed.",
+          "DisplayName": "Exit While",
+          "TypeName": "ExitWhile",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced2",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "DisplayName": "Advanced",
+            "ErrorHandling": {
+              "xName": "errorHandling2",
+              "CustomTypeName": "ErrorHandling",
+              "Description": "Default error handling settings.",
+              "description": "Default error handling settings.",
+              "DisplayName": "Error Handling",
+              "MaxRetryCount": "0",
+              "RetryInterval": "5"
+            },
+            "Logging": {
+              "xName": "logging2",
+              "CustomTypeName": "Logging",
+              "Description": "Default logging settings.",
+              "description": "Default logging settings.",
+              "DisplayName": "Logging",
+              "LogLevel": "Default"
+            }
+          },
+          "Counter": "%getRowsCount1%",
+          "exitWhileInsideWhile": "True",
+          "isValid": "True",
+          "whileSequenceActivity": "sequenceActivity1"
+        },
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "Description": "Get the hostname from the current row of the serverTable.",
+          "description": "Get the hostname from the current row of the serverTable.",
+          "DisplayName": "Get Cell Value",
+          "TypeName": "GetCellValue",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "DisplayName": "Advanced",
+            "ErrorHandling": {
+              "xName": "errorHandling3",
+              "CustomTypeName": "ErrorHandling",
+              "Description": "Default error handling settings.",
+              "description": "Default error handling settings.",
+              "DisplayName": "Error Handling",
+              "MaxRetryCount": "0",
+              "RetryInterval": "5"
+            },
+            "Logging": {
+              "xName": "logging3",
+              "CustomTypeName": "Logging",
+              "Description": "Default logging settings.",
+              "description": "Default logging settings.",
+              "DisplayName": "Logging",
+              "LogLevel": "Default"
+            }
+          },
+          "ColumnName": "hostname",
+          "Result": {
+            "xName": "result2",
+            "CustomTypeName": "Result",
+            "Description": "Default result settings.",
+            "description": "Default result settings.",
+            "DisplayName": "Result"
+          },
+          "ResultSet": "%serverTable%",
+          "RowNumber": "%whileActivity1%",
+          "ColumnType": "Name"
+        },
+        "ping1": {
+          "xName": "ping1",
+          "CustomTypeName": "Ping",
+          "Description": "Ping the server retrieved from the table.",
+          "description": "Ping the server retrieved from the table.",
+          "DisplayName": "Ping",
+          "HostName": "%getCellValue1%",
+          "TypeName": "Ping",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Default advanced settings.",
+            "description": "Default advanced settings.",
+            "DisplayName": "Advanced",
+            "ErrorHandling": {
+              "xName": "errorHandling4",
+              "CustomTypeName": "ErrorHandling",
+              "Description": "Default error handling settings.",
+              "description": "Default error handling settings.",
+              "DisplayName": "Error Handling",
+              "MaxRetryCount": "0",
+              "RetryInterval": "5"
+            },
+            "Logging": {
+              "xName": "logging4",
+              "CustomTypeName": "Logging",
+              "Description": "Default logging settings.",
+              "description": "Default logging settings.",
+              "DisplayName": "Logging",
+              "LogLevel": "Default"
+            }
+          },
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Default result settings.",
+            "description": "Default result settings.",
+            "DisplayName": "Result"
+          },
+          "HostId": "-2"
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "Description": "Check if the ping failed, and if so, send an email.",
+          "description": "Check if the ping failed, and if so, send an email.",
+          "DisplayName": "If/Else",
+          "TypeName": "IfElseActivity",
+          "activityLicenseType": "1",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Condition for a failed ping.",
+            "description": "Condition for a failed ping.",
+            "DisplayName": "Branch",
+            "TypeName": "IfElseBranchActivity",
+            "activityLicenseType": "1",
+            "isDefault": false,
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "Condition": "",
+              "ConditionType": "Equals",
+              "Description": "Return value for the branch.",
+              "description": "Return value for the branch.",
+              "DisplayName": "Return Value",
+              "Formula": "=Equals(&&&,Failure)",
+              "IsValid": "True",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "UseStoredValue": "True",
+              "Value": "Failure",
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "sendEmail1": {
+              "xName": "sendEmail1",
+              "CustomTypeName": "SendEmail",
+              "Body": "The server %getCellValue1% is not responding to ping requests. Ping result: %ping1%",
+              "Description": "Send an email notification that the server is down.",
+              "description": "Send an email notification that the server is down.",
+              "DisplayName": "Send Email",
+              "Subject": "Server Down: %getCellValue1%",
+              "To": "%adminEmail%",
+              "TypeName": "SendEmail",
+              "activityLicenseType": "1",
+              "Advanced": {
+                "xName": "advanced5",
+                "CustomTypeName": "Advanced",
+                "Description": "Default advanced settings.",
+                "description": "Default advanced settings.",
+                "DisplayName": "Advanced",
+                "ErrorHandling": {
+                  "xName": "errorHandling5",
+                  "CustomTypeName": "ErrorHandling",
+                  "Description": "Default error handling settings.",
+                  "description": "Default error handling settings.",
+                  "DisplayName": "Error Handling",
+                  "MaxRetryCount": "0",
+                  "RetryInterval": "5"
+                },
+                "Logging": {
+                  "xName": "logging5",
+                  "CustomTypeName": "Logging",
+                  "Description": "Default logging settings.",
+                  "description": "Default logging settings.",
+                  "DisplayName": "Logging",
+                  "LogLevel": "Default"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "update"
+    },
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+    "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+  ],
+  "errors": []
+}
