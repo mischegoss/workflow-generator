@@ -1,0 +1,424 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Workflow Generator Telemetry Event Schema",
+  "description": "Schema for all telemetry events emitted by tools/telemetry.py. Authoritative list per CLAUDE.md §13.2. Validation runs at log time; violations are logged separately but events still write so data is never lost.",
+  "definitions": {
+    "_meta": {
+      "type": "object",
+      "properties": {
+        "_event_type": { "type": "string" },
+        "_timestamp": { "type": "string", "description": "ISO 8601 UTC" },
+        "session_id": { "type": "string" }
+      },
+      "required": ["_event_type", "_timestamp"]
+    }
+  },
+  "events": {
+    "session_start": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "prompt",
+        "prompt_length"
+      ],
+      "properties": {
+        "_event_type": { "const": "session_start" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "prompt": { "type": "string" },
+        "prompt_length": { "type": "integer" },
+        "user_agent": { "type": "string" }
+      }
+    },
+    "session_abandon": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "last_state",
+        "time_since_last_activity_sec"
+      ],
+      "properties": {
+        "_event_type": { "const": "session_abandon" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "last_state": { "type": "string" },
+        "time_since_last_activity_sec": { "type": "number" }
+      }
+    },
+    "session_reset": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "from_state",
+        "reason"
+      ],
+      "properties": {
+        "_event_type": { "const": "session_reset" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "from_state": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "session_complete": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "total_duration_sec",
+        "final_state",
+        "total_llm_calls"
+      ],
+      "properties": {
+        "_event_type": { "const": "session_complete" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "total_duration_sec": { "type": "number" },
+        "final_state": { "type": "string" },
+        "total_llm_calls": { "type": "integer" }
+      }
+    },
+    "task_match_attempted": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "prompt_length",
+        "total_phrases_scanned"
+      ],
+      "properties": {
+        "_event_type": { "const": "task_match_attempted" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "prompt_length": { "type": "integer" },
+        "total_phrases_scanned": { "type": "integer" }
+      }
+    },
+    "task_match_result": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "tasks",
+        "fallback"
+      ],
+      "properties": {
+        "_event_type": { "const": "task_match_result" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "tasks": { "type": "array" },
+        "confidence": { "type": ["number", "null"] },
+        "fallback": { "type": ["string", "null"] },
+        "unmatched_segments": { "type": "array" }
+      }
+    },
+    "gate1_preview_shown": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id", "step_count"],
+      "properties": {
+        "_event_type": { "const": "gate1_preview_shown" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "decomposition_json": { "type": ["object", "null"] },
+        "task_match_result": { "type": ["object", "null"] },
+        "step_count": { "type": "integer" },
+        "workflow_summary": { "type": "string" }
+      }
+    },
+    "gate1_approved": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "time_to_decision_sec",
+        "retry_count"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate1_approved" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "time_to_decision_sec": { "type": "number" },
+        "retry_count": { "type": "integer" }
+      }
+    },
+    "gate1_rejected": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "feedback_text",
+        "time_to_decision_sec",
+        "retry_count"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate1_rejected" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "feedback_text": { "type": "string" },
+        "time_to_decision_sec": { "type": "number" },
+        "retry_count": { "type": "integer" }
+      }
+    },
+    "task_pattern_composed": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "task_id",
+        "scaffold_pattern_id",
+        "slots_filled",
+        "slots_unfilled"
+      ],
+      "properties": {
+        "_event_type": { "const": "task_pattern_composed" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "scaffold_pattern_id": { "type": "string" },
+        "slots_filled": { "type": "integer" },
+        "slots_unfilled": { "type": "integer" },
+        "composition_duration_ms": { "type": "number" }
+      }
+    },
+    "task_slot_filled": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "task_id",
+        "slots_filled",
+        "slots_null"
+      ],
+      "properties": {
+        "_event_type": { "const": "task_slot_filled" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "slots_filled": { "type": "integer" },
+        "slots_null": { "type": "integer" }
+      }
+    },
+    "gate2_preview_shown": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id"],
+      "properties": {
+        "_event_type": { "const": "gate2_preview_shown" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "activity_list": { "type": "array" },
+        "data_flow": { "type": ["object", "array", "null"] },
+        "placeholders": { "type": "array" },
+        "warnings": { "type": "array" },
+        "mermaid_snapshot": { "type": ["string", "null"] },
+        "task_groupings": { "type": ["object", "array", "null"] }
+      }
+    },
+    "gate2_approved": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "time_to_decision_sec",
+        "retry_count"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate2_approved" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "time_to_decision_sec": { "type": "number" },
+        "retry_count": { "type": "integer" }
+      }
+    },
+    "gate2_edit": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "step_id",
+        "from_activity",
+        "to_activity"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate2_edit" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "step_id": { "type": "string" },
+        "from_activity": { "type": "string" },
+        "to_activity": { "type": "string" },
+        "was_in_candidates_list": { "type": "boolean" },
+        "mermaid_snapshot": { "type": ["string", "null"] }
+      }
+    },
+    "gate2_placeholder_resolved": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "step_id",
+        "chosen_activity"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate2_placeholder_resolved" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "step_id": { "type": "string" },
+        "chosen_activity": { "type": "string" },
+        "candidate_rank": { "type": ["integer", "null"] },
+        "mermaid_snapshot": { "type": ["string", "null"] }
+      }
+    },
+    "gate2_rejected": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "feedback_text",
+        "time_to_decision_sec",
+        "retry_count"
+      ],
+      "properties": {
+        "_event_type": { "const": "gate2_rejected" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "feedback_text": { "type": "string" },
+        "time_to_decision_sec": { "type": "number" },
+        "retry_count": { "type": "integer" },
+        "mermaid_snapshot": { "type": ["string", "null"] }
+      }
+    },
+    "decomposer_call": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "duration_ms",
+        "mode"
+      ],
+      "properties": {
+        "_event_type": { "const": "decomposer_call" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "duration_ms": { "type": "number" },
+        "prompt_tokens": { "type": ["integer", "null"] },
+        "output_tokens": { "type": ["integer", "null"] },
+        "mode": { "enum": ["slot_filling", "freeform_fallback"] }
+      }
+    },
+    "deterministic_middle": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id", "duration_ms"],
+      "properties": {
+        "_event_type": { "const": "deterministic_middle" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "duration_ms": { "type": "number" },
+        "stage_timings": { "type": ["object", "null"] },
+        "warnings": { "type": "array" }
+      }
+    },
+    "wirer_call": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id", "duration_ms"],
+      "properties": {
+        "_event_type": { "const": "wirer_call" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "duration_ms": { "type": "number" },
+        "prompt_tokens": { "type": ["integer", "null"] },
+        "output_tokens": { "type": ["integer", "null"] },
+        "fields_filled": { "type": ["integer", "array", "null"] }
+      }
+    },
+    "correction_fired": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id", "reason"],
+      "properties": {
+        "_event_type": { "const": "correction_fired" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "reason": { "type": "string" },
+        "errors": { "type": "array" },
+        "resolved_after_correction": { "type": ["boolean", "null"] }
+      }
+    },
+    "validation_result": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "session_id", "status"],
+      "properties": {
+        "_event_type": { "const": "validation_result" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "status": { "enum": ["valid", "invalid"] },
+        "errors": { "type": "array" },
+        "verify_notes": { "type": "array" }
+      }
+    },
+    "xml_downloaded": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "filename",
+        "tracking_token",
+        "file_size_bytes"
+      ],
+      "properties": {
+        "_event_type": { "const": "xml_downloaded" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": ["string", "null"] },
+        "filename": { "type": "string" },
+        "tracking_token": { "type": "string" },
+        "file_size_bytes": { "type": "integer" }
+      }
+    },
+    "outcome_reported": {
+      "type": "object",
+      "required": ["_event_type", "_timestamp", "tracking_token", "worked"],
+      "properties": {
+        "_event_type": { "const": "outcome_reported" },
+        "_timestamp": { "type": "string" },
+        "tracking_token": { "type": "string" },
+        "worked": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "generation_failed": {
+      "type": "object",
+      "required": [
+        "_event_type",
+        "_timestamp",
+        "session_id",
+        "stage",
+        "error_type",
+        "error_message"
+      ],
+      "properties": {
+        "_event_type": { "const": "generation_failed" },
+        "_timestamp": { "type": "string" },
+        "session_id": { "type": "string" },
+        "stage": { "type": "string" },
+        "error_type": { "type": "string" },
+        "error_message": { "type": "string" },
+        "state_dump_filename": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

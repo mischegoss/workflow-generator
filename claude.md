@@ -1,9 +1,14 @@
-# Workflow Generator — Completion Spec (v4)
+# Workflow Generator — Completion Spec (v4.1)
 
 ## 0. Document status and audience
 
 Authoritative spec for the workflow generator's task-centered, three-stage
-gated flow. Supersedes v3. Folds in:
+gated flow. Supersedes v3. v4.1 adds catalog enrichment and a soft
+system-bias signal that improves the retrieval path used by flex slots
+and freeform fallback. v4.1 does not change the architecture, phase
+boundaries, or any of the new task-centered components from v4.
+
+Folds in:
 
 - Task taxonomy as structural backbone (from the task mining work)
 - Variant C patterns bringing pre-wired skeletons per task
@@ -13,8 +18,12 @@ gated flow. Supersedes v3. Folds in:
 - Three-gate architecture with Mermaid viz
 - No LLM prompt validator (six deterministic checks only)
 - Telemetry as product, not polish
+- **(v4.1) Catalog enrichment (`task_type`, `module_type`, `node_type`,
+  `is_orphaned` per activity) plus a soft system-bias signal on
+  flex-slot and fallback retrieval. See §9 and Addendum B.**
 
 Companion documents for history:
+
 - `determinism_analysis.md`
 - `plan_review_accuracy_focus.md`
 - `frontend_beta_design.md`
@@ -145,14 +154,14 @@ User prompt
 
 ### 2.2 Endpoint set
 
-| Endpoint | Phases | Purpose |
-|---|---|---|
-| `POST /plan` | 0, 1a, 1b | Validate + match tasks + decompose |
-| `POST /build-activities` | 2a, 2b | Compose patterns + run deterministic middle |
-| `POST /generate-artifacts` | 3 | Wirer + artifacts |
-| `GET /download/{filename}` | — | Serve files |
-| `POST /outcome/{tracking_token}` | — | Post-import outcome reporting |
-| `GET /health` | — | Liveness |
+| Endpoint                         | Phases    | Purpose                                     |
+| -------------------------------- | --------- | ------------------------------------------- |
+| `POST /plan`                     | 0, 1a, 1b | Validate + match tasks + decompose          |
+| `POST /build-activities`         | 2a, 2b    | Compose patterns + run deterministic middle |
+| `POST /generate-artifacts`       | 3         | Wirer + artifacts                           |
+| `GET /download/{filename}`       | —         | Serve files                                 |
+| `POST /outcome/{tracking_token}` | —         | Post-import outcome reporting               |
+| `GET /health`                    | —         | Liveness                                    |
 
 ### 2.3 Retry policy
 
@@ -163,7 +172,7 @@ button. Internal beta captures retry patterns as signal.
 
 ## 3. Telemetry — the product
 
-Unchanged in intent from v3. Full schema in §8. Task-specific events
+Unchanged in intent from v3. Full schema in §13.2. Task-specific events
 added:
 
 - `task_match_attempted` — which tasks the matcher considered
@@ -172,12 +181,13 @@ added:
 - `task_slot_filled` — Decomposer slot-filling result per task
 
 These let us answer questions like:
+
 - Which tasks never get matched? (taxonomy gaps)
 - Which tasks have low-confidence matches? (phrase list needs tuning)
 - Which scaffolds fail composition? (scaffold bugs)
 - Which slot-fills does the Decomposer get wrong? (prompt ambiguity)
 
-Full event list in §8.
+Full event list in §13.2.
 
 ---
 
@@ -273,103 +283,18 @@ extracted from the taxonomy for fast matching. Regenerated whenever the
 taxonomy changes.
 
 **`data/task_scaffold_map.json`** — authoritative mapping from task_id to
-pattern_library.json scaffold_id, generated during taxonomy review. Each
-entry specifies which scaffold implements which task and how to adapt it:
-
-```json
-{
-  "composite_read_then_iterate_then_check_then_notify": {
-    "scaffold_pattern_id": "p019",
-    "slot_to_param_map": {
-      "source_variable": "PARAM_TableName",
-      "iteration_item": "PARAM_xname_whileactivity",
-      "check_target": "PARAM_HostName",
-      "notification_recipient": "PARAM_To",
-      "notification_condition": "PARAM_Formula"
-    }
-  },
-  ...
-}
-```
-
-### 5.3 Matching algorithm
-
-New module: `tools/task_matcher.py` → `match_tasks(prompt: str) -> TaskMatchResult`.
-
-Priority-ordered matching:
-
-**1. Composite task match first.** For each composite task, score the
-prompt against its `prompt_phrases` using substring + word-boundary match.
-Any composite task with ≥2 matching phrases is a strong candidate.
-Composites win over atomics because they encode more intent.
-
-**2. Atomic task match for gaps.** After composite matches are identified,
-scan the prompt for phrases from atomic tasks that weren't covered. These
-fill in remaining intent (e.g., "also send a summary email at the end"
-might trigger `send_email` atomic after a composite.
-
-**3. Order inference.** Tasks matched are ordered by their first phrase
-occurrence in the prompt. If the prompt says "ping each server then send
-email," the matcher emits `[query_system_state, send_email]` in that order.
-
-**4. Confidence scoring.** Each matched task gets:
-- `confidence`: 0.0–1.0 based on phrase match strength and specificity
-- `match_reasons`: list of matched phrase strings
-- `source`: "composite" | "atomic"
-
-**5. Fallback on no match.** If zero tasks match, return
-`{tasks: [], fallback: "use_decomposer_freeform"}`. The Decomposer runs
-in its old freeform mode for that prompt. Telemetry flags this for
-taxonomy review.
-
-### 5.4 Output schema
-
-```python
-@dataclass
-class TaskMatchResult:
-    tasks: list[MatchedTask]              # ordered by prompt position
-    fallback: str | None                  # "use_decomposer_freeform" | None
-    unmatched_segments: list[str]         # prompt fragments no task claimed
-    total_confidence: float               # average across matched tasks
-
-@dataclass
-class MatchedTask:
-    task_id: str
-    kind: str                             # "atomic" | "composite"
-    confidence: float
-    match_reasons: list[str]
-    slot_values: dict[str, str]           # filled by Phase 1b (Decomposer)
-    prompt_span: tuple[int, int]          # char range in prompt
-```
-
-`slot_values` starts empty; the Decomposer fills it in Phase 1b.
-
-### 5.5 Performance
-
-Pure Python regex and substring matching over ~50 task phrase lists.
-Expected latency: <50ms for typical prompts. No LLM call.
-
-### 5.6 Telemetry events
-
-- `task_match_attempted` — { prompt_length, total_phrases_scanned }
-- `task_match_result` — { tasks, confidence, fallback, unmatched_segments }
+pattern_library.json scaffold_id, generated during taxonomy review.
 
 ---
 
 ## 6. Phase 1b — Decomposer (narrowed)
 
-### 6.1 New role: slot filling, not structure
+### 6.1 Purpose
 
-The Decomposer no longer produces an arbitrary step list. Its job:
-
-- Given: the original prompt + matched task sequence (with slot schemas)
-- Produce: the same task sequence with `slot_values` filled in from the
-  prompt
-- Optional: a `workflow_summary` one-liner for Gate 1 preview
-
-The Decomposer doesn't decide structure. It doesn't pick activities. It
-binds concrete values from the prompt to the abstract slots each task
-defines.
+The Decomposer's job in v4 is fundamentally different. It doesn't decide
+structure (the task matcher did that). It doesn't pick activities (task
+scaffolds will). It binds concrete values from the prompt to the abstract
+slots each task defines.
 
 ### 6.2 Instruction
 
@@ -485,7 +410,7 @@ For each matched task:
 
 1. Load its `scaffold_pattern_id` from `task_scaffold_map.json`
 2. Load the scaffold from `pattern_library.json`
-3. Substitute slot_values into the scaffold's `PARAM_` placeholders
+3. Substitute slot*values into the scaffold's `PARAM*` placeholders
 4. Append to the growing skeleton, wrapping in control flow as the
    scaffold dictates (containers compose into containers)
 
@@ -520,6 +445,7 @@ The slot_schema in the taxonomy specifies which mode per slot.
 
 If a slot_value is null (Decomposer couldn't determine from prompt), the
 composer:
+
 1. Leaves the corresponding field empty in the scaffold
 2. Registers a placeholder in the warnings list for Gate 2
 3. Does NOT invent a value
@@ -551,6 +477,12 @@ Retained:
   confirm the task's canonical member is valid. Only run the 4-layer
   matcher when a position is a generic slot ("this task can use any
   matching activity").
+- **Catalog enrichment.** _(v4.1)_ Each activity in
+  `data/activity_frequency.json` carries `task_type`, `module_type`,
+  `node_type`, and `is_orphaned` fields, populated once at corpus
+  ingestion by `scripts/merge_activity_info.py`. These fields are read
+  at retrieval time but require no runtime computation. See §9.4 for the
+  ingestion contract and Addendum B for the rationale.
 - **Enrichment** — merge activity JSON syntax templates, enum values,
   field defaults (unchanged).
 - **Table variable backfill** — unchanged.
@@ -581,16 +513,65 @@ e.g., "the WhileActivity in iterate_rows"), retrieval confirms the match
 and skips the 4-layer scoring. Only positions marked as flex (the
 scaffold has `PARAM_activity_type`) run full retrieval.
 
+**System-bias modulation on flex retrieval.** _(v4.1)_ When the 4-layer
+matcher runs on a flex slot — or on any step in the freeform fallback
+path (§6.3) — it applies a multiplicative bias to candidate
+`combined_score` based on agreement between the step's identified system
+and the candidate's `module_type`:
+
+| Condition                                                        | Multiplier | Constant             |
+| ---------------------------------------------------------------- | ---------- | -------------------- |
+| `extract_system_from_step(step)` matches `candidate.module_type` | ×1.5       | `SYSTEM_MATCH_BOOST` |
+| Step has system, `candidate.module_type` is INTERNAL             | ×0.7       | `INTERNAL_PENALTY`   |
+| Step has no identified system                                    | no-op      | —                    |
+
+System identification is deterministic — `tools/system_extraction.py`
+matches step text against a curated alias map of canonical system names
+(ServiceNow, Jira, AWS, MsTeams, etc.). The bias is soft, not gating: a
+strong keyword match for an INTERNAL activity can still win against a
+weak system match. This degrades gracefully when `module_type` is missing
+or wrong.
+
+The bias does not change Layer 1 (intent map) behavior. Steps resolved
+deterministically via `INTENT_TO_ACTIVITY` skip the 4-layer matcher and
+therefore skip the bias.
+
 ### 9.3 Warnings surfaced at Gate 2
 
 Three classes of warning carry through unchanged:
+
 - Missing prerequisite
 - Corpus-outlier wiring (`workflow_count < 5`)
 - Template-filled mandatory field
 
 New class added:
+
 - **Unfilled slot from Phase 1b** — surfaced as "slot 'X' in task Y is
   empty; the user should provide value or accept placeholder"
+
+### 9.4 Catalog ingestion contract _(v4.1)_
+
+The corpus ingestion pipeline runs `scripts/merge_activity_info.py`
+exactly once per corpus snapshot, after `count_top_activities.py`
+produces `activity_frequency.json` and the catalog metadata CSV
+(`activity_info.csv`) is generated. The merge:
+
+1. Joins the two sources on activity name (case-insensitive, instance
+   digits stripped)
+2. Resolves within-group conflicts by preferring non-INTERNAL
+   `module_type` over INTERNAL
+3. Applies evidence-based prefix overrides for activities mistagged
+   INTERNAL whose name prefix is provably system-bound (e.g. `SN*`
+   → ServiceNow, `Aws*` → AWS), gated on bidirectional witness +
+   coverage thresholds
+4. Writes the enriched catalog in place with a `.bak` backup
+5. Emits `merge_review.json` with a complete audit trail of fixes,
+   confidence-tagged prefix rules, and no-evidence flags for human
+   review
+
+Ingestion-time only — no runtime invocation. Missing `module_type`
+values do not fail the pipeline; they cause the system bias to no-op
+for that candidate.
 
 ---
 
@@ -614,7 +595,8 @@ Task 2: Check each server
 
 Task 3: Notify on failure
   5. [Flow Control]  IfElseActivity      — Check ping result
-       5.1. [Communication] SendEmail    — Send alert
+       5.1. [ServiceNow] SNCreateRecord  — Open incident
+       5.2. [Communication] SendEmail    — Send alert
 
 {if warnings}: Warnings section
 
@@ -624,9 +606,17 @@ Task 3: Notify on failure
 Tasks group the activities. Still see activities, still see wiring, but
 the grouping reinforces the intent from Gate 1.
 
+_(v4.1)_ When a leaf activity has a non-INTERNAL `module_type` from the
+enriched catalog, the preview prefers `[<system>]` over the generic
+category tag from `build_activity.py` — `[ServiceNow]` instead of
+`[Communication]`, `[Jira]` instead of `[Tables]`. Falls back to the
+existing category tag when `module_type` is INTERNAL or missing. Purely
+display logic; the underlying activity selection is unchanged.
+
 ### 10.2 Edit widgets
 
 Same as v3:
+
 - Click an activity → swap for alternative
 - Click a placeholder → resolve from candidates
 - Needs-changes feedback → re-run Phase 2 with feedback
@@ -656,12 +646,14 @@ covered by task scaffolds or Tier 1 templates.
 ### 11.2 Accuracy validator
 
 Unchanged from v3. VERIFY notes for:
+
 - Mandatory fields filled by templates
 - Corpus-outlier wiring
 - High placeholder ratio
 - Empty scalar-producer ConditionType
 
 New classes for v4:
+
 - Unfilled slot that should have been filled by Decomposer
 - Scaffold parameter that wasn't substituted
 
@@ -694,6 +686,7 @@ individual activity picks before Gate 2.
 ### 12.3 State machine
 
 Same 9 states. Task-match-specific states added:
+
 - `AWAITING_TASK_MATCH` (fast — usually <100ms)
 - `AWAITING_DECOMPOSER` (slot filling, faster than freeform)
 - `FALLBACK_MODE_ACKNOWLEDGED` (user acknowledges freeform fallback)
@@ -803,22 +796,25 @@ Task-specific questions the data answers:
 
 ## 14. Open decisions (all resolved)
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| Task taxonomy authoring | Corpus-mined draft + manual curation | Best of both |
-| Task match algorithm | Deterministic phrase matching | Fast, no LLM dependency |
-| Composite vs atomic priority | Composites first | Encode more intent |
-| Fallback when no task matches | Run v3-style freeform Decomposer | Graceful degradation |
-| Decomposer in task mode | Slot filling only, no structure | Narrower = more reliable |
-| Scaffold reuse | Leverage existing pattern_library.json | Already corpus-validated |
-| Container composition | Explicit `composes_as` per task | Avoids heuristic bugs |
-| Unfilled slots | Surface at Gate 2 as placeholders | User resolves explicitly |
-| Gate 1 default view | Task-level | Legible; `[Show activities]` drills down |
-| Retry caps | None | Internal beta captures retry signal |
-| Prompt validator | 6 deterministic only | Internal users don't submit junk |
-| Mobile support | Deferred | Desktop only |
-| Post-import outcome | Buttons + optional Slack hook | Level 2+ accuracy signal |
-| Mermaid diagrams | Kept, with task subgraphs | User verification + telemetry |
+| Decision                              | Choice                                                     | Rationale                                           |
+| ------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| Task taxonomy authoring               | Corpus-mined draft + manual curation                       | Best of both                                        |
+| Task match algorithm                  | Deterministic phrase matching                              | Fast, no LLM dependency                             |
+| Composite vs atomic priority          | Composites first                                           | Encode more intent                                  |
+| Fallback when no task matches         | Run v3-style freeform Decomposer                           | Graceful degradation                                |
+| Decomposer in task mode               | Slot filling only, no structure                            | Narrower = more reliable                            |
+| Scaffold reuse                        | Leverage existing pattern_library.json                     | Already corpus-validated                            |
+| Container composition                 | Explicit `composes_as` per task                            | Avoids heuristic bugs                               |
+| Unfilled slots                        | Surface at Gate 2 as placeholders                          | User resolves explicitly                            |
+| Gate 1 default view                   | Task-level                                                 | Legible; `[Show activities]` drills down            |
+| Retry caps                            | None                                                       | Internal beta captures retry signal                 |
+| Prompt validator                      | 6 deterministic only                                       | Internal users don't submit junk                    |
+| Mobile support                        | Deferred                                                   | Desktop only                                        |
+| Post-import outcome                   | Buttons + optional Slack hook                              | Level 2+ accuracy signal                            |
+| Mermaid diagrams                      | Kept, with task subgraphs                                  | User verification + telemetry                       |
+| **Catalog enrichment scope** _(v4.1)_ | **`task_type`, `module_type`, `node_type`, `is_orphaned`** | **Soft signals; no architectural commitment**       |
+| **System identification** _(v4.1)_    | **Deterministic alias-map matching**                       | **No LLM cost; matches catalog vocabulary exactly** |
+| **System bias strength** _(v4.1)_     | **Multiplicative (1.5× / 0.7×); not gating**               | **Degrades gracefully when catalog is wrong**       |
 
 ---
 
@@ -827,13 +823,29 @@ Task-specific questions the data answers:
 Ten phases. ~9 days total. Taxonomy work must finish before pipeline
 integration.
 
+**Pre-spec (already complete) _(v4.1)_**
+
+- `scripts/merge_activity_info.py` — catalog enrichment, runs once at
+  ingestion. Done.
+- `tools/system_extraction.py` — step → system identifier helper. Done.
+- `tools/retrieval_tools.py` system-bias modulation in `_apply_system_bias`
+  with `SYSTEM_MATCH_BOOST` and `INTERNAL_PENALTY` constants. Done.
+- `data/activity_frequency.json` enriched in place. Done.
+
+These pieces are independent of the v4 task pipeline. They improve the
+flex-slot retrieval path that v4 retains and the freeform fallback path.
+No phase ordering dependency — they were landed against v3 and carry
+forward unchanged.
+
 **Phase T1 — Taxonomy draft (half day)**
+
 - Run `scripts/mine_task_taxonomy.py` against corpus
 - Generate `task_taxonomy_draft.json`, `task_match_phrases_draft.json`,
   `task_mining_report.md`
 - Done when all three files exist, report reviewed.
 
 **Phase T2 — Taxonomy review (1-2 days)**
+
 - Someone who knows Resolve Actions goes through every task in the
   draft
 - For each task: fill description, refine prompt_phrases, verify
@@ -845,6 +857,7 @@ integration.
   taxonomy files are finalized (drop `_draft` suffix).
 
 **Phase 0 — Telemetry foundation (half day)**
+
 - `tools/telemetry.py` with log_event, log_error, log_outcome
 - Event schema as JSON Schema
 - Log directories
@@ -852,12 +865,14 @@ integration.
 - Done when JSONL lines appear with correct shape.
 
 **Phase A — Prompt validation (half day)**
+
 - `tools/prompt_validator.py` (6 deterministic checks)
 - Session management
 - Wire telemetry
 - Done when invalid prompts rejected with specific messages.
 
 **Phase B — Task matching (1 day)**
+
 - `tools/task_matcher.py` — deterministic phrase matching
 - Composite-first, atomic-fill-gaps, order inference
 - Fallback to freeform when no match
@@ -866,6 +881,7 @@ integration.
   reasonable confidence.
 
 **Phase C — Decomposer narrowing (half day)**
+
 - Rewrite `agents/decomposer_agent.py` with slot-filling instruction
 - Keep freeform instruction as fallback path
 - Post-process to merge slot_values into match_result
@@ -874,6 +890,7 @@ integration.
   still produces valid output.
 
 **Phase D — Pattern composition (1 day)**
+
 - `tools/task_composer.py` — task sequence → skeleton
 - Container composition logic with `composes_as` handling
 - Slot substitution (direct and xName reference)
@@ -881,6 +898,7 @@ integration.
 - Done when composition produces valid skeletons for 5 test workflows.
 
 **Phase E — Deterministic middle (0.5 day)**
+
 - Simplify `run_deterministic_middle()` — remove pattern matching and
   skeleton building (moved to composition)
 - Modify retrieval to use task-canonical members when available
@@ -889,12 +907,14 @@ integration.
 - Done when Gate 2 preview produces for 5 test workflows.
 
 **Phase F — Gate 1 + task preview (0.5 day)**
+
 - `tools/preview.py` — `build_task_preview()` function
 - Fallback-mode preview when no task match
 - `[Show activities]` drill-down toggle
 - Done when Gate 1 renders task-centric view with drill-down.
 
 **Phase G — Phase 3 + artifacts (0.5 day)**
+
 - Narrowed Wirer instruction (shrunk further vs v3)
 - Accuracy validator extended with new v4 classes
 - Mermaid with task subgraphs
@@ -903,6 +923,7 @@ integration.
 - Done when full 3-gate flow produces JSON+XML+Mermaid.
 
 **Phase H — Frontend (1.5 days)**
+
 - Three-panel layout
 - State machine with task-match states
 - Inline widgets
@@ -912,6 +933,7 @@ integration.
 - Done when end-to-end flow works for 5 representative prompts.
 
 **Phase I — Polish (0.5 day)**
+
 - README with taxonomy maintenance guide
 - `jq` cookbook for weekly telemetry review
 - Smoke tests
@@ -923,40 +945,57 @@ integration.
 
 **R1: Task taxonomy is wrong.** Users have intents that no task covers,
 or tasks are too coarse/fine.
-*Mitigation:* Unmatched-segments telemetry + fallback to freeform
+_Mitigation:_ Unmatched-segments telemetry + fallback to freeform
 Decomposer. Weekly review of fallback rate. Target: <10% of prompts.
 
 **R2: Composite task match picks wrong composite.**
-*Mitigation:* Telemetry shows confidence distributions. Low-confidence
+_Mitigation:_ Telemetry shows confidence distributions. Low-confidence
 matches trigger Gate 1 review by the user. Phrase lists refined based
 on rejection feedback.
 
 **R3: Scaffold substitution produces invalid workflows.**
-*Mitigation:* Fragments F1-F9 run after composition as safety net.
+_Mitigation:_ Fragments F1-F9 run after composition as safety net.
 Accuracy validator catches residuals. Correction pipeline as final
 fallback.
 
 **R4: Decomposer slot filling hallucinates values.**
-*Mitigation:* Explicit "leave null if not in prompt" instruction.
+_Mitigation:_ Explicit "leave null if not in prompt" instruction.
 Unfilled-slot telemetry tracks hallucination rate. Null slots become
 placeholders at Gate 2, not invented values.
 
 **R5: Container composition misnests tasks.**
-*Mitigation:* Explicit `composes_as` per task. Composer has unit
+_Mitigation:_ Explicit `composes_as` per task. Composer has unit
 tests for all container/member combinations. Fragment F-series enforces
 container invariants.
 
 **R6: Task review is expensive and nobody does it.**
-*Mitigation:* Miner produces draft with most fields pre-filled. Review
+_Mitigation:_ Miner produces draft with most fields pre-filled. Review
 is edit-in-place in one JSON file. Estimated 1-2 days total for
 full review. Can be chunked.
 
 **R7: Fallback mode is actually better than task mode.**
-*Mitigation:* Track accuracy by mode. If fallback consistently wins,
+_Mitigation:_ Track accuracy by mode. If fallback consistently wins,
 revisit taxonomy. Possible the taxonomy is too rigid for real usage.
 
 **R8: Session loss on restart.**
-*Mitigation:* Documented. Beta scope.
+_Mitigation:_ Documented. Beta scope.
+
+**R9: System bias produces false positives on short or generic prefixes.**
+_(v4.1)_ Catalog has confirmed cases where the same prefix maps to
+multiple intents (e.g. `ms*` matches both MsTeams activities and generic
+Microsoft-prefixed customs like `msToken`).
+_Mitigation:_ Bias is multiplicative and soft. Wrong system tag costs
+only a 1.5× boost to a candidate that probably shouldn't have won
+anyway. Confidence-tagged prefix rules in `merge_review.json` flag
+short-prefix rules for human review at ingestion time.
+
+**R10: Catalog `module_type` drifts from reality as the platform
+evolves.**
+_(v4.1)_ Activities not yet in `activity_info.csv` get `module_type:
+None` and skip the bias entirely.
+_Mitigation:_ No-op behavior on missing data is the correct default.
+Re-running `merge_activity_info.py` against an updated CSV refreshes
+the catalog without code changes.
 
 ---
 
@@ -969,6 +1008,11 @@ revisit taxonomy. Possible the taxonomy is too rigid for real usage.
 - Cross-workflow task library
 - User-customized taxonomies
 - Everything from v3 out-of-scope list (mobile, feedback UI, etc.)
+- _(v4.1)_ Using `task_type` or `node_type` from the enriched catalog
+  in scoring or composition. The fields are stored for future use; no
+  current code path reads them.
+- _(v4.1)_ Hard system filtering. The bias is multiplicative only;
+  candidates from non-matching systems are never excluded outright.
 
 ---
 
@@ -989,16 +1033,25 @@ The completion is done when:
 10. Generated XML imports cleanly for 5 test prompts covering different
     task sequences.
 
+_(v4.1)_ No additional success criteria. Catalog enrichment and system
+bias are improvements to existing paths and have no standalone
+acceptance bar at the v4 spec level. Their effectiveness is measured by
+the same retrieval accuracy and Gate 1/2 approval-rate telemetry
+already required by v4.
+
 ---
 
 ## 19. File-change summary
 
 ### New files
+
 - `scripts/mine_task_taxonomy.py` — taxonomy mining script (already written)
+- **`scripts/merge_activity_info.py` _(v4.1)_ — one-shot catalog enrichment (already written)**
 - `tools/telemetry.py` — event/error/outcome logging
 - `tools/prompt_validator.py` — 6 deterministic checks
 - `tools/task_matcher.py` — prompt → task sequence (NEW)
 - `tools/task_composer.py` — task sequence → skeleton (NEW)
+- **`tools/system_extraction.py` _(v4.1)_ — step → canonical system name (already written)**
 - `tools/preview.py` — Gate 1 and Gate 2 preview rendering
 - `tools/activity_flow.py` — Gate 2 data extraction
 - `tools/description_templates.py` — Tier 1 template
@@ -1017,31 +1070,44 @@ The completion is done when:
 - `tests/test_visualize.py`
 
 ### New data files (task-specific)
+
 - `data/task_taxonomy.json` — authoritative taxonomy
 - `data/task_match_phrases.json` — flat phrase map
 - `data/task_scaffold_map.json` — task_id → scaffold_id + slot maps
 
 ### New data files (other)
+
 - `data/description_templates.json`
 - `data/display_templates.json`
 - `data/prompt_validation_keywords.json`
 - `data/telemetry_event_schema.json`
+- **`data/activity_info.csv` _(v4.1)_ — catalog metadata source for the merge**
+- **`data/merge_review.json` _(v4.1)_ — audit trail emitted by `merge_activity_info.py`**
 
 ### New directories
+
 - `logs/` (events, errors, outcomes, state_dumps)
 - `viz_output/` (Mermaid files)
 
 ### Modified files
+
 - `agents/decomposer_agent.py` — slot-filling instruction + freeform fallback
 - `agents/wirer_agent.py` — narrower instruction
 - `tools/pipeline_stages.py` — simplified middle, extended wiring
-- `tools/retrieval_tools.py` — task-position-aware retrieval
+- `tools/retrieval_tools.py` — task-position-aware retrieval **+ system-bias modulation on flex slots and fallback path _(v4.1)_**
 - `tools/validation_tools.py` — accuracy validator with v4 classes
 - `api.py` — three new endpoints + outcome endpoint; keep legacy
 - `main.py` — add task-aware pipeline entry points
 - `frontend/index.html` — state machine rewrite with task-match states
 
+### Modified data files _(v4.1)_
+
+- `data/activity_frequency.json` — now carries `task_type`, `module_type`,
+  `node_type`, `is_orphaned` per individual_activities entry. Backed up to
+  `activity_frequency.json.bak` on first merge run.
+
 ### Untouched
+
 - `serializer/xml_composer.py`
 - `tools/annotation_tools.py`
 - `tools/build_tools.py`
@@ -1062,6 +1128,10 @@ mine time.
 
 Blocks deployment. Treat as prerequisite to any spec implementation.
 
+_(v4.1)_ The catalog enrichment work (§9.4) is a separate hygiene
+concern and does not address the secrets issue. Both must be resolved
+before deployment; they're independent.
+
 ---
 
 ## Appendix A: Worked example
@@ -1076,18 +1146,20 @@ with the server name."
 **Phase 0 (validation):** Passes all 6 checks. Proceed.
 
 **Phase 1a (task matching):** Matcher scans prompt phrases:
+
 - "check a list of servers" → matches composite
   `composite_read_iterate_check_notify` (high confidence)
 - No remaining atomic-only phrases
 
 Output:
+
 ```json
 {
   "tasks": [
     {
       "task_id": "composite_read_iterate_check_notify",
       "confidence": 0.89,
-      "slot_values": {}  // to be filled by Decomposer
+      "slot_values": {} // to be filled by Decomposer
     }
   ],
   "fallback": null
@@ -1095,6 +1167,7 @@ Output:
 ```
 
 **Phase 1b (Decomposer slot filling):** LLM fills slots:
+
 ```json
 {
   "workflow_summary": "Every morning, ping servers from an Excel list and email admin on failure.",
@@ -1114,6 +1187,7 @@ Output:
 ```
 
 **Gate 1 preview:**
+
 ```
 Every morning, ping servers from an Excel list and email admin on failure.
 
@@ -1129,6 +1203,7 @@ Plan (1 task):
 User approves.
 
 **Phase 2a (composition):** Composer loads scaffold `p019`, substitutes:
+
 - `PARAM_TableName` → `serverList`
 - `PARAM_xname_whileactivity` → `forEachServer`
 - `PARAM_HostName` → `%getCellValue1%` (xName ref to in-scope GetCellValue)
@@ -1139,7 +1214,8 @@ Output: complete pre-wired skeleton with 8 activities in correct nesting.
 
 **Phase 2b (deterministic middle):** Runs fragments, enrichment,
 templates. Catches nothing new because scaffold was already correct.
-Tier 1 fills Description fields, ValueToDisplay, email Subject.
+Tier 1 fills Description fields, ValueToDisplay, email Subject. System
+bias is a no-op on this prompt — no canonical external system mentioned.
 
 **Gate 2:** User sees activity-grouped preview, confirms. Generates
 artifacts.
@@ -1153,3 +1229,55 @@ Telemetry captures full lifecycle.
 Total LLM calls: 2 (Decomposer slot fill, Wirer body fill). Compared to
 v3: 3 calls (validator, Decomposer freeform, Wirer full fill). v4 is
 cheaper and more reliable by construction.
+
+---
+
+## Addendum B: System bias rationale _(v4.1)_
+
+**Problem.** Raw catalog usage counts are dominated by INTERNAL plumbing
+activities — `MemorySet`, `IfElseBranchActivity`, `CustomWorkflow`,
+`DisplayValue` — which collectively account for ~98% of all corpus usage.
+A retriever that ranks purely on usage frequency or co-occurrence will
+prefer these generics over system-bound activities (`SNGetRecord`,
+`MsTeamsSendMessage`, `JiraCreateIssue`) for steps that explicitly target
+external systems. In v3 this caused observable misranks on cross-system
+workflows.
+
+**Why this is a soft signal in v4.** Most retrieval in v4 is bypassed
+entirely — task scaffolds pin the activity at composition time. The
+4-layer matcher only fires for flex slots (where the scaffold author
+explicitly delegated activity choice) and for the freeform fallback path
+(when no task matches). System bias improves both.
+
+**Why multiplicative, not gating.** Three reasons:
+
+1. The catalog's `module_type` field is imperfect. Some activities are
+   mistagged INTERNAL despite being clearly system-bound (the SN-prefix
+   class). The merge script fixes the obvious cases but cannot fix
+   prefixes with no in-data witnesses (e.g. `Corrigo*`, `ServiceDeskPlus*`
+   were 100% INTERNAL in the source data). A hard filter would silently
+   exclude legitimate candidates.
+2. Some prompts mention a system contextually but want a generic
+   activity (e.g. "log the ServiceNow ticket ID" wants `DisplayValue`,
+   not an SN activity). A boost lets generics still win when keyword
+   evidence overwhelms the bias.
+3. Future-proofing: the multipliers can be tuned (or zeroed) without
+   structural code changes. A gating filter would be harder to roll back.
+
+**What the bias does not do.** It does not:
+
+- Override Layer 1 intent-map decisions (those are deterministic and
+  pre-bias)
+- Filter candidates (no exclusion, only re-ranking)
+- Affect task-canonical positions (those skip the 4-layer matcher
+  entirely)
+- Use `task_type`, `node_type`, or `is_orphaned` from the enriched
+  catalog (those fields are stored for future use; no current consumer)
+
+**Tuning surface.** `SYSTEM_MATCH_BOOST` and `INTERNAL_PENALTY` are
+module-level constants in `tools/retrieval_tools.py`. Initial values
+(1.5 / 0.7) are unvalidated guesses; expected to be tuned against eval
+results once flex slots and fallback runs produce a workable sample
+size. Telemetry already captures `selected_activity` and the candidates
+list per step, which is sufficient for offline tuning without
+instrumentation changes.
