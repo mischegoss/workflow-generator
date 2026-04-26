@@ -1,0 +1,346 @@
+{
+  "name": "ServerServertablePingEmail_1777216708_2570",
+  "pnumber": "96405",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "createMemoryTable1": {
+      "xName": "createMemoryTable1",
+      "CustomTypeName": "CreateMemoryTable",
+      "Description": "Creates an in-memory table named serverTable to hold server data.",
+      "description": "Creates an in-memory table named serverTable to hold server data.",
+      "DisplayName": "Create In-Memory Table",
+      "Name": "Create In-Memory Table",
+      "TypeName": "Create In-Memory Table",
+      "activityLicenseType": "1",
+      "Advanced": {
+        "xName": "advanced1",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for CreateMemoryTable.",
+        "description": "Advanced settings for CreateMemoryTable.",
+        "ContinueOnError": false,
+        "LogErrors": true,
+        "LogResults": true,
+        "RetryCount": 0,
+        "RetryInterval": 1,
+        "Timeout": 0,
+        "SecureOutput": false
+      },
+      "Result": null,
+      "TableName": "serverTable",
+      "Columns": [
+        {
+          "Name": "ServerName",
+          "Type": "String"
+        }
+      ],
+      "Rows": [
+        {
+          "ServerName": "server1.example.com"
+        },
+        {
+          "ServerName": "server2.example.com"
+        },
+        {
+          "ServerName": "server3.example.com"
+        }
+      ],
+      "ColumnNumber": "1",
+      "RowNumber": "0",
+      "isEmptyGrid": "1",
+      "notes": "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime."
+    },
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Gets the total number of rows in serverTable to control the loop.",
+      "description": "Gets the total number of rows in serverTable to control the loop.",
+      "DisplayName": "Get Table Rows Count",
+      "Name": "Get Table Rows Count",
+      "TypeName": "Get Table Rows Count",
+      "activityLicenseType": "1",
+      "Advanced": {
+        "xName": "advanced2",
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for GetRowsCount.",
+        "description": "Advanced settings for GetRowsCount.",
+        "ContinueOnError": false,
+        "LogErrors": true,
+        "LogResults": true,
+        "RetryCount": 0,
+        "RetryInterval": 1,
+        "Timeout": 0,
+        "SecureOutput": false
+      },
+      "Result": {
+        "xName": "result1",
+        "CustomTypeName": "Result",
+        "Description": "Result of GetRowsCount.",
+        "description": "Result of GetRowsCount.",
+        "ResultCode": "",
+        "ResultData": ""
+      },
+      "ResultSet": "%serverTable%"
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "Description": "Begins a loop that iterates through each row of the serverTable.",
+      "description": "Begins a loop that iterates through each row of the serverTable.",
+      "DisplayName": "While",
+      "Name": "While",
+      "TypeName": "While",
+      "activityLicenseType": "1",
+      "Condition": "{x:Null}",
+      "sequenceActivity1": {
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "Description": "Checks if the loop counter has exceeded the total number of rows and exits the loop if true.",
+          "description": "Checks if the loop counter has exceeded the total number of rows and exits the loop if true.",
+          "DisplayName": "Exit While",
+          "Name": "Exit While",
+          "TypeName": "ExitWhile",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced3",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for ExitWhile.",
+            "description": "Advanced settings for ExitWhile.",
+            "ContinueOnError": false,
+            "LogErrors": true,
+            "LogResults": true,
+            "RetryCount": 0,
+            "RetryInterval": 1,
+            "Timeout": 0,
+            "SecureOutput": false
+          },
+          "Result": null,
+          "exitWhileInsideWhile": "True",
+          "isValid": "True",
+          "whileSequenceActivity": "sequenceActivity1",
+          "Counter": "%getRowsCount1%"
+        },
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "Description": null,
+        "DisplayName": "Sequence",
+        "Name": "Sequence",
+        "TypeName": "Sequence",
+        "activityLicenseType": "1",
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "Description": "Retrieves the server name from the current row of the serverTable.",
+          "description": "Retrieves the server name from the current row of the serverTable.",
+          "DisplayName": "Get Table Cell Value",
+          "Name": "Get Table Cell Value",
+          "TypeName": "Get Table Cell Value",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced4",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for GetCellValue.",
+            "description": "Advanced settings for GetCellValue.",
+            "ContinueOnError": false,
+            "LogErrors": true,
+            "LogResults": true,
+            "RetryCount": 0,
+            "RetryInterval": 1,
+            "Timeout": 0,
+            "SecureOutput": false
+          },
+          "Result": {
+            "xName": "result2",
+            "CustomTypeName": "Result",
+            "Description": "Result of GetCellValue.",
+            "description": "Result of GetCellValue.",
+            "ResultCode": "",
+            "ResultData": ""
+          },
+          "ResultSet": "%serverTable%",
+          "ResultSetName": "serverTable",
+          "ColumnName": "ServerName",
+          "RowNumber": "%whileActivity1%",
+          "ColumnType": "Name"
+        },
+        "ping1": {
+          "xName": "ping1",
+          "CustomTypeName": "Ping",
+          "Description": "Attempts to ping the retrieved server name.",
+          "description": "Attempts to ping the retrieved server name.",
+          "DisplayName": "Ping",
+          "Name": "Ping",
+          "TypeName": "Ping",
+          "activityLicenseType": "1",
+          "Advanced": {
+            "xName": "advanced5",
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for Ping.",
+            "description": "Advanced settings for Ping.",
+            "ContinueOnError": false,
+            "LogErrors": true,
+            "LogResults": true,
+            "RetryCount": 0,
+            "RetryInterval": 1,
+            "Timeout": 0,
+            "SecureOutput": false
+          },
+          "Result": {
+            "xName": "result3",
+            "CustomTypeName": "Result",
+            "Description": "Result of Ping.",
+            "description": "Result of Ping.",
+            "ResultCode": "",
+            "ResultData": ""
+          },
+          "HostName": "%getCellValue1%",
+          "PingCount": 4,
+          "BufferSize": 32,
+          "PingTimeout": 1000,
+          "DontFragment": false,
+          "HostId": "-2"
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "Description": "Evaluates the result of the ping operation to determine if the server is down.",
+          "description": "Evaluates the result of the ping operation to determine if the server is down.",
+          "DisplayName": "If",
+          "Name": "If",
+          "TypeName": "If",
+          "activityLicenseType": "1",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Branch for failed ping.",
+            "description": "Branch for failed ping.",
+            "DisplayName": "If",
+            "Name": "If",
+            "TypeName": "If",
+            "activityLicenseType": "1",
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "Description": "Condition to check if the ping result is 'Failure'.",
+              "description": "Condition to check if the ping result is 'Failure'.",
+              "DisplayName": "ping1",
+              "Name": "ping1",
+              "TypeName": "Return Value",
+              "UseStoredValue": "True",
+              "ConditionType": "Equals",
+              "Value": "Failure",
+              "IsValid": "True",
+              "Formula": "=Equals(&&&,Failure)",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "name": "ReturnValue"
+            },
+            "sendEmail1": {
+              "xName": "sendEmail1",
+              "CustomTypeName": "SendEmail",
+              "Description": "Sends an email notification to the administrator if the server ping failed.",
+              "description": "Sends an email notification to the administrator if the server ping failed.",
+              "DisplayName": "Send Email",
+              "Name": "Send Email",
+              "TypeName": "Send Email",
+              "activityLicenseType": "1",
+              "Advanced": {
+                "xName": "advanced6",
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced settings for SendEmail.",
+                "description": "Advanced settings for SendEmail.",
+                "ContinueOnError": false,
+                "LogErrors": true,
+                "LogResults": true,
+                "RetryCount": 0,
+                "RetryInterval": 1,
+                "Timeout": 0,
+                "SecureOutput": false
+              },
+              "Result": null,
+              "To": "admin@example.com",
+              "Cc": "",
+              "Bcc": "",
+              "Subject": "Server Down Alert: %getCellValue1%",
+              "Body": "The server %getCellValue1% is not responding to ping requests. Please investigate. Ping result: %ping1%",
+              "IsBodyHtml": false,
+              "Attachments": null,
+              "SmtpProfile": ""
+            }
+          },
+          "ifElseBranchActivity2": {
+            "xName": "ifElseBranchActivity2",
+            "CustomTypeName": "IfElseBranchActivity",
+            "Description": "Default branch for successful pings.",
+            "description": "Default branch for successful pings.",
+            "DisplayName": "Else",
+            "Name": "Else",
+            "TypeName": "Else",
+            "activityLicenseType": "1",
+            "returnValue2": {
+              "xName": "returnValue2",
+              "CustomTypeName": "ReturnValue",
+              "Description": "Default condition for any other ping result.",
+              "description": "Default condition for any other ping result.",
+              "DisplayName": "Return Value",
+              "Name": "Return Value",
+              "TypeName": "Return Value",
+              "UseStoredValue": "True",
+              "ConditionType": "",
+              "Value": "",
+              "IsValid": "True",
+              "Formula": "{x:Null}",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "name": "ReturnValue"
+            }
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "update"
+    },
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    },
+    {
+      "activity": "createMemoryTable1",
+      "type": "CreateMemoryTable",
+      "field": "notes",
+      "message": "VERIFY: 'TableName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.  VERIFY: 'TableName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'ColumnNumber' is set to the literal value '1'. Confirm this matches the exact table or column name used at runtime.",
+    "VERIFY: 'TableName' is set to the literal value 'serverTable'. Confirm this matches the exact table or column name used at runtime."
+  ],
+  "errors": []
+}
