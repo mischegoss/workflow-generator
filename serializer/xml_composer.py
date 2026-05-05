@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 import re
 import xml.etree.ElementTree as ET
 
@@ -361,4 +362,115 @@ class WorkflowXmlComposer:
                 elem.append(child)
 
         return elem
+
+
+# ===================================================================== #
+# Convenience function — load JSON, compose XML, validate both layers,  #
+# write to disk. Used by both convert_to_xml.py (CLI) and api.py (HTTP).#
+# ===================================================================== #
+
+class XmlValidationError(Exception):
+    """Raised when composed XML fails one of the two-layer validation passes
+    (outer TotalExport wrapper or inner Xoml string). Carries the underlying
+    ET.ParseError plus a layer label so callers can report which check failed."""
+    def __init__(self, layer: str, parse_error: ET.ParseError):
+        self.layer = layer
+        self.parse_error = parse_error
+        super().__init__(f"{layer} validation failed: {parse_error}")
+
+
+class WorkflowJsonSchemaError(ValueError):
+    """Raised when the input JSON is missing required top-level fields
+    (name, pnumber). Distinct from XmlValidationError so callers can decide
+    whether to surface the error as 'bad input' (this) or 'composer bug' (the other)."""
+    pass
+
+
+def _validate_outer(xml_string: str) -> ET.Element:
+    """Parse the TotalExport wrapper. Raises XmlValidationError on failure."""
+    try:
+        return ET.fromstring(xml_string)
+    except ET.ParseError as e:
+        raise XmlValidationError("outer XML", e)
+
+
+def _validate_xoml(root: ET.Element) -> None:
+    """
+    Locate the Xoml attribute on WorkflowInfo and parse it as XML.
+
+    ET.fromstring on the outer XML already decodes the Xoml attribute value
+    (converting &amp; → &, &quot; → ", etc.). Calling html.unescape on top
+    of that causes double-unescaping: &amp; in the Xoml → & which is a bare
+    ampersand and invalid XML (triggers "invalid token" on Formula attributes
+    containing =Equals(&&&,Value)).
+
+    Do NOT call html.unescape here.
+    """
+    workflow_info = root.find(".//WorkflowInfo")
+    if workflow_info is None:
+        return  # No WorkflowInfo — nothing to validate
+    xoml = workflow_info.get("Xoml", "")
+    if not xoml:
+        return  # Empty Xoml — nothing to validate
+    try:
+        ET.fromstring(xoml)
+    except ET.ParseError as e:
+        raise XmlValidationError("Xoml", e)
+
+
+def convert_json_to_xml(json_path: str | pathlib.Path,
+                        output_dir: str | pathlib.Path | None = None) -> pathlib.Path:
+    """
+    Load a workflow JSON file, compose its TotalExport XML, validate both
+    layers (outer wrapper + inner Xoml), and write the .xml beside (or
+    inside output_dir if provided). Returns the written file path.
+
+    This function is the shared implementation for:
+      - convert_to_xml.py (CLI wrapper)
+      - api.py POST /convert-xml/{filename} (HTTP endpoint)
+
+    Both callers want identical behavior: same composer, same validation,
+    same output naming (basename(.json) → basename.xml). Pulling the logic
+    here keeps them in lockstep.
+
+    Raises:
+      FileNotFoundError       — input JSON doesn't exist
+      WorkflowJsonSchemaError — JSON missing 'name' or 'pnumber'
+      XmlValidationError      — composed XML fails outer or Xoml validation
+
+    Args:
+      json_path:  Path to the workflow JSON file.
+      output_dir: Where to write the .xml. Defaults to the JSON file's
+                  parent directory (matching the CLI's behavior). For the
+                  HTTP path, api.py passes json_files/ explicitly so the
+                  .xml lands next to the .json and .mmd siblings.
+    """
+    json_path = pathlib.Path(json_path)
+    if not json_path.exists():
+        raise FileNotFoundError(f"workflow JSON not found: {json_path}")
+
+    with open(json_path, encoding="utf-8") as f:
+        workflow = json.load(f)
+
+    name    = workflow.get("name")
+    pnumber = workflow.get("pnumber")
+    if not name or not pnumber:
+        raise WorkflowJsonSchemaError(
+            "workflow JSON must contain 'name' and 'pnumber' fields"
+        )
+
+    composer   = WorkflowXmlComposer()
+    xml_string = composer.compose(workflow, name, pnumber)
+
+    # Two-layer validation. Either failure raises XmlValidationError with
+    # a layer label so the caller can report which check failed.
+    root = _validate_outer(xml_string)
+    _validate_xoml(root)
+
+    out_dir = pathlib.Path(output_dir) if output_dir else json_path.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / (json_path.stem + ".xml")
+
+    out_path.write_text(xml_string, encoding="utf-8")
+    return out_path
     

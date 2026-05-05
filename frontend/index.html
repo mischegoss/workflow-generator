@@ -1,0 +1,1637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workflow Generator — Internal Beta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--
+  Phase H v2 — internal-beta frontend for the workflow generator.
+
+  Three panels per spec §12.1:
+    LEFT          chat (prompt → preview → activities → outcome)
+    RIGHT TOP     Mermaid diagram (post-Gate 3) — click to expand to lightbox
+    RIGHT BOTTOM  downloads (.json + .mmd links, on-demand .xml conversion)
+
+  State machine per spec §12.3 (read-only Gate 2 for v1):
+    IDLE → AWAITING_GATE1 → AWAITING_GATE2 → AWAITING_GATE3 → DONE
+
+  Mode toggle:
+    SINGLE_SHOT  — disabled, "Coming Soon" placeholder
+    ADVANCED     — the gated flow above (active)
+
+  Top-bar controls:
+    Mode toggle | Reset (wipes session, with confirmation) | Env indicator
+
+  v2 changes vs v1:
+    - All UI fonts bumped (~14px → ~16-17px base, larger pills/labels)
+    - Lightbox is now a fixed-size rectangle (96vw × 92vh) with the
+      diagram scaled to fit inside, instead of letting the SVG dictate
+      the modal's shape (which produced tall-portrait modals on
+      horizontally-laid-out diagrams)
+    - "Show raw" buttons now open the same lightbox modal (with a
+      JSON viewer + Copy button) instead of expanding inline. Inline
+      details on a 2,000-line enriched_workflow blob was unreadable.
+    - "Convert to XML" button in downloads panel — calls the new
+      POST /convert-xml/{filename} endpoint, then renders a download
+      link for the resulting .xml. On-demand only (per design call:
+      not every workflow gets imported, conversion is non-trivial work).
+
+  Build/runtime:
+    Zero build step. Vanilla JS. Mermaid loaded from jsDelivr CDN.
+    Talks to API_BASE (default http://localhost:8000) — change at top of <script>.
+
+  Edit widgets (per spec §10.2 — click activity to swap, resolve placeholder)
+  are deferred to Phase H.5 once partial-update endpoints are designed.
+  Gate 2 here is read-only with approve / reject / show raw only.
+-->
+<style>
+  /* -------------------------------------------------------------------- */
+  /* Reset + base                                                         */
+  /* -------------------------------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    /* v2: 14px → 16px base. Everything below that derives from the body
+       font-size scales proportionally. Mermaid SVG text is unaffected
+       by this change (it lives inside the rendered SVG and uses its
+       own embedded font-size). */
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1f2328;
+    background: #f6f8fa;
+    overflow: hidden;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.5; }
+  pre, code { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  /* -------------------------------------------------------------------- */
+  /* Top bar — mode toggle + reset + environment indicator                */
+  /* -------------------------------------------------------------------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 18px;
+    background: #24292f;
+    color: #f6f8fa;
+    border-bottom: 1px solid #1b1f24;
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .mode-toggle { display: flex; gap: 4px; padding: 3px; background: #1b1f24; border-radius: 6px; }
+  .mode-btn {
+    background: transparent;
+    color: #adbac7;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+  }
+  .mode-btn.active { background: #347d39; color: #fff; }
+  .mode-btn .badge {
+    background: #d29922;
+    color: #1b1f24;
+    border-radius: 3px;
+    padding: 2px 6px;
+    margin-left: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+
+  /* Reset button — sits between mode toggle and env indicator. */
+  .reset-btn {
+    background: #21262d;
+    color: #f0883e;
+    border: 1px solid #3d4046;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .reset-btn:hover:not(:disabled) {
+    background: #2d2d2d;
+    border-color: #f0883e;
+  }
+
+  .env-indicator {
+    margin-left: auto;
+    font-size: 12px;
+    color: #adbac7;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .env-indicator .dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #6e7681;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .env-indicator .dot.ok { background: #2ea043; }
+  .env-indicator .dot.bad { background: #cf222e; }
+
+  /* -------------------------------------------------------------------- */
+  /* Three-panel layout                                                   */
+  /* -------------------------------------------------------------------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1px;
+    background: #d0d7de;
+    height: calc(100vh - 49px);   /* topbar — taller now (49px) */
+  }
+  .panel { background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .panel-chat { grid-row: 1 / 3; grid-column: 1; }
+  .panel-viz  { grid-row: 1 / 2; grid-column: 2; }
+  .panel-dl   { grid-row: 2 / 3; grid-column: 2; }
+
+  .panel-header {
+    padding: 10px 14px;
+    background: #f6f8fa;
+    border-bottom: 1px solid #d0d7de;
+    font-size: 13px;
+    font-weight: 600;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-body { flex: 1; overflow: auto; padding: 14px; }
+  .panel-footer {
+    border-top: 1px solid #d0d7de;
+    padding: 12px 14px;
+    background: #f6f8fa;
+    flex-shrink: 0;
+  }
+
+  /* -------------------------------------------------------------------- */
+  /* Chat panel                                                           */
+  /* -------------------------------------------------------------------- */
+  #chat { display: flex; flex-direction: column; gap: 12px; }
+  .msg {
+    border-radius: 8px;
+    padding: 12px 14px;
+    max-width: 100%;
+    word-wrap: break-word;
+    font-size: 15px;
+  }
+  .msg-user {
+    background: #ddf4ff;
+    border: 1px solid #54aeff;
+    align-self: flex-end;
+    max-width: 80%;
+  }
+  .msg-assistant { background: #f6f8fa; border: 1px solid #d0d7de; }
+  .msg-system { background: #fff8c5; border: 1px solid #d4a72c; font-style: italic; font-size: 14px; }
+  .msg-error { background: #ffebe9; border: 1px solid #cf222e; color: #82071e; }
+  .msg-meta {
+    font-size: 11px;
+    color: #6e7681;
+    margin-bottom: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .msg-meta .endpoint {
+    background: #ddf4ff;
+    color: #0969da;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .msg-meta .endpoint.failed { background: #ffebe9; color: #cf222e; }
+  .msg-meta .retried-flag {
+    background: #fff8c5;
+    color: #7d4e00;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .msg-meta .duration { color: #57606a; }
+  .msg-content { white-space: pre-wrap; font-family: inherit; }
+
+  /* Action buttons inside messages */
+  .actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+  .btn {
+    border: 1px solid #d0d7de;
+    background: #f6f8fa;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1f2328;
+  }
+  .btn:hover:not(:disabled) { background: #eaeef2; }
+  .btn-primary { background: #2da44e; border-color: #2da44e; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #2c974b; }
+  .btn-danger { background: #cf222e; border-color: #cf222e; color: #fff; }
+  .btn-danger:hover:not(:disabled) { background: #a40e26; }
+
+  .feedback-textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font: inherit;
+    margin-top: 8px;
+    resize: vertical;
+  }
+
+  /* "Show raw" button — replaces the old <details>/<summary> inline pattern.
+     Behavior: clicking opens the raw-state lightbox modal. The button itself
+     looks like a quiet secondary action so it doesn't compete with primary
+     gate buttons for attention. */
+  .btn-raw {
+    margin-top: 10px;
+    border: 1px dashed #afb8c1;
+    background: #fff;
+    color: #57606a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 6px 12px;
+    border-radius: 4px;
+  }
+  .btn-raw:hover { background: #f6f8fa; border-color: #57606a; }
+
+  /* Activity table for Gate 2 */
+  table.activities {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  table.activities th, table.activities td {
+    padding: 7px 9px;
+    border: 1px solid #d0d7de;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.activities th { background: #f6f8fa; font-weight: 600; color: #57606a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  table.activities td.idx { color: #6e7681; width: 28px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  table.activities td.xname { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #0969da; }
+
+  /* Prompt input form */
+  .prompt-form { display: flex; gap: 8px; }
+  .prompt-form textarea {
+    flex: 1;
+    min-height: 60px;
+    max-height: 140px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 10px;
+    font: inherit;
+    resize: vertical;
+  }
+  .prompt-form textarea:focus { outline: 2px solid #0969da; border-color: #0969da; }
+  .prompt-form button { align-self: flex-end; padding: 9px 18px; }
+
+  /* -------------------------------------------------------------------- */
+  /* Viz panel                                                            */
+  /* -------------------------------------------------------------------- */
+  #viz {
+    padding: 16px;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #viz.has-diagram { cursor: zoom-in; }
+  #viz.has-diagram:hover svg {
+    filter: drop-shadow(0 0 6px rgba(9, 105, 218, 0.35));
+    transition: filter 0.15s;
+  }
+  #viz .placeholder {
+    color: #6e7681;
+    text-align: center;
+    font-style: italic;
+    font-size: 14px;
+  }
+  #viz svg { max-width: 100%; height: auto; }
+
+  /* "click to expand" hint shown in the viz panel header when a diagram
+     is loaded. Lives in the panel header next to the title. */
+  .expand-hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: #0969da;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    display: none;
+  }
+  .expand-hint.visible { display: inline; }
+
+  /* -------------------------------------------------------------------- */
+  /* Lightbox (used for both Mermaid expand + raw state viewing)          */
+  /* -------------------------------------------------------------------- */
+  /* v2 design: the lightbox content is now a FIXED-SIZE rectangle
+     (96vw × 92vh) with internal flex layout. Whatever lives inside
+     (SVG diagram or JSON pre block) is constrained to fill the
+     available space without forcing the modal to the SVG's natural
+     aspect ratio. Result: always a comfortable rectangle, never a
+     tall-portrait card. */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 17, 21, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    width: 96vw;
+    height: 92vh;
+    display: flex;
+    flex-direction: column;
+    cursor: default;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: #57606a;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1;
+  }
+  .lightbox-close:hover { background: #f6f8fa; color: #cf222e; }
+  .lightbox-meta {
+    font-size: 12px;
+    color: #57606a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    margin-bottom: 12px;
+    padding-right: 60px;     /* leave room for the X button + copy button */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .lightbox-meta .filename { font-weight: 600; color: #1f2328; }
+
+  /* Copy button (shown only in raw-state mode, hidden for Mermaid mode) */
+  .lightbox-copy {
+    background: #f6f8fa;
+    border: 1px solid #d0d7de;
+    color: #1f2328;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 50px;     /* clear the X button */
+  }
+  .lightbox-copy:hover { background: #eaeef2; }
+  .lightbox-copy.copied { background: #ddf4ff; border-color: #54aeff; color: #0969da; }
+
+  /* The body of the lightbox — fills remaining vertical space, scrolls
+     as needed. Two modes: Mermaid SVG (centered) or JSON pre block
+     (top-anchored, scrollable). The .lightbox-mode-* classes on the
+     content element control which is in effect. */
+  .lightbox-body {
+    flex: 1;
+    overflow: auto;
+    background: #fff;
+    border-radius: 4px;
+    min-height: 0;     /* allow flex item to shrink below content size */
+  }
+  .lightbox-mode-mermaid .lightbox-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background: #fafbfc;
+  }
+  .lightbox-mode-mermaid .lightbox-body svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+  }
+  .lightbox-mode-raw .lightbox-body {
+    background: #f6f8fa;
+    padding: 12px;
+  }
+  .lightbox-mode-raw .lightbox-body pre {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1f2328;
+    white-space: pre;
+  }
+
+  /* -------------------------------------------------------------------- */
+  /* Downloads panel                                                      */
+  /* -------------------------------------------------------------------- */
+  #downloads .placeholder { color: #6e7681; font-style: italic; font-size: 14px; }
+  .dl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    background: #ddf4ff;
+    border: 1px solid #54aeff;
+    border-radius: 6px;
+    color: #0969da;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    margin-right: 8px;
+  }
+  .dl-link:hover { background: #b6e3ff; }
+  .dl-link.dl-link-xml { background: #fff8c5; border-color: #d4a72c; color: #7d4e00; }
+  .dl-link.dl-link-xml:hover { background: #f6e7a1; }
+
+  /* "Convert to XML" button — sits next to the download links. The
+     visual treatment matches the link styling so the relationship is
+     obvious; the action is "request the XML, then a link will appear
+     here." */
+  .convert-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    background: #fff;
+    border: 1px dashed #d4a72c;
+    border-radius: 6px;
+    color: #7d4e00;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .convert-btn:hover:not(:disabled) { background: #fff8c5; border-style: solid; }
+  .convert-btn .spinner { margin-right: 4px; }
+
+  .dl-meta { font-size: 13px; color: #57606a; margin-top: 12px; margin-bottom: 16px; }
+  .dl-meta div { margin-bottom: 4px; }
+  .dl-meta code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 13px; height: 13px;
+    border: 2px solid rgba(9, 105, 218, 0.2);
+    border-top-color: #0969da;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* -------------------------------------------------------------------- */
+  /* Reset confirm dialog (small inline modal)                            */
+  /* -------------------------------------------------------------------- */
+  .confirm-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 17, 21, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+  }
+  .confirm-modal.open { display: flex; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 22px;
+    min-width: 360px;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .confirm-box h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #1f2328;
+  }
+  .confirm-box p {
+    margin: 0 0 18px 0;
+    color: #57606a;
+    font-size: 14px;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+</style>
+</head>
+<body>
+
+<!-- =================================================================== -->
+<!-- Top bar                                                              -->
+<!-- =================================================================== -->
+<div class="topbar">
+  <h1>Workflow Generator</h1>
+  <div class="mode-toggle" role="tablist" aria-label="Mode selection">
+    <button id="modeAdvanced" class="mode-btn active" role="tab" aria-selected="true">Advanced</button>
+    <button id="modeSingleShot" class="mode-btn" role="tab" aria-selected="false" disabled
+            title="Single-shot mode is not implemented yet — coming soon.">
+      Single Shot <span class="badge">Coming Soon</span>
+    </button>
+  </div>
+  <button id="resetBtn" class="reset-btn" title="Wipe the current session and start fresh">
+    Reset
+  </button>
+  <div class="env-indicator">
+    <span id="apiDot" class="dot"></span>
+    <span id="apiStatus">checking…</span>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- Three-panel layout                                                   -->
+<!-- =================================================================== -->
+<div class="layout">
+
+  <!-- LEFT: Chat -->
+  <section class="panel panel-chat" aria-label="Chat">
+    <div class="panel-header">
+      Chat
+      <span id="stateLabel" style="margin-left:auto;font-size:11px;color:#0969da;">IDLE</span>
+    </div>
+    <div class="panel-body">
+      <div id="chat"></div>
+    </div>
+    <div class="panel-footer">
+      <form class="prompt-form" id="promptForm">
+        <textarea id="promptInput" placeholder="Describe a workflow…" required></textarea>
+        <button type="submit" id="submitBtn" class="btn btn-primary">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- RIGHT TOP: Mermaid viz -->
+  <section class="panel panel-viz" aria-label="Visualization">
+    <div class="panel-header">
+      Mermaid Diagram
+      <span id="expandHint" class="expand-hint">click to expand ⤢</span>
+    </div>
+    <div class="panel-body">
+      <div id="viz">
+        <div class="placeholder">Diagram will appear after artifacts are generated.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT BOTTOM: Downloads + global raw -->
+  <section class="panel panel-dl" aria-label="Downloads">
+    <div class="panel-header">Downloads</div>
+    <div class="panel-body">
+      <div id="downloads">
+        <div class="placeholder">Download links will appear after artifacts are generated.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- =================================================================== -->
+<!-- Lightbox (modal — used for Mermaid expand AND raw state viewing)     -->
+<!-- =================================================================== -->
+<!-- Hidden by default. Opened by openLightbox(mode, opts). The inner
+     content stops click propagation so only backdrop clicks dismiss. -->
+<div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-label="Lightbox">
+  <div class="lightbox-content" id="lightboxContent">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close (Esc)">×</button>
+    <div class="lightbox-meta" id="lightboxMeta">
+      <span class="filename" id="lightboxFilename"></span>
+      <button class="lightbox-copy" id="lightboxCopy" style="display:none;">Copy</button>
+    </div>
+    <div class="lightbox-body" id="lightboxBody"></div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- Reset confirm modal                                                  -->
+<!-- =================================================================== -->
+<div id="confirmModal" class="confirm-modal" aria-hidden="true" role="dialog" aria-label="Reset confirmation">
+  <div class="confirm-box">
+    <h2>Reset session?</h2>
+    <p>This will wipe the current session, clear the chat, and discard any in-progress workflow.
+       The download links and tracking token will be lost.</p>
+    <div class="confirm-actions">
+      <button id="confirmCancel" class="btn">Cancel</button>
+      <button id="confirmReset" class="btn btn-danger">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- Mermaid CDN — initializes after DOM ready                            -->
+<!-- =================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<script>
+"use strict";
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+const API_BASE = "http://localhost:8000";
+
+// Mirrors tools/preview.py INTENT_TO_CATEGORY. Updating preview.py?
+// Update here too. Used only for the [Show activities] toggle on Gate 1
+// — we render the steps client-side from decomposition rather than
+// re-calling /plan with include_activities=true (saves an LLM call).
+const INTENT_TO_CATEGORY = {
+  "create_table":        "Tables",
+  "count_rows":          "Tables",
+  "get_cell":            "Tables",
+  "get_date":            "Time",
+  "format_date":         "Time",
+  "date_difference":     "Time",
+  "set_variable":        "Variables",
+  "initialize_variable": "Variables",
+  "display":             "Logging",
+  "send_email":          "Communication",
+  "query_servicenow":    "ServiceNow",
+  "branch":              "Flow Control",
+  "loop":                "Flow Control",
+  "exit_loop":           "Flow Control",
+  "other":               "General",
+};
+
+// State machine labels — must match the strings api.py returns
+// in {Plan,BuildActivities,GenerateArtifacts}Response.state.
+const STATES = {
+  IDLE:            "IDLE",
+  AWAITING_GATE1:  "AWAITING_GATE1",
+  AWAITING_GATE2:  "AWAITING_GATE2",
+  AWAITING_GATE3:  "AWAITING_GATE3",
+  DONE:            "DONE",
+  WORKING:         "WORKING",   // transient — between an HTTP call and its response
+};
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "default",
+  flowchart: { useMaxWidth: true, htmlLabels: true },
+  securityLevel: "strict",
+});
+
+// ============================================================
+// SESSION STATE — single in-memory object
+// ============================================================
+const session = {
+  id:                 null,
+  state:              STATES.IDLE,
+  // Snapshot of every API response. Per-gate raw modals read from here.
+  // Kept in full so debugging an unexpected state doesn't require a re-run.
+  lastPlan:           null,
+  lastBuild:          null,
+  lastArtifacts:      null,
+  // Tracking token from a successful /generate-artifacts.
+  trackingToken:      null,
+  // Cached Mermaid SVG markup (string) so the lightbox can re-insert
+  // a fresh copy without re-running mermaid.render(), which mutates
+  // its input nodes and would otherwise tear the small panel apart
+  // when we move the SVG into the modal.
+  mermaidSvg:         null,
+  mermaidFilename:    null,
+  // XML conversion result — null until user clicks "Convert to XML".
+  // Holds the response from POST /convert-xml/{filename}.
+  xmlFilename:        null,
+};
+
+// ============================================================
+// CHAT MESSAGE RENDERING
+// ============================================================
+
+const chatEl = document.getElementById("chat");
+const stateLabelEl = document.getElementById("stateLabel");
+
+function addMsg({ role, content, endpoint, durationMs, retried, failed, htmlBuilder }) {
+  const msg = document.createElement("div");
+  msg.className = "msg msg-" + role;
+
+  if (endpoint || durationMs != null || retried) {
+    const meta = document.createElement("div");
+    meta.className = "msg-meta";
+    if (endpoint) {
+      const ep = document.createElement("span");
+      ep.className = "endpoint" + (failed ? " failed" : "");
+      ep.textContent = endpoint;
+      meta.appendChild(ep);
+    }
+    if (durationMs != null) {
+      const d = document.createElement("span");
+      d.className = "duration";
+      d.textContent = (durationMs / 1000).toFixed(1) + "s";
+      meta.appendChild(d);
+    }
+    if (retried) {
+      const r = document.createElement("span");
+      r.className = "retried-flag";
+      r.textContent = "retried";
+      meta.appendChild(r);
+    }
+    msg.appendChild(meta);
+  }
+
+  if (content) {
+    const c = document.createElement("div");
+    c.className = "msg-content";
+    c.textContent = content;
+    msg.appendChild(c);
+  }
+
+  if (htmlBuilder) htmlBuilder(msg);
+
+  chatEl.appendChild(msg);
+  msg.scrollIntoView({ block: "end", behavior: "smooth" });
+  return msg;
+}
+
+function setState(newState) {
+  session.state = newState;
+  stateLabelEl.textContent = newState;
+  document.getElementById("submitBtn").disabled = (newState === STATES.WORKING);
+}
+
+// ============================================================
+// API HELPERS
+// ============================================================
+
+async function apiCall(method, path, body) {
+  const t0 = performance.now();
+  let res, parsed;
+  try {
+    res = await fetch(API_BASE + path, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body == null ? undefined : JSON.stringify(body),
+    });
+  } catch (e) {
+    const dt = performance.now() - t0;
+    return { ok: false, status: 0, body: { error: "network_error", message: String(e) }, durationMs: dt };
+  }
+  const dt = performance.now() - t0;
+  try {
+    parsed = await res.json();
+  } catch {
+    parsed = { error: "non_json_response", message: await res.text().catch(() => "") };
+  }
+  return { ok: res.ok, status: res.status, body: parsed, durationMs: dt };
+}
+
+async function probeHealth() {
+  const dotEl = document.getElementById("apiDot");
+  const lblEl = document.getElementById("apiStatus");
+  const r = await apiCall("GET", "/health");
+  if (r.ok && r.body.status === "ok") {
+    dotEl.className = "dot ok";
+    lblEl.textContent = `${API_BASE} • v${r.body.version || "?"}`;
+  } else {
+    dotEl.className = "dot bad";
+    lblEl.textContent = `${API_BASE} • UNREACHABLE`;
+  }
+}
+
+// ============================================================
+// RAW BUTTONS — open lightbox in raw mode
+// ============================================================
+//
+// v2 change: raw state used to expand inline as <details>. With
+// 2,000-line enriched_workflow blobs that was unreadable. Now each
+// "Show raw — X" button opens the same lightbox modal that Mermaid
+// uses, in raw mode (JSON viewer + Copy button + Esc/X to close).
+
+function appendRawButton(parentMsg, label, dataObj) {
+  const btn = document.createElement("button");
+  btn.className = "btn-raw";
+  btn.textContent = "{ } Show raw — " + label;
+  btn.addEventListener("click", () => {
+    openLightbox("raw", { label, dataObj });
+  });
+  parentMsg.appendChild(btn);
+}
+
+// ============================================================
+// FLOW: prompt submit → /plan
+// ============================================================
+
+document.getElementById("promptForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const promptEl = document.getElementById("promptInput");
+  const text = promptEl.value.trim();
+  if (!text) return;
+
+  if (session.state === STATES.DONE) resetSession({ keepChat: true });
+
+  addMsg({ role: "user", content: text });
+  promptEl.value = "";
+
+  await runPlan(text, /* feedbackText */ null);
+});
+
+async function runPlan(promptText, feedbackText) {
+  setState(STATES.WORKING);
+  const isFeedback = !!feedbackText;
+  const payload = isFeedback
+    ? { prompt: promptText, session_id: session.id, feedback_text: feedbackText }
+    : { prompt: promptText };
+
+  const loadingMsg = addMsg({
+    role: "system",
+    content: "Planning…",
+    htmlBuilder: m => { const s = document.createElement("span"); s.className = "spinner"; m.prepend(s); m.prepend(document.createTextNode(" ")); }
+  });
+
+  const r = await apiCall("POST", "/plan", payload);
+  loadingMsg.remove();
+
+  if (!r.ok) {
+    addMsg({
+      role: "error",
+      endpoint: "POST /plan",
+      durationMs: r.durationMs,
+      failed: true,
+      content: formatApiError(r),
+    });
+    setState(session.id ? STATES.AWAITING_GATE1 : STATES.IDLE);
+    return;
+  }
+
+  session.id = r.body.session_id;
+  session.lastPlan = r.body;
+
+  const msg = addMsg({
+    role: "assistant",
+    endpoint: "POST /plan",
+    durationMs: r.durationMs,
+    content: r.body.preview,
+    htmlBuilder: (m) => {
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const ok = mkBtn("Looks good", "btn-primary", () => {
+        m.querySelector(".actions")?.remove();
+        runBuildActivities();
+      });
+      actions.appendChild(ok);
+
+      const nc = mkBtn("Needs changes", "", () => {
+        showFeedbackPrompt(m, /* gate */ 1);
+      });
+      actions.appendChild(nc);
+
+      const showAct = mkBtn("Show activities", "", (e) => {
+        const existing = m.querySelector(".activities-block");
+        if (existing) { existing.remove(); e.target.textContent = "Show activities"; return; }
+        const block = renderDecompositionSteps(session.lastPlan.decomposition);
+        block.classList.add("activities-block");
+        m.appendChild(block);
+        e.target.textContent = "Hide activities";
+      });
+      actions.appendChild(showAct);
+
+      m.appendChild(actions);
+
+      // Per-gate raw — opens in lightbox modal (v2)
+      appendRawButton(m, "decomposition + task_match_result", {
+        decomposition:     session.lastPlan.decomposition,
+        task_match_result: session.lastPlan.task_match_result,
+        step_count:        session.lastPlan.step_count,
+      });
+    },
+  });
+
+  setState(STATES.AWAITING_GATE1);
+}
+
+function renderDecompositionSteps(decomposition) {
+  const wrap = document.createElement("div");
+  wrap.style.marginTop = "12px";
+  const header = document.createElement("div");
+  header.style.fontWeight = "600";
+  header.style.marginBottom = "6px";
+  header.textContent = "Activities:";
+  wrap.appendChild(header);
+  const ol = document.createElement("ol");
+  ol.style.margin = "0 0 0 22px";
+  ol.style.padding = "0";
+  for (const step of (decomposition.steps || [])) {
+    const li = document.createElement("li");
+    li.style.marginBottom = "4px";
+    const cat = INTENT_TO_CATEGORY[step.intent] || "General";
+    li.innerHTML = `<code style="color:#6e7681;font-size:12px;">[${cat}]</code> ${escapeHtml(step.description || "(no description)")}`;
+    ol.appendChild(li);
+  }
+  wrap.appendChild(ol);
+  return wrap;
+}
+
+// ============================================================
+// FEEDBACK FLOW (Gate 1 / Gate 2 reject)
+// ============================================================
+
+function showFeedbackPrompt(msgEl, gate) {
+  msgEl.querySelector(".actions")?.remove();
+
+  const wrap = document.createElement("div");
+  wrap.style.marginTop = "12px";
+
+  const ta = document.createElement("textarea");
+  ta.className = "feedback-textarea";
+  ta.placeholder = gate === 1
+    ? "What should change about the plan?"
+    : "What should change about the activities?";
+  wrap.appendChild(ta);
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+
+  if (gate === 2) {
+    addMsg({
+      role: "system",
+      content: "Gate 2 edits aren't implemented yet — coming in Phase H.5. " +
+               "For now you can either approve to generate, or restart with a different prompt.",
+    });
+    msgEl.appendChild(wrap);
+    actions.appendChild(mkBtn("Restart", "btn-danger", () => {
+      resetSession({ keepChat: true });
+      addMsg({ role: "system", content: "Session reset. Submit a new prompt." });
+    }));
+    actions.appendChild(mkBtn("Cancel", "", () => {
+      wrap.remove();
+      attachGate2Actions(msgEl);
+    }));
+    wrap.appendChild(actions);
+    return;
+  }
+
+  // gate === 1
+  actions.appendChild(mkBtn("Submit feedback", "btn-primary", async () => {
+    const text = ta.value.trim();
+    if (!text) return;
+    wrap.remove();
+    addMsg({ role: "user", content: "[Feedback] " + text });
+    await runPlan(session.lastPlan?.preview ? "" : "", text);
+  }));
+  actions.appendChild(mkBtn("Cancel", "", () => {
+    wrap.remove();
+    rerenderGate1Actions(msgEl);
+  }));
+  wrap.appendChild(actions);
+  msgEl.appendChild(wrap);
+}
+
+function rerenderGate1Actions(msgEl) {
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.appendChild(mkBtn("Looks good", "btn-primary", () => {
+    msgEl.querySelector(".actions")?.remove();
+    runBuildActivities();
+  }));
+  actions.appendChild(mkBtn("Needs changes", "", () => showFeedbackPrompt(msgEl, 1)));
+  actions.appendChild(mkBtn("Show activities", "", (e) => {
+    const existing = msgEl.querySelector(".activities-block");
+    if (existing) { existing.remove(); e.target.textContent = "Show activities"; return; }
+    const block = renderDecompositionSteps(session.lastPlan.decomposition);
+    block.classList.add("activities-block");
+    msgEl.appendChild(block);
+    e.target.textContent = "Hide activities";
+  }));
+  msgEl.appendChild(actions);
+}
+
+// ============================================================
+// FLOW: /build-activities → Gate 2
+// ============================================================
+
+async function runBuildActivities() {
+  setState(STATES.WORKING);
+  const loadingMsg = addMsg({
+    role: "system",
+    content: "Building activities (deterministic middle)…",
+    htmlBuilder: m => { const s = document.createElement("span"); s.className = "spinner"; m.prepend(s); m.prepend(document.createTextNode(" ")); }
+  });
+
+  const r = await apiCall("POST", "/build-activities", { session_id: session.id });
+  loadingMsg.remove();
+
+  if (!r.ok) {
+    addMsg({
+      role: "error",
+      endpoint: "POST /build-activities",
+      durationMs: r.durationMs,
+      failed: true,
+      content: formatApiError(r),
+    });
+    setState(STATES.AWAITING_GATE1);
+    return;
+  }
+
+  session.lastBuild = r.body;
+
+  const msg = addMsg({
+    role: "assistant",
+    endpoint: "POST /build-activities",
+    durationMs: r.durationMs,
+    content: `Activities ready (${r.body.activity_count} top-level).`,
+    htmlBuilder: (m) => {
+      m.appendChild(renderActivityTable(r.body.enriched_workflow));
+      attachGate2Actions(m);
+      appendRawButton(m, "enriched_workflow", r.body.enriched_workflow);
+    },
+  });
+
+  setState(STATES.AWAITING_GATE2);
+}
+
+function attachGate2Actions(msgEl) {
+  msgEl.querySelector(".actions")?.remove();
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.appendChild(mkBtn("Generate", "btn-primary", () => {
+    msgEl.querySelector(".actions")?.remove();
+    runGenerateArtifacts();
+  }));
+  actions.appendChild(mkBtn("Needs changes", "", () => showFeedbackPrompt(msgEl, 2)));
+  msgEl.appendChild(actions);
+}
+
+function renderActivityTable(enriched) {
+  const wrap = document.createElement("div");
+  const raw = (enriched && enriched.workflow_raw_data) || {};
+  const rows = [];
+  let i = 1;
+  for (const [xname, act] of Object.entries(raw)) {
+    if (!act || typeof act !== "object") continue;
+    rows.push({
+      idx: i++,
+      xname,
+      ctype: act.CustomTypeName || "",
+      display: act.DisplayName || "",
+    });
+  }
+  if (!rows.length) {
+    const p = document.createElement("p");
+    p.style.color = "#6e7681";
+    p.textContent = "(no top-level activities returned)";
+    wrap.appendChild(p);
+    return wrap;
+  }
+  const table = document.createElement("table");
+  table.className = "activities";
+  table.innerHTML = `
+    <thead><tr>
+      <th>#</th><th>xName</th><th>CustomType</th><th>DisplayName</th>
+    </tr></thead>
+    <tbody>${rows.map(r => `
+      <tr>
+        <td class="idx">${r.idx}</td>
+        <td class="xname">${escapeHtml(r.xname)}</td>
+        <td>${escapeHtml(r.ctype)}</td>
+        <td>${escapeHtml(r.display)}</td>
+      </tr>`).join("")}
+    </tbody>
+  `;
+  wrap.appendChild(table);
+  return wrap;
+}
+
+// ============================================================
+// FLOW: /generate-artifacts → Gate 3
+// ============================================================
+
+async function runGenerateArtifacts() {
+  setState(STATES.WORKING);
+  const loadingMsg = addMsg({
+    role: "system",
+    content: "Generating workflow JSON (Wirer + post-Wirer)…",
+    htmlBuilder: m => { const s = document.createElement("span"); s.className = "spinner"; m.prepend(s); m.prepend(document.createTextNode(" ")); }
+  });
+
+  const r = await apiCall("POST", "/generate-artifacts", { session_id: session.id });
+  loadingMsg.remove();
+
+  if (!r.ok) {
+    addMsg({
+      role: "error",
+      endpoint: "POST /generate-artifacts",
+      durationMs: r.durationMs,
+      retried: r.body?.detail?.retried,
+      failed: true,
+      content: formatApiError(r),
+    });
+    setState(STATES.AWAITING_GATE2);
+    return;
+  }
+
+  session.lastArtifacts = r.body;
+  session.trackingToken = r.body.tracking_token;
+  session.mermaidFilename = r.body.mermaid_filename;
+  session.xmlFilename = null;   // reset XML state for this new run
+
+  await renderMermaid(r.body.mermaid_url);
+  renderDownloads(r.body);
+
+  const msg = addMsg({
+    role: "assistant",
+    endpoint: "POST /generate-artifacts",
+    durationMs: r.durationMs,
+    retried: r.body.retried,
+    content: r.body.summary,
+    htmlBuilder: (m) => {
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      actions.appendChild(mkBtn("✓ Worked", "btn-primary", () => recordOutcome(true, "")));
+      actions.appendChild(mkBtn("✗ Import failed", "btn-danger",
+                                () => promptOutcome(m, false, "import_failed")));
+      actions.appendChild(mkBtn("✗ Runtime failed", "btn-danger",
+                                () => promptOutcome(m, false, "runtime_failed")));
+      m.appendChild(actions);
+
+      appendRawButton(m, "validation + placeholders + verify_notes", {
+        retried:        r.body.retried,
+        retry_reason:   r.body.retry_reason,
+        placeholders:   r.body.placeholders,
+        verify_notes:   r.body.verify_notes,
+      });
+    },
+  });
+
+  setState(STATES.AWAITING_GATE3);
+}
+
+// ============================================================
+// FLOW: /outcome
+// ============================================================
+
+function promptOutcome(msgEl, worked, kind) {
+  msgEl.querySelector(".actions")?.remove();
+  const wrap = document.createElement("div");
+  wrap.style.marginTop = "12px";
+  const ta = document.createElement("textarea");
+  ta.className = "feedback-textarea";
+  ta.placeholder = kind === "import_failed"
+    ? "Optional: what error did you see at import time?"
+    : "Optional: what went wrong at runtime?";
+  wrap.appendChild(ta);
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  actions.appendChild(mkBtn("Send", "btn-primary", () => {
+    const notes = ta.value.trim() || `[${kind}]`;
+    recordOutcome(worked, notes);
+  }));
+  actions.appendChild(mkBtn("Cancel", "", () => {
+    wrap.remove();
+    const restored = document.createElement("div");
+    restored.className = "actions";
+    restored.appendChild(mkBtn("✓ Worked", "btn-primary", () => recordOutcome(true, "")));
+    restored.appendChild(mkBtn("✗ Import failed", "btn-danger",
+                                () => promptOutcome(msgEl, false, "import_failed")));
+    restored.appendChild(mkBtn("✗ Runtime failed", "btn-danger",
+                                () => promptOutcome(msgEl, false, "runtime_failed")));
+    msgEl.appendChild(restored);
+  }));
+  wrap.appendChild(actions);
+  msgEl.appendChild(wrap);
+}
+
+async function recordOutcome(worked, notes) {
+  if (!session.trackingToken) {
+    addMsg({ role: "error", content: "No tracking token — can't record outcome." });
+    return;
+  }
+  setState(STATES.WORKING);
+  const r = await apiCall("POST", `/outcome/${session.trackingToken}`,
+                          { worked, notes });
+  if (!r.ok) {
+    addMsg({
+      role: "error",
+      endpoint: `POST /outcome/${session.trackingToken.slice(0,12)}…`,
+      durationMs: r.durationMs,
+      failed: true,
+      content: formatApiError(r),
+    });
+    setState(STATES.AWAITING_GATE3);
+    return;
+  }
+  addMsg({
+    role: "assistant",
+    endpoint: `POST /outcome/${session.trackingToken.slice(0,12)}…`,
+    durationMs: r.durationMs,
+    content: worked
+      ? "Thanks — outcome recorded. Submit another prompt to start a new session."
+      : "Failure recorded. Submit another prompt to try again.",
+    htmlBuilder: (m) => {
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      actions.appendChild(mkBtn("Start over", "", () => {
+        resetSession({ keepChat: false });
+      }));
+      m.appendChild(actions);
+    },
+  });
+  setState(STATES.DONE);
+}
+
+// ============================================================
+// VIZ PANEL — Mermaid render
+// ============================================================
+
+const vizEl       = document.getElementById("viz");
+const expandHint  = document.getElementById("expandHint");
+
+async function renderMermaid(mermaidUrl) {
+  vizEl.innerHTML = "";
+  vizEl.classList.remove("has-diagram");
+  expandHint.classList.remove("visible");
+  session.mermaidSvg = null;
+
+  if (!mermaidUrl) {
+    vizEl.innerHTML = '<div class="placeholder">Mermaid render failed (Stage 8 returned no file).</div>';
+    return;
+  }
+  try {
+    const res = await fetch(API_BASE + mermaidUrl);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const mmdSrc = await res.text();
+    const id = "mmd_" + Math.random().toString(36).slice(2, 9);
+    const { svg } = await mermaid.render(id, mmdSrc);
+    session.mermaidSvg = svg;
+    vizEl.innerHTML = svg;
+    vizEl.classList.add("has-diagram");
+    expandHint.classList.add("visible");
+  } catch (e) {
+    vizEl.innerHTML = `<div class="placeholder">Failed to render Mermaid: ${escapeHtml(String(e))}</div>`;
+  }
+}
+
+// ============================================================
+// LIGHTBOX — used for both Mermaid expand AND raw state viewing
+// ============================================================
+//
+// openLightbox(mode, opts)
+//   mode = "mermaid"  → opts: {} (uses session.mermaidSvg + filename)
+//   mode = "raw"      → opts: {label, dataObj}
+//
+// The same lightbox element handles both. We toggle a CSS mode class on
+// the content element to switch visual treatment (centered SVG vs scroll
+// pre block) and show/hide the Copy button which is raw-mode-only.
+
+const lightboxEl       = document.getElementById("lightbox");
+const lightboxContent  = document.getElementById("lightboxContent");
+const lightboxBody     = document.getElementById("lightboxBody");
+const lightboxFilename = document.getElementById("lightboxFilename");
+const lightboxCopy     = document.getElementById("lightboxCopy");
+
+function openLightbox(mode, opts) {
+  // Reset mode classes — last mode's CSS shouldn't leak into this one
+  lightboxContent.classList.remove("lightbox-mode-mermaid", "lightbox-mode-raw");
+  lightboxContent.classList.add("lightbox-mode-" + mode);
+  lightboxBody.innerHTML = "";
+
+  if (mode === "mermaid") {
+    if (!session.mermaidSvg) return;     // nothing to show
+    lightboxFilename.textContent = session.mermaidFilename
+      ? "diagram • " + session.mermaidFilename
+      : "diagram";
+    lightboxCopy.style.display = "none";
+    // Stamp a fresh copy of the SVG. Setting innerHTML re-parses the
+    // markup and creates new DOM nodes, leaving the small-panel SVG
+    // untouched. mermaid.render's internal layout calculations don't
+    // re-fire on the moved-and-resized node and break things.
+    lightboxBody.innerHTML = session.mermaidSvg;
+  } else if (mode === "raw") {
+    const { label, dataObj } = opts;
+    lightboxFilename.textContent = "raw • " + label;
+    lightboxCopy.style.display = "inline-block";
+    lightboxCopy.classList.remove("copied");
+    lightboxCopy.textContent = "Copy";
+    const pre = document.createElement("pre");
+    const json = JSON.stringify(dataObj, null, 2);
+    pre.textContent = json;
+    lightboxBody.appendChild(pre);
+    // Wire up Copy — uses the modern clipboard API. The button briefly
+    // turns blue and shows "Copied" so the user has feedback.
+    lightboxCopy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(json);
+        lightboxCopy.textContent = "Copied ✓";
+        lightboxCopy.classList.add("copied");
+        setTimeout(() => {
+          lightboxCopy.textContent = "Copy";
+          lightboxCopy.classList.remove("copied");
+        }, 1500);
+      } catch (e) {
+        lightboxCopy.textContent = "Copy failed";
+      }
+    };
+  }
+
+  lightboxEl.classList.add("open");
+  lightboxEl.setAttribute("aria-hidden", "false");
+}
+
+function closeLightbox() {
+  lightboxEl.classList.remove("open");
+  lightboxEl.setAttribute("aria-hidden", "true");
+  lightboxBody.innerHTML = "";
+  lightboxCopy.onclick = null;
+}
+
+// Wire up lightbox interactions
+vizEl.addEventListener("click", () => {
+  if (vizEl.classList.contains("has-diagram")) openLightbox("mermaid");
+});
+lightboxEl.addEventListener("click", (e) => {
+  // Only close on backdrop clicks — content propagation stopped below
+  if (e.target === lightboxEl) closeLightbox();
+});
+lightboxContent.addEventListener("click", (e) => e.stopPropagation());
+document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && lightboxEl.classList.contains("open")) closeLightbox();
+});
+
+// ============================================================
+// DOWNLOADS PANEL
+// ============================================================
+//
+// v2 change: add a "Convert to XML" button. The button is in the
+// quiet-but-visible state by default; clicking it calls
+// POST /convert-xml/{filename}, then replaces the button with a
+// real download link for the resulting .xml.
+
+function renderDownloads(artifactsResp) {
+  const dl = document.getElementById("downloads");
+  dl.innerHTML = "";
+
+  // JSON download — primary artifact
+  const link = document.createElement("a");
+  link.className = "dl-link";
+  link.href = API_BASE + artifactsResp.download_url;
+  link.download = artifactsResp.output_filename;
+  link.textContent = "⬇ " + artifactsResp.output_filename;
+  dl.appendChild(link);
+
+  // Mermaid download — sibling .mmd if Stage 8 succeeded
+  if (artifactsResp.mermaid_url && artifactsResp.mermaid_filename) {
+    const mlink = document.createElement("a");
+    mlink.className = "dl-link";
+    mlink.href = API_BASE + artifactsResp.mermaid_url;
+    mlink.download = artifactsResp.mermaid_filename;
+    mlink.textContent = "⬇ " + artifactsResp.mermaid_filename;
+    dl.appendChild(mlink);
+  }
+
+  // XML conversion slot — initially a button. Once clicked + converted,
+  // becomes a download link for the .xml. The slot is a wrapper element
+  // so we can swap its contents in place without touching neighbors.
+  const xmlSlot = document.createElement("div");
+  xmlSlot.id = "xmlSlot";
+  xmlSlot.style.display = "inline-block";
+  xmlSlot.style.marginLeft = "0";
+  renderXmlSlot(xmlSlot, artifactsResp);
+  dl.appendChild(xmlSlot);
+
+  // Linebreak before metadata so the meta block sits below the buttons
+  dl.appendChild(document.createElement("br"));
+
+  const meta = document.createElement("div");
+  meta.className = "dl-meta";
+  meta.innerHTML = `
+    <div>session: <code>${escapeHtml(artifactsResp.session_id)}</code></div>
+    <div>tracking: <code>${escapeHtml(artifactsResp.tracking_token)}</code></div>
+    <div>placeholders: ${artifactsResp.placeholders.length} update / ${artifactsResp.verify_notes.length} verify</div>
+    ${artifactsResp.retried ? `<div style="color:#7d4e00;">⚠ recovered after retry: ${escapeHtml(artifactsResp.retry_reason || "")}</div>` : ""}
+  `;
+  dl.appendChild(meta);
+
+  // Global raw — opens in lightbox modal (v2)
+  const rawBtn = document.createElement("button");
+  rawBtn.className = "btn-raw";
+  rawBtn.textContent = "{ } Show raw — full session state";
+  rawBtn.addEventListener("click", () => {
+    openLightbox("raw", {
+      label: "full session state",
+      dataObj: {
+        session_id:    session.id,
+        state:         session.state,
+        plan:          session.lastPlan,
+        build:         session.lastBuild,
+        artifacts:     session.lastArtifacts,
+      },
+    });
+  });
+  dl.appendChild(rawBtn);
+}
+
+function renderXmlSlot(slotEl, artifactsResp) {
+  slotEl.innerHTML = "";
+
+  // If we already converted in this session, show the download link
+  if (session.xmlFilename) {
+    const xlink = document.createElement("a");
+    xlink.className = "dl-link dl-link-xml";
+    xlink.href = API_BASE + "/download/" + session.xmlFilename;
+    xlink.download = session.xmlFilename;
+    xlink.textContent = "⬇ " + session.xmlFilename;
+    slotEl.appendChild(xlink);
+    return;
+  }
+
+  // Otherwise show the convert button
+  const btn = document.createElement("button");
+  btn.className = "convert-btn";
+  btn.textContent = "→ Convert to XML";
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    // Show spinner + label while the conversion runs. Two-layer XML
+    // validation is fast (~100-300ms) but the user gets feedback either way.
+    btn.innerHTML = '<span class="spinner"></span>Converting…';
+    const r = await apiCall("POST", "/convert-xml/" + encodeURIComponent(artifactsResp.output_filename));
+    if (!r.ok) {
+      // Revert the button and show the error in chat. We could surface
+      // it inline in the downloads panel too but the chat is where the
+      // user is already looking for status updates.
+      btn.disabled = false;
+      btn.textContent = "→ Convert to XML";
+      addMsg({
+        role: "error",
+        endpoint: "POST /convert-xml/…",
+        durationMs: r.durationMs,
+        failed: true,
+        content: formatApiError(r),
+      });
+      return;
+    }
+    session.xmlFilename = r.body.xml_filename;
+    addMsg({
+      role: "assistant",
+      endpoint: "POST /convert-xml/…",
+      durationMs: r.durationMs,
+      content: "XML ready — " + r.body.xml_filename,
+    });
+    // Re-render slot with the download link
+    renderXmlSlot(slotEl, artifactsResp);
+  });
+  slotEl.appendChild(btn);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function mkBtn(label, extraClass, onClick) {
+  const b = document.createElement("button");
+  b.className = "btn " + (extraClass || "");
+  b.textContent = label;
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function formatApiError(r) {
+  const body = r.body || {};
+  if (body.error === "network_error") {
+    return `Network error talking to ${API_BASE}: ${body.message}\n\n` +
+           `Is uvicorn running? Try:\n  uvicorn api:app --reload`;
+  }
+  const detail = body.detail !== undefined ? body.detail : body;
+  if (typeof detail === "string") return `HTTP ${r.status}: ${detail}`;
+  if (typeof detail === "object" && detail) {
+    const lines = [`HTTP ${r.status}`];
+    if (detail.error)    lines.push(`error: ${detail.error}`);
+    if (detail.message)  lines.push(`message: ${detail.message}`);
+    if (detail.layer)    lines.push(`layer: ${detail.layer}`);
+    if (detail.errors && Array.isArray(detail.errors) && detail.errors.length) {
+      lines.push("errors:");
+      for (const e of detail.errors.slice(0, 10)) lines.push(`  - ${e}`);
+    }
+    if (detail.retried)      lines.push("retried: true");
+    if (detail.retry_reason) lines.push(`retry_reason: ${detail.retry_reason}`);
+    return lines.join("\n");
+  }
+  return `HTTP ${r.status}: ${JSON.stringify(body)}`;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function resetSession({ keepChat }) {
+  session.id              = null;
+  session.state           = STATES.IDLE;
+  session.lastPlan        = null;
+  session.lastBuild       = null;
+  session.lastArtifacts   = null;
+  session.trackingToken   = null;
+  session.mermaidSvg      = null;
+  session.mermaidFilename = null;
+  session.xmlFilename     = null;
+  setState(STATES.IDLE);
+  if (!keepChat) chatEl.innerHTML = "";
+  vizEl.innerHTML = '<div class="placeholder">Diagram will appear after artifacts are generated.</div>';
+  vizEl.classList.remove("has-diagram");
+  expandHint.classList.remove("visible");
+  if (lightboxEl.classList.contains("open")) closeLightbox();
+  document.getElementById("downloads").innerHTML =
+    '<div class="placeholder">Download links will appear after artifacts are generated.</div>';
+}
+
+// ============================================================
+// MODE TOGGLE — Single Shot is intentionally a placeholder
+// ============================================================
+
+document.getElementById("modeSingleShot").addEventListener("click", (e) => {
+  if (e.target.disabled) return;
+  addMsg({ role: "system", content: "Single-shot mode is not implemented yet." });
+});
+
+// ============================================================
+// TOP-BAR RESET — confirmation modal then full wipe
+// ============================================================
+
+const confirmModal  = document.getElementById("confirmModal");
+const confirmReset  = document.getElementById("confirmReset");
+const confirmCancel = document.getElementById("confirmCancel");
+const resetBtn      = document.getElementById("resetBtn");
+
+function openResetConfirm() {
+  confirmModal.classList.add("open");
+  confirmModal.setAttribute("aria-hidden", "false");
+  confirmCancel.focus();
+}
+function closeResetConfirm() {
+  confirmModal.classList.remove("open");
+  confirmModal.setAttribute("aria-hidden", "true");
+}
+
+resetBtn.addEventListener("click", () => {
+  if (session.state === STATES.IDLE && chatEl.children.length <= 1) {
+    resetSession({ keepChat: false });
+    addMsg({ role: "system", content: "Ready. Submit a prompt below to start." });
+    return;
+  }
+  openResetConfirm();
+});
+confirmReset.addEventListener("click", () => {
+  closeResetConfirm();
+  resetSession({ keepChat: false });
+  addMsg({ role: "system", content: "Session reset. Submit a new prompt to start." });
+});
+confirmCancel.addEventListener("click", closeResetConfirm);
+confirmModal.addEventListener("click", (e) => {
+  if (e.target === confirmModal) closeResetConfirm();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && confirmModal.classList.contains("open")) closeResetConfirm();
+});
+
+// ============================================================
+// BOOT
+// ============================================================
+
+probeHealth();
+addMsg({
+  role: "system",
+  content: "Ready. Submit a prompt below to start.\n" +
+           "Advanced mode uses the three-gate flow: /plan → /build-activities → /generate-artifacts → /outcome.",
+});
+setState(STATES.IDLE);
+</script>
+</body>
+</html>

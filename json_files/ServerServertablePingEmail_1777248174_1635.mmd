@@ -1,0 +1,34 @@
+flowchart TD
+    getRowsCount1["Get the total number of servers in the serverTabl…"]
+    whileActivity1[["Loop through each server in the serverTable."]]
+    exitWhile1["Exit the loop when all servers have been processe…"]
+    getCellValue1["Get the server name from the current row."]
+    ping1["Ping the server to check its status."]
+    ifElseActivity1{"Check if the ping failed."}
+    sendEmail1["Send an email notification that the server is dow…"]
+    ifElseActivity1_branch2_empty["(no action)"]
+
+    getRowsCount1 --> whileActivity1
+    whileActivity1 --> exitWhile1
+    exitWhile1 --> getCellValue1
+    getCellValue1 --> ping1
+    ping1 --> ifElseActivity1
+    ifElseActivity1 -->|"failure"| sendEmail1
+    ifElseActivity1 -->|"else"| ifElseActivity1_branch2_empty
+    sendEmail1 -->|"loop"| whileActivity1
+    ifElseActivity1_branch2_empty -->|"loop"| whileActivity1
+
+    subgraph task_other["other"]
+        getCellValue1
+        ping1
+        sendEmail1
+        ifElseActivity1_branch2_empty
+    end
+    subgraph task_iterate_rows["iterate_rows"]
+        getRowsCount1
+        whileActivity1
+        exitWhile1
+    end
+    subgraph task_branch_decision["branch_decision"]
+        ifElseActivity1
+    end

@@ -14,10 +14,10 @@ PIPELINE BOUNDARIES
                            Outputs: pattern_match, activity_manifest, enriched_workflow
                            Endpoint: POST /build-activities
 
-  ArtifactsPipeline      — Stage 4d (Wirer) + post-Wirer (4f, 4f.5, 4g, 5, 6, 7)
+  ArtifactsPipeline      — Stage 4d (Wirer) + post-Wirer (4f, 4f.5, 4g, 5, 6, 7, 8)
                            Inputs:  decomposition, activity_manifest,
                                     enriched_workflow, pattern_match
-                           Outputs: workflow_json, output_result
+                           Outputs: workflow_json, output_result, mermaid_file
                            Endpoint: POST /generate-artifacts
 
 CODE REUSE
@@ -29,7 +29,7 @@ CODE REUSE
 
   The post-Wirer chain is imported directly from agents.pipeline rather
   than reimplemented — _run_post_wirer_stages handles repair, validation,
-  and output identically for CLI and HTTP paths.
+  output, AND Mermaid (Stage 8) identically for CLI and HTTP paths.
 
 ADK STATE SEEDING
   Each pipeline runs in its own InMemoryRunner with state seeded by api.py.
@@ -318,13 +318,17 @@ class BuildActivitiesPipeline(BaseAgent):
 
 class ArtifactsPipeline(BaseAgent):
     """Runs WirerAgent and the post-Wirer chain (repair, cleanup, annotation,
-    validation, output). Requires decomposition, activity_manifest,
+    validation, output, Mermaid). Requires decomposition, activity_manifest,
     enriched_workflow, pattern_match in session state at start.
 
     On Wirer truncation or validation failure, this pipeline returns the
     failure in output_result. api.py is responsible for invoking the
     existing CorrectionPipeline (from agents.pipeline) for retry — same
-    retry logic as main.py uses, no duplication."""
+    retry logic as main.py uses, no duplication.
+
+    Stage 8 (Mermaid) runs as the last step of _run_post_wirer_stages and
+    sets ctx.session.state["mermaid_file"] when the renderer succeeds.
+    Captured below alongside the other post-Wirer outputs."""
 
     wirer: LlmAgent
 
@@ -363,18 +367,25 @@ class ArtifactsPipeline(BaseAgent):
         except Exception as telem_err:
             print(f"  [artifacts_pipeline] telemetry.log_wirer_call failed: {telem_err}")
 
-        # Stages 4f, 4f.5, 4g, 5, 6, 7 — shared helper from agents.pipeline
+        # Stages 4f, 4f.5, 4g, 5, 6, 7, 8 — shared helper from agents.pipeline.
+        # Stage 8 (Mermaid) writes the sibling .mmd and stashes its path
+        # in ctx.session.state["mermaid_file"]. Failures in Stage 8 are
+        # non-fatal and leave mermaid_file unset.
         await _run_post_wirer_stages(ctx, activity_manifest)
 
         # Capture all post-Wirer outputs for api.py to read after the runner
         # exits. _run_post_wirer_stages writes these via Python state mutation
         # which doesn't survive get_session(); see _RESULTS docstring.
+        # mermaid_file is included so /generate-artifacts can surface it
+        # in the response — without this capture, the value would be lost
+        # at the runner boundary.
         capture_result(
             ckey,
             workflow_json=ctx.session.state.get("workflow_json"),
             annotation_result=ctx.session.state.get("annotation_result"),
             validation_result=ctx.session.state.get("validation_result"),
             output_result=ctx.session.state.get("output_result"),
+            mermaid_file=ctx.session.state.get("mermaid_file"),
             _empty_response_error=ctx.session.state.get("_empty_response_error"),
         )
 

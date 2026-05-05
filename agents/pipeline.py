@@ -54,11 +54,29 @@ RETRY ARCHITECTURE:
   from decomposition (persists as LlmAgent output_key). WirerAgent receives
   CORRECTION REQUIRED prompt with embedded workflow_json.
 
+  api.py also uses build_correction_pipeline() for its retry path. The
+  result_capture bridge below is what makes api.py's retry path work —
+  see CAPTURE NOTE below.
+
 ADK STATE NOTE:
   LlmAgent output_key values persist through get_session().
   Python-stage mutations do NOT persist through get_session().
   decomposition and workflow_json survive retry; activity_manifest and
   enriched_workflow must be recomputed.
+
+CAPTURE NOTE (G2 + post-Mermaid bug fix):
+  Because Python-stage mutations don't survive get_session(), HTTP-flow
+  callers (api.py via _run_pipeline_with_state) can't read output_result,
+  validation_result, annotation_result, or mermaid_file from ADK state.
+  The fix: _capture_post_wirer_state() at the bottom of this module
+  stamps these into the process-local result_capture dict at every exit
+  point of _run_post_wirer_stages. CLI behavior unchanged because main.py
+  never seeds _capture_key — capture_result becomes a no-op.
+
+  Without this, /generate-artifacts after a successful CorrectionPipeline
+  run was returning 502 Bad Gateway because api.py couldn't see the
+  output_file written to ctx.session.state. The pipeline succeeded; the
+  result simply didn't survive the runner boundary.
 
 TELEMETRY (Phase E):
   ctx.session.state["telemetry_session_id"] is read at the top of each
@@ -112,6 +130,7 @@ from tools.output_tools import run_output
 from tools.annotation_tools import _ensure_dict
 from tools.post_wirer_repair import repair_workflow
 from tools.visualize import write_mermaid
+from tools.result_capture import capture_result, _capture_key
 
 
 # ---------------------------------------------------------------------------
@@ -166,6 +185,43 @@ def _log_fatal(ctx: InvocationContext, stage: str, exception: Exception) -> None
 
 
 # ---------------------------------------------------------------------------
+# Result-capture bridge for HTTP callers
+# ---------------------------------------------------------------------------
+
+def _capture_post_wirer_state(ctx: InvocationContext) -> None:
+    """Bridge ctx.session.state writes from _run_post_wirer_stages into the
+    process-local result_capture dict so api.py can read them across the
+    InMemoryRunner boundary.
+
+    NO-OP on the CLI path: main.py never sets ctx.session.state["_capture_key"],
+    so _capture_key(ctx) returns "" and capture_result() short-circuits.
+    The CLI reads state directly via get_session() (for LlmAgent output_keys
+    like workflow_json) and from disk (for output_file via output_result).
+
+    HTTP path: api.py seeds ctx.session.state["_capture_key"] = "<uuid>" in
+    initial_state. After this function runs at every exit of
+    _run_post_wirer_stages, api.py's pop_result(<uuid>) returns all the
+    Python-stage outputs that get_session() drops on the floor.
+
+    We capture EVERY field _run_post_wirer_stages might set so partial
+    failures are observable too — api.py needs to see output_result.errors
+    on validation failure, not just success cases.
+    """
+    ckey = _capture_key(ctx)
+    if not ckey:
+        return   # CLI path — no capture needed
+    capture_result(
+        ckey,
+        workflow_json         = ctx.session.state.get("workflow_json"),
+        annotation_result     = ctx.session.state.get("annotation_result"),
+        validation_result     = ctx.session.state.get("validation_result"),
+        output_result         = ctx.session.state.get("output_result"),
+        mermaid_file          = ctx.session.state.get("mermaid_file"),
+        _empty_response_error = ctx.session.state.get("_empty_response_error"),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Activity count guard
 # ---------------------------------------------------------------------------
 
@@ -204,6 +260,11 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
     annotation/validation/output/visualization. No fallback to
     enriched_workflow — if Wirer returns empty the outer retry fires and
     CorrectionPipeline reruns with a better prompt.
+
+    EVERY exit point in this function calls _capture_post_wirer_state(ctx)
+    so HTTP callers (api.py via _run_pipeline_with_state) can read the
+    Python-stage outputs that get_session() drops. CLI path is unaffected
+    because the capture is a no-op when _capture_key isn't seeded.
     """
     sid = _sid(ctx)
 
@@ -220,6 +281,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "errors": ["WirerAgent returned empty or unparseable output."],
         }
         _log_fatal(ctx, "wirer_output", RuntimeError(msg))
+        _capture_post_wirer_state(ctx)
         return
 
     # Normalize Wirer output — fast no-op for clean xName-keyed responses.
@@ -233,6 +295,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [f"Wirer output normalization failed: {e}"],
         }
+        _capture_post_wirer_state(ctx)
         return
 
     raw_data = workflow_json.get("workflow_raw_data", {})
@@ -249,6 +312,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "errors": [truncation_error],
         }
         _log_fatal(ctx, "activity_count_guard", RuntimeError(truncation_error))
+        _capture_post_wirer_state(ctx)
         return
 
     # Stage 4f: Re-apply fragments + scaffold on Wirer output (idempotent)
@@ -302,6 +366,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [f"Annotation failed: {e}"],
         }
+        _capture_post_wirer_state(ctx)
         return
 
     # Stage 6: Validate
@@ -319,6 +384,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [f"Validation failed: {e}"],
         }
+        _capture_post_wirer_state(ctx)
         return
 
     # Emit validation outcome event regardless of status (valid OR invalid).
@@ -340,6 +406,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": validation_result.get("errors", []),
         }
+        _capture_post_wirer_state(ctx)
         return
 
     # Stage 7: Output
@@ -355,6 +422,7 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
             "status": "failed",
             "errors": [f"Output stage failed: {e}"],
         }
+        _capture_post_wirer_state(ctx)
         return
 
     # Stage 8: Mermaid visualization
@@ -374,6 +442,9 @@ async def _run_post_wirer_stages(ctx: InvocationContext, activity_manifest: list
                 print(f"  [pipeline] mermaid skipped (renderer returned empty)")
         except Exception as e:
             print(f"  [pipeline] mermaid stage failed (non-fatal): {e}")
+
+    # Successful exit — capture all final outputs for HTTP callers.
+    _capture_post_wirer_state(ctx)
 
 
 # ---------------------------------------------------------------------------
@@ -417,6 +488,7 @@ class WorkflowPipeline(BaseAgent):
             }
             _log_fatal(ctx, "decomposer_output",
                        RuntimeError("DecomposerAgent returned empty output."))
+            _capture_post_wirer_state(ctx)
             return
 
         # Begin deterministic middle timing (Stages 2 through 4c.6)
@@ -444,6 +516,7 @@ class WorkflowPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Retrieval failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4a: Skeleton builder (deterministic, replaces PlacerAgent)
@@ -459,6 +532,7 @@ class WorkflowPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Skeleton builder failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4b: Enrich
@@ -474,6 +548,7 @@ class WorkflowPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Enrichment failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4b.5: Backfill table variable names before scaffold
@@ -496,6 +571,7 @@ class WorkflowPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Fragment application failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4c.5: Content scaffold
@@ -540,7 +616,7 @@ class WorkflowPipeline(BaseAgent):
         except Exception as telem_err:
             print(f"  [pipeline] telemetry.log_wirer_call failed: {telem_err}")
 
-        # Stages 4f-8
+        # Stages 4f-8 — captures own state at every exit
         await _run_post_wirer_stages(ctx, activity_manifest)
 
 
@@ -554,6 +630,12 @@ class CorrectionPipeline(BaseAgent):
     Rebuilds all deterministic stages from decomposition (which persists
     as a LlmAgent output_key). WirerAgent receives the CORRECTION REQUIRED
     prompt with embedded workflow_json from attempt 1.
+
+    Used by both main.py (CLI retry) and api.py (HTTP /generate-artifacts
+    retry). The result_capture bridge in _run_post_wirer_stages is what
+    makes the api.py path observable — without it, a successful correction
+    pipeline produces a valid workflow on disk but api.py returns 502
+    because output_result doesn't survive the runner boundary.
     """
 
     wirer: LlmAgent
@@ -575,6 +657,7 @@ class CorrectionPipeline(BaseAgent):
             }
             _log_fatal(ctx, "correction_decomposition_missing",
                        RuntimeError("CorrectionPipeline: decomposition not found."))
+            _capture_post_wirer_state(ctx)
             return
 
         print(f"  [correction] reusing decomposition "
@@ -606,6 +689,7 @@ class CorrectionPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Correction retrieval failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4a: Skeleton builder
@@ -621,6 +705,7 @@ class CorrectionPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Skeleton builder failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4b: Enrich
@@ -636,6 +721,7 @@ class CorrectionPipeline(BaseAgent):
                 "status": "failed",
                 "errors": [f"Correction enrichment failed: {e}"],
             }
+            _capture_post_wirer_state(ctx)
             return
 
         # Stage 4b.5: Backfill table variable names
@@ -695,7 +781,7 @@ class CorrectionPipeline(BaseAgent):
         except Exception as telem_err:
             print(f"  [correction] telemetry.log_wirer_call failed: {telem_err}")
 
-        # Stages 4f-8
+        # Stages 4f-8 — captures own state at every exit
         await _run_post_wirer_stages(ctx, activity_manifest)
 
 

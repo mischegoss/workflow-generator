@@ -1,0 +1,215 @@
+{
+  "name": "ServerServertablePingEmail_1777251102_9653",
+  "pnumber": "58643",
+  "workflow_type": "Regular",
+  "created_by": "adk-pipeline-v2",
+  "workflow_raw_data": {
+    "getRowsCount1": {
+      "xName": "getRowsCount1",
+      "CustomTypeName": "GetRowsCount",
+      "Description": "Get the total number of servers in the serverTable.",
+      "description": "Get the total number of servers in the serverTable.",
+      "DisplayName": "Get Rows Count",
+      "ResultSet": "%serverTable%",
+      "Result": {
+        "xName": "result1",
+        "Result": "",
+        "CustomTypeName": "Result",
+        "Description": "Result of GetRowsCount.",
+        "description": "Result of GetRowsCount."
+      },
+      "Advanced": {
+        "xName": "advanced1",
+        "ContinueOnError": false,
+        "CustomTypeName": "Advanced",
+        "Description": "Advanced settings for GetRowsCount.",
+        "description": "Advanced settings for GetRowsCount."
+      },
+      "notes": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+    },
+    "whileActivity1": {
+      "xName": "whileActivity1",
+      "CustomTypeName": "WhileActivity",
+      "Description": "Loop through each server in the serverTable.",
+      "description": "Loop through each server in the serverTable.",
+      "DisplayName": "While",
+      "Condition": "{x:Null}",
+      "sequenceActivity1": {
+        "exitWhile1": {
+          "xName": "exitWhile1",
+          "CustomTypeName": "ExitWhile",
+          "DisplayName": "Exit While",
+          "Counter": "%getRowsCount1%",
+          "exitWhileInsideWhile": "True",
+          "Advanced": {
+            "xName": "advanced2",
+            "ContinueOnError": false,
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for ExitWhile.",
+            "description": "Advanced settings for ExitWhile."
+          },
+          "isValid": "True",
+          "TypeName": "ExitWhile",
+          "whileSequenceActivity": "sequenceActivity1",
+          "Description": "Exit While",
+          "description": "Exit While"
+        },
+        "xName": "sequenceActivity1",
+        "CustomTypeName": "SequenceActivity",
+        "getCellValue1": {
+          "xName": "getCellValue1",
+          "CustomTypeName": "GetCellValue",
+          "Description": "Get the server name from the current row.",
+          "description": "Get the server name from the current row.",
+          "DisplayName": "Get Cell Value",
+          "ColumnName": "hostname",
+          "RowNumber": "%whileActivity1%",
+          "ResultSet": "%serverTable%",
+          "Result": {
+            "xName": "result2",
+            "Result": "",
+            "CustomTypeName": "Result",
+            "Description": "Result of GetCellValue.",
+            "description": "Result of GetCellValue."
+          },
+          "Advanced": {
+            "xName": "advanced3",
+            "ContinueOnError": false,
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for GetCellValue.",
+            "description": "Advanced settings for GetCellValue."
+          },
+          "ColumnType": "Name"
+        },
+        "ping1": {
+          "xName": "ping1",
+          "CustomTypeName": "Ping",
+          "Description": "Ping the server retrieved from the table.",
+          "description": "Ping the server retrieved from the table.",
+          "DisplayName": "Ping",
+          "HostName": "%getCellValue1%",
+          "Result": {
+            "xName": "result3",
+            "Result": "",
+            "CustomTypeName": "Result",
+            "Description": "Result of Ping.",
+            "description": "Result of Ping."
+          },
+          "Advanced": {
+            "xName": "advanced4",
+            "ContinueOnError": false,
+            "CustomTypeName": "Advanced",
+            "Description": "Advanced settings for Ping.",
+            "description": "Advanced settings for Ping."
+          },
+          "HostId": "-2"
+        },
+        "ifElseActivity1": {
+          "xName": "ifElseActivity1",
+          "CustomTypeName": "IfElseActivity",
+          "Description": "Check if the ping failed.",
+          "description": "Check if the ping failed.",
+          "DisplayName": "If/Else",
+          "ifElseBranchActivity1": {
+            "xName": "ifElseBranchActivity1",
+            "CustomTypeName": "IfElseBranchActivity",
+            "DisplayName": "If",
+            "returnValue1": {
+              "xName": "returnValue1",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "Equals",
+              "Value": "Failure",
+              "Description": "Return Value",
+              "description": "Return Value",
+              "UseStoredValue": "True",
+              "StoredValue": "",
+              "Name": "",
+              "DisplayName": "Return Value",
+              "IsValid": "True",
+              "Formula": "=Equals(&&&,Failure)",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            },
+            "sendEmail1": {
+              "xName": "sendEmail1",
+              "CustomTypeName": "SendEmail",
+              "Description": "Send an email notification that the server is down.",
+              "description": "Send an email notification that the server is down.",
+              "DisplayName": "Send Email",
+              "To": "%adminEmail%",
+              "Subject": "Server Down: %getCellValue1%",
+              "Body": "The server %getCellValue1% is not responding to ping.",
+              "Advanced": {
+                "xName": "advanced5",
+                "ContinueOnError": false,
+                "CustomTypeName": "Advanced",
+                "Description": "Advanced settings for SendEmail.",
+                "description": "Advanced settings for SendEmail."
+              }
+            }
+          },
+          "ifElseBranchActivity2": {
+            "xName": "ifElseBranchActivity2",
+            "CustomTypeName": "IfElseBranchActivity",
+            "DisplayName": "Else",
+            "returnValue2": {
+              "xName": "returnValue2",
+              "CustomTypeName": "ReturnValue",
+              "ConditionType": "",
+              "Value": "",
+              "Description": "Return Value",
+              "description": "Return Value",
+              "UseStoredValue": "True",
+              "StoredValue": "",
+              "Name": "",
+              "DisplayName": "Return Value",
+              "IsValid": "True",
+              "Formula": "{x:Null}",
+              "Type": "StoredValue",
+              "UseBranchWhenTimeout": false,
+              "ConditionNumber": "0",
+              "ConditionName": "",
+              "UseCustomeCondition": "False",
+              "RecoveryMethodSelection": "{x:Null}",
+              "Disabled": "False",
+              "ClusterID": "{x:Null}",
+              "ClusterName": "{x:Null}",
+              "TypeName": "ReturnValue",
+              "name": "ReturnValue"
+            }
+          }
+        }
+      }
+    }
+  },
+  "placeholder_summary": [
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "update"
+    },
+    {
+      "activity": "getRowsCount1",
+      "type": "GetRowsCount",
+      "field": "notes",
+      "message": "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+      "kind": "verify"
+    }
+  ],
+  "pipeline_notes": [
+    "UPDATE BEFORE RUNNING: VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running.",
+    "VERIFY: '%serverTable%' is referenced as a table but is not created by any activity in this workflow. Ensure 'serverTable' is populated before running."
+  ],
+  "errors": []
+}

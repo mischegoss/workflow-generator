@@ -1,17 +1,23 @@
 """
-convert_to_xml.py  —  root of project, no ADK dependency.
+convert_to_xml.py  —  CLI wrapper around serializer.xml_composer.
 
 Standalone CLI: convert a pipeline-output JSON file to TotalExport XML
 for manual upload to the Resolve Actions sandbox.
 
+This script is now a thin wrapper around convert_json_to_xml() in
+serializer.xml_composer. The actual load + compose + two-layer validation
+logic lives there so api.py's /convert-xml/{filename} endpoint can share
+the exact same code path. CLI behavior is unchanged from the user's
+perspective.
+
 Usage:
-    python convert_to_xml.py output/MyWorkflow_A3F9.json
-    python convert_to_xml.py output/MyWorkflow_A3F9.json --output ./uploads/
-    python convert_to_xml.py output/MyWorkflow_A3F9.json --dry-run
+    python convert_to_xml.py json_files/MyWorkflow_A3F9.json
+    python convert_to_xml.py json_files/MyWorkflow_A3F9.json --output ./uploads/
+    python convert_to_xml.py json_files/MyWorkflow_A3F9.json --dry-run
 
 The script validates both layers of the produced XML before writing:
   1. Outer TotalExport wrapper  (xml.etree.ElementTree.fromstring)
-  2. Inner Xoml string          (unescaped and parsed separately)
+  2. Inner Xoml string          (parsed separately)
 
 Exit codes:
     0  — XML written successfully and both layers valid
@@ -24,46 +30,14 @@ import argparse
 import json
 import pathlib
 import sys
-import xml.etree.ElementTree as ET
 
-from serializer.xml_composer import WorkflowXmlComposer
+from serializer.xml_composer import (
+    convert_json_to_xml,
+    WorkflowJsonSchemaError,
+    XmlValidationError,
+    WorkflowXmlComposer,
+)
 
-
-# ---------------------------------------------------------------------------
-# Validation helpers
-# ---------------------------------------------------------------------------
-
-def _validate_outer(xml_string: str) -> ET.Element:
-    """Parse TotalExport wrapper. Raises ET.ParseError on failure."""
-    return ET.fromstring(xml_string)
-
-
-def _validate_xoml(root: ET.Element) -> None:
-    """
-    Locate the Xoml attribute on WorkflowInfo and parse it as XML.
-
-    ET.fromstring on the outer XML already decodes the Xoml attribute value
-    (converting &amp; → &, &quot; → ", etc.). Calling html.unescape on top
-    of that causes double-unescaping: &amp; in the Xoml → & which is a bare
-    ampersand and invalid XML (triggers "invalid token" on Formula attributes
-    containing =Equals(&&&,Value)).
-
-    Do NOT call html.unescape here.
-    """
-    workflow_info = root.find(".//WorkflowInfo")
-    if workflow_info is None:
-        print("  [warn] No WorkflowInfo element found — skipping Xoml validation")
-        return
-    xoml = workflow_info.get("Xoml", "")
-    if not xoml:
-        print("  [warn] Xoml attribute is empty — skipping Xoml validation")
-        return
-    ET.fromstring(xoml)
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -82,18 +56,24 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # ── 1. Load input JSON ──────────────────────────────────────────────────
     json_path = pathlib.Path(args.json_path)
+
+    # ── Load + report metadata before invoking the composer ─────────────
+    # Done here (rather than inside convert_json_to_xml) so the CLI can
+    # print the workflow name + pnumber even if the composer later fails.
     if not json_path.exists():
         print(f"Error: file not found — {json_path}", file=sys.stderr)
         sys.exit(1)
 
-    with open(json_path, encoding="utf-8") as f:
-        workflow = json.load(f)
+    try:
+        with open(json_path, encoding="utf-8") as f:
+            workflow = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: input JSON is not parseable — {e}", file=sys.stderr)
+        sys.exit(2)
 
-    name = workflow.get("name")
+    name    = workflow.get("name")
     pnumber = workflow.get("pnumber")
-
     if not name or not pnumber:
         print(
             "Error: workflow JSON must contain 'name' and 'pnumber' fields.",
@@ -104,36 +84,43 @@ def main() -> None:
     print(f"Input:     {json_path}")
     print(f"Workflow:  {name}  │  Pnumber: {pnumber}")
 
-    # ── 2. Compose XML ──────────────────────────────────────────────────────
-    composer = WorkflowXmlComposer()
-    xml_string = composer.compose(workflow, name, pnumber)
-
-    # ── 3. Validate outer TotalExport wrapper ───────────────────────────────
-    try:
-        root = _validate_outer(xml_string)
-        print("Validation [outer XML]:  VALID")
-    except ET.ParseError as e:
-        print(f"Validation [outer XML]:  INVALID — {e}", file=sys.stderr)
-        sys.exit(3)
-
-    # ── 4. Validate inner Xoml string ───────────────────────────────────────
-    try:
-        _validate_xoml(root)
-        print("Validation [Xoml]:       VALID")
-    except ET.ParseError as e:
-        print(f"Validation [Xoml]:       INVALID — {e}", file=sys.stderr)
-        sys.exit(3)
-
-    # ── 5. Write output ─────────────────────────────────────────────────────
+    # ── Dry-run: compose + validate but do not write ─────────────────────
+    # We re-implement the dry-run path here rather than adding a flag to
+    # convert_json_to_xml() because the function's contract is "produce
+    # a file." A dry-run is a CLI-only concept.
     if args.dry_run:
+        composer   = WorkflowXmlComposer()
+        xml_string = composer.compose(workflow, name, pnumber)
+        from serializer.xml_composer import _validate_outer, _validate_xoml
+        try:
+            root = _validate_outer(xml_string)
+            print("Validation [outer XML]:  VALID")
+        except XmlValidationError as e:
+            print(f"Validation [outer XML]:  INVALID — {e.parse_error}", file=sys.stderr)
+            sys.exit(3)
+        try:
+            _validate_xoml(root)
+            print("Validation [Xoml]:       VALID")
+        except XmlValidationError as e:
+            print(f"Validation [Xoml]:       INVALID — {e.parse_error}", file=sys.stderr)
+            sys.exit(3)
         print("Dry run — no file written.")
         return
 
-    out_dir = pathlib.Path(args.output) if args.output else json_path.parent
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / (json_path.stem + ".xml")
+    # ── Real run: convert + write via the shared helper ──────────────────
+    try:
+        out_path = convert_json_to_xml(json_path, output_dir=args.output)
+    except WorkflowJsonSchemaError as e:
+        # Already covered above, but the function defends in depth too
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
+    except XmlValidationError as e:
+        # Print which layer failed and the underlying parser message
+        print(f"Validation [{e.layer}]:  INVALID — {e.parse_error}", file=sys.stderr)
+        sys.exit(3)
 
-    out_path.write_text(xml_string, encoding="utf-8")
+    print("Validation [outer XML]:  VALID")
+    print("Validation [Xoml]:       VALID")
     print(f"Written:   {out_path}")
 
 
